@@ -1,0 +1,370 @@
+/* 
+  Copyright (c) 2025 FRC 6328
+  http://github.com/Mechanical-Advantage
+
+  Use of this source code is governed by an MIT-style
+  license that can be found in the LICENSE file at
+  the root directory of this project.
+*/
+
+body {
+  overscroll-behavior: none;
+  overflow: hidden;
+  font-family: Helvetica, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+  color: #000;
+
+  /* Show disconnected state by default */
+  background-color: red;
+}
+
+div {
+  position: absolute;
+}
+
+div.overview-section {
+  top: 0%;
+  left: 0%;
+  height: 100%;
+  width: 15%;
+}
+
+div.overview-section div.left-container {
+  left: 0%;
+  width: 100%;
+  height: 25%;
+}
+
+div.overview-section div.left-container:nth-child(1) {
+  top: 75%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 5vh;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white; /* Text color for better contrast */
+}
+
+div.overview-section div.left-container:nth-child(1) div.left-section {
+  background-color: var(--box-color, red); /* Default color inside the box */
+  border-radius: 5vh;
+  border: 1px solid black; /* Border remains unaffected */
+  width: 80%;
+  height: 80%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+div.overview-section div.left-container:nth-child(2) {
+  top: 50%;
+  color: white; /* Text color for better contrast */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 5vh;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 5vh;
+}
+
+div.overview-section div.left-container:nth-child(3) {
+  top: 25%;
+  color: white; /* Text color for better contrast */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 5vh;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 5vh;
+}
+
+div.overview-section div.left-container:nth-child(4) {
+  top: 0%;
+  color: white; /* Text color for better contrast */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 5vh;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 5vh;
+}
+
+div.overview-section div.left-container:nth-child(4) div.left-section {
+  background-color: var(--alliance-color, red); /* Default to red */
+  border-radius: 5vh;
+  border: 1px solid black;
+  width: 80%;
+  height: 80%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+div.overview-section div.left-container div.left-section {
+  top: 10%;
+  height: 80%;
+  left: 10%;
+  width: 80%;
+  border-radius: 5vh;
+  border: 0px solid black;
+}
+
+div.overview-section div.left-container div.left-section.active {
+  background-color: #ffffff;
+}
+
+div.overview-section div.left-container div.left-section div {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10vh;
+}
+
+div.reef-section {
+  top: 0%;
+  left: 15%;
+  height: 80%;
+  width: 85%;
+}
+
+div.reef-section canvas {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+div.reef-section div.branch,
+div.reef-section div.algae {
+  border-radius: 100%;
+  transform: translate(-50%, -50%);
+  border: 1px solid black;
+  z-index: 1;
+}
+
+div.reef-section div.branch {
+  height: 12vh;
+  width: 12vh;
+}
+
+div.reef-section div.algae {
+  height: 14vh;
+  width: 14vh;
+}
+
+div.reef-section div.branch,
+div.reef-section div.branch.active {
+  background-color: #cc00ff;
+}
+
+div.reef-section div.branch img {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10vh;
+}
+
+div.reef-section div.branch.active img {
+  display: initial;
+}
+
+div.reef-section div.algae {
+  background-color: #00b7ff;
+}
+
+div.reef-section div.algae img {
+  display: initial;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10vh;
+}
+
+div.reef-section div.branch:nth-child(1) {
+  left: calc(50% + 10%);
+  top: calc(50% + 40%);
+}
+
+div.reef-section div.branch:nth-child(2) {
+  left: calc(50% - 10%);
+  top: calc(50% + 40%);
+}
+
+div.reef-section div.branch:nth-child(3) {
+  left: calc(50% - 30%);
+  top: calc(50% + 30%);
+}
+
+div.reef-section div.branch:nth-child(4) {
+  left: calc(50% - 40%);
+  top: calc(50% + 12%);
+}
+
+div.reef-section div.branch:nth-child(5) {
+  left: calc(50% - 40%);
+  top: calc(50% - 12%);
+}
+
+div.reef-section div.branch:nth-child(6) {
+  left: calc(50% - 30%);
+  top: calc(50% - 30%);
+}
+
+div.reef-section div.branch:nth-child(7) {
+  left: calc(50% - 10%);
+  top: calc(50% - 40%);
+}
+
+div.reef-section div.branch:nth-child(8) {
+  left: calc(50% + 10%);
+  top: calc(50% - 40%);
+}
+
+div.reef-section div.branch:nth-child(9) {
+  left: calc(50% + 30%);
+  top: calc(50% - 30%);
+}
+
+div.reef-section div.branch:nth-child(10) {
+  left: calc(50% + 40%);
+  top: calc(50% - 12%);
+}
+
+div.reef-section div.branch:nth-child(11) {
+  left: calc(50% + 40%);
+  top: calc(50% + 12%);
+}
+
+div.reef-section div.branch:nth-child(12) {
+  left: calc(50% + 30%);
+  top: calc(50% + 30%);
+}
+
+div.reef-section div.algae:nth-child(13) {
+  left: calc(50% + 0%);
+  top: calc(50% + 20%);
+}
+
+div.reef-section div.algae:nth-child(14) {
+  left: calc(50% - 18%);
+  top: calc(50% + 10%);
+}
+
+div.reef-section div.algae:nth-child(15) {
+  left: calc(50% - 18%);
+  top: calc(50% - 10%);
+}
+
+div.reef-section div.algae:nth-child(16) {
+  left: calc(50% + 0%);
+  top: calc(50% - 20%);
+}
+
+div.reef-section div.algae:nth-child(17) {
+  left: calc(50% + 18%);
+  top: calc(50% - 10%);
+}
+
+div.reef-section div.algae:nth-child(18) {
+  left: calc(50% + 18%);
+  top: calc(50% + 10%);
+}
+
+div.lower-section {
+  top: 80%;
+  left: 15%;
+  height: 20%;
+  width: 85%;
+}
+
+div.lower-section div.direction,
+div.lower-section div.value,
+div.lower-section div.submit {
+  top: 10%;
+  height: 80%;
+  width: 25%;
+  border-radius: 5vh;
+  border: 1px solid black;
+}
+
+div.lower-section div.direction {
+  left: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+div.lower-section div.direction select {
+  width: 80%;
+  height: 50%;
+  font-size: 5vh;
+  font-family: "Courier New", Courier, monospace; /* Updated font for cooler text */
+  font-weight: bold; /* Makes the text bold */
+  color: #fff; /* Darker text color */
+  border-radius: 1vh;
+  border: 1px solid black;
+  text-align: center;
+  background-color: #007bff; /* Light background for better contrast */
+}
+
+div.lower-section div.value {
+  left: 37.5%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+div.lower-section div.value input[type="text"] {
+  width: 80%;
+  height: 50%;
+  font-size: 5vh;
+  font-family: "Courier New", Courier, monospace; /* Updated font for cooler text */
+  font-weight: bold;
+  color: #fff;
+  border-radius: 1vh;
+  border: 1px solid black;
+  text-align: center;
+  background-color: #007bff;;
+}
+
+div.lower-section div.submit {
+  left: 65%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+div.lower-section div.submit button {
+  width: 80%;
+  height: 50%;
+  font-size: 4.25vh;
+  font-family: "Courier New", Courier, monospace; /* Matches the cooler text font */
+  font-weight: bold;
+  color: #fff;
+  border-radius: 1vh;
+  border: 1px solid black;
+  text-align: center;
+  background-color: #007bff; /* Blue background for better visibility */
+  cursor: pointer;
+}
+
+div.lower-section div.direction div,
+div.lower-section div.value div,
+div.lower-section div.submit div {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10vh;
+  filter: brightness(0);
+}

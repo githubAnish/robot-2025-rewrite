@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="stylesheet" href="index.css" />
+    <script src="index.js" type="module"></script>
+    <title>Reef Controls &mdash; FRC 503</title>
+  </head>
+  <body>
+    <div class="overview-section">
+      <div class="left-container">
+        <div class="left-section"><div class="alliance-container"></div></div>
+      </div>
+      <div class="left-container">
+        <div class="left-section"><div class="empty-container"></div></div>
+      </div>
+      <div class="left-container">
+        <div class="left-section"><div class="empty-container"></div></div>
+      </div>
+      <div class="left-container">
+        <div class="left-section"><div class="tuning-container"></div></div>
+      </div>
+    </div>
+    <div class="reef-section">
+      <div class="branch" id="RIGHT_AB"><img src="coral.png" /></div>
+      <div class="branch" id="LEFT_AB"><img src="coral.png" /></div>
+      <div class="branch" id="RIGHT_KL"><img src="coral.png" /></div>
+      <div class="branch" id="LEFT_KL"><img src="coral.png" /></div>
+      <div class="branch" id="RIGHT_IJ"><img src="coral.png" /></div>
+      <div class="branch" id="LEFT_IJ"><img src="coral.png" /></div>
+      <div class="branch" id="RIGHT_GH"><img src="coral.png" /></div>
+      <div class="branch" id="LEFT_GH"><img src="coral.png" /></div>
+      <div class="branch" id="RIGHT_EF"><img src="coral.png" /></div>
+      <div class="branch" id="LEFT_EF"><img src="coral.png" /></div>
+      <div class="branch" id="RIGHT_CD"><img src="coral.png" /></div>
+      <div class="branch" id="LEFT_CD"><img src="coral.png" /></div>
+      <div class="algae active"><img src="algae.png" /></div>
+      <div class="algae active"><img src="algae.png" /></div>
+      <div class="algae active"><img src="algae.png" /></div>
+      <div class="algae active"><img src="algae.png" /></div>
+      <div class="algae active"><img src="algae.png" /></div>
+      <div class="algae active"><img src="algae.png" /></div>
+      <div class="flag" hidden>&#x1F3C1;</div>
+      <canvas class="reef-canvas"></canvas>
+    </div>
+    <div class="lower-section">
+      <div class="direction">
+        <select>
+            <option value="LEFT" selected>LEFT</option>
+            <option value="RIGHT">RIGHT</option>
+            <option value="FORWARD">FORWARD</option>
+            <option value="BACKWARD">BACKWARD</option>
+        </select>
+      </div>
+      <div class="value">
+        <input type="text" id="name" name="name">
+      </div>
+      <div class="submit">
+        <button type="submit">Apply Offset</button>
+      </div>
+    </div>
+  </body>
+</html>

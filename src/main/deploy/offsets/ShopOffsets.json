@@ -1,0 +1,29 @@
+{
+    "LEFT_RED_AB": "7.125, 3.65",
+    "LEFT_RED_CD": "7.125, 3.65",
+    "LEFT_RED_EF": "7.125, 3.65",
+    "LEFT_RED_GH": "7.125, 3.65",
+    "LEFT_RED_IJ": "7.125, 3.65",
+    "LEFT_RED_KL": "7.125, 3.65",
+
+    "LEFT_BLUE_AB": "7.125, 3.65",
+    "LEFT_BLUE_CD": "7.125, 3.65",
+    "LEFT_BLUE_EF": "7.125, 3.65",
+    "LEFT_BLUE_GH": "7.125, 3.65",
+    "LEFT_BLUE_IJ": "7.125, 3.65",
+    "LEFT_BLUE_KL": "7.125, 3.65",
+
+    "RIGHT_RED_AB": "-7.125, 3.65",
+    "RIGHT_RED_CD": "-7.125, 3.65",
+    "RIGHT_RED_EF": "-7.125, 3.65",
+    "RIGHT_RED_GH": "-7.125, 3.65",
+    "RIGHT_RED_IJ": "-7.125, 3.65",
+    "RIGHT_RED_KL": "-7.125, 3.65",
+
+    "RIGHT_BLUE_AB": "-7.125, 3.65",
+    "RIGHT_BLUE_CD": "-7.125, 3.65",
+    "RIGHT_BLUE_EF": "-7.125, 3.65",
+    "RIGHT_BLUE_GH": "-7.125, 3.65",
+    "RIGHT_BLUE_IJ": "-7.125, 3.65",
+    "RIGHT_BLUE_KL": "-7.125, 3.65"
+}
