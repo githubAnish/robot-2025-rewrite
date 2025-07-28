@@ -289,8 +289,8 @@ public class FieldConfig {
         public String filePath;
         public AprilTagFieldLayout aprilTagFieldLayout;
 
-        private Venue(String p, AprilTagFieldLayout aprilTagFieldLayout) {
-            this.filePath = p;
+        private Venue(String filePath, AprilTagFieldLayout aprilTagFieldLayout) {
+            this.filePath = filePath;
             this.aprilTagFieldLayout = aprilTagFieldLayout;
         }
     }

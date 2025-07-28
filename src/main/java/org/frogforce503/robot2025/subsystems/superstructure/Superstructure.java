@@ -71,42 +71,6 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
         coralSensorIO.updateInputs(coralSensorInputs);
         Logger.processInputs("CoralSensors", coralSensorInputs);
 
-        // hasAlgaeInClaw =
-        //     claw.algaeCurrentThresholdForHoldMet() &&
-        //     (claw.getCurrentGoal() == ClawGoal.INTAKE_ALGAE || claw.getCurrentGoal() == ClawGoal.HOLD_ALGAE);
-
-        // hasAlgaeInIntake =
-        //     intake.algaeCurrentThresholdForHoldMet() &&
-        //     (intake.getCurrentGoal() == IntakeGoal.INTAKE || intake.getCurrentGoal() == IntakeGoal.HANDOFF);
-
-        // if (currentGoal == Goal.INTAKE_ALGAE && algaeFilter.calculate(clawInputs.leftMotorData.statorCurrentAmps() > 15)) {
-        //     hasAlgae = true;
-        // }
-
-        // if (hasCoral) {
-        //     if (currentGoal != Goal.EJECT_CORAL) {
-        //         currentGoal = Goal.OFF;
-        //     }
-        // }
-
-        // if (currentGoal == Goal.EJECT_CORAL) {
-        //     hasCoral = false;
-        // }
-
-        // if (currentGoal == Goal.EJECT_ALGAE) {
-        //     hasAlgae = false;
-        // }
-
-        Logger.recordOutput("Superstructure/Brake Mode Enabled", brakeModeEnabled);
-
-        Logger.recordOutput("Superstructure/Inputs/Has Coral", hasCoral);
-        Logger.recordOutput("Superstructure/Inputs/Algae In Claw", hasAlgaeInClaw);
-        Logger.recordOutput("Superstructure/Inputs/Algae In Intake", hasAlgaeInIntake);
-
-        Logger.recordOutput("Superstructure/Current Gamepiece", currentPiece);
-        Logger.recordOutput("Superstructure/Mode", currentMode);
-        Logger.recordOutput("Superstructure/Branch", currentBranch);
-
         // Update visualizers
         measuredVisualizer.updateOnlyIfInSimulation(
             elevator.getPosition(),
@@ -119,6 +83,16 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
             arm.getSetpoint().position,
             wrist.getSetpoint().position,
             intake.getSetpoint().position);
+
+        Logger.recordOutput("Superstructure/Brake Mode Enabled", brakeModeEnabled);
+
+        Logger.recordOutput("Superstructure/Inputs/Has Coral", hasCoral);
+        Logger.recordOutput("Superstructure/Inputs/Algae In Claw", hasAlgaeInClaw);
+        Logger.recordOutput("Superstructure/Inputs/Algae In Intake", hasAlgaeInIntake);
+
+        Logger.recordOutput("Superstructure/Current Gamepiece", currentPiece);
+        Logger.recordOutput("Superstructure/Mode", currentMode);
+        Logger.recordOutput("Superstructure/Branch", currentBranch);
 
         // Record cycle time
         LoggedTracer.record("Superstructure");
@@ -146,6 +120,17 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
             wrist.setEncoderPosition(
                 arm.getPosition() + wrist.getAbsolutePosition());
         }
+    }
+
+    /** Set the superstructure brake mode only if no subsystem has brake mode set individually through each subsystem's coast override. */
+    public void setBrakeMode(boolean enabled) {
+        brakeModeEnabled = enabled;
+
+        elevator.setBrakeMode(enabled);
+        arm.setBrakeMode(enabled);
+        wrist.setBrakeMode(enabled);
+        claw.setBrakeMode(enabled);
+        intake.setBrakeMode(enabled);
     }
 
     // Manual Control
@@ -555,16 +540,6 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
     // Miscellaneous commands here
     public Command stopClaw() {
         return claw.stop();
-    }
-
-    public void setBrakeMode(boolean enabled) {
-        brakeModeEnabled = enabled;
-
-        elevator.setBrakeMode(enabled);
-        arm.setBrakeMode(enabled);
-        wrist.setBrakeMode(enabled);
-        claw.setBrakeMode(enabled);
-        intake.setBrakeMode(enabled);
     }
 
     public enum Mode {

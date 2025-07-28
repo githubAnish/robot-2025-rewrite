@@ -14,13 +14,14 @@ import edu.wpi.first.math.numbers.N3;
 public interface DriveIO {
     @AutoLog
     class DriveIOInputs {
-        public DriveIOData data = new DriveIOData(new SwerveDriveState(), new Pose2d(), new ChassisSpeeds());
+        public DriveIOData data = new DriveIOData(new SwerveDriveState(), Pose2d.kZero, new ChassisSpeeds(), Rotation2d.kZero);
     }
 
     record DriveIOData(
         SwerveDriveState state,
         Pose2d poseMeters,
-        ChassisSpeeds velocityMeters) {}
+        ChassisSpeeds velocityMeters,
+        Rotation2d rawGyroAngle) {}
 
     default void updateInputs(DriveIOInputs inputs) {}
 
@@ -28,11 +29,13 @@ public interface DriveIO {
 
     default void setAngle(Rotation2d angle) {}
 
-    default void runVelocity(ChassisSpeeds velocity) {}
+    default void acceptVisionMeasurement(Pose2d poseEstimate, double timestamp, Matrix<N3, N1> stdDevs) {}
 
     default void brake() {}
 
     default void coast() {}
-    
-    default void acceptVisionMeasurement(Pose2d poseEstimate, double timestamp, Matrix<N3, N1> stdDevs) {}
+
+    default void runVelocity(ChassisSpeeds velocity) {}
+
+    default void runCharacterization(double output) {}
 }

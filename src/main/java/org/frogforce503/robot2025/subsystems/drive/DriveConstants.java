@@ -12,7 +12,9 @@ import edu.wpi.first.math.util.Units;
 public final class DriveConstants {
     public static final double dt = 0.02;
 
-    public static final Translation2d CENTER_OF_ROTATION = new Translation2d();
+    public static final double driveBaseRadius = Math.hypot(Robot.bot.kWheelbaseLength / 2, Robot.bot.kWheelbaseWidth / 2);
+    
+    public static final Translation2d CENTER_OF_ROTATION = Translation2d.kZero;
 
     public static final double SLOW_TRANSLATION_METERS_PER_SECOND = 1.5;
     public static final double FAST_TRANSLATION_METERS_PER_SECOND = Robot.bot.frontLeftConstants.SpeedAt12Volts;

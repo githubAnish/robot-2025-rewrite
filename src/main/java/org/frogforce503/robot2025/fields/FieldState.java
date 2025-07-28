@@ -20,19 +20,11 @@ public class FieldState {
         return !info.isEmpty();
     }
 
-    private Alliance getAllianceColor() {
+    public Alliance getAlliance() {
         return 
             allianceColorBeenOverriden || DriverStation.getAlliance().isEmpty()
                 ? this.allianceColor
                 : DriverStation.getAlliance().get();
-    }
-
-    public boolean isAllianceRed() {
-        return getAllianceColor() == Alliance.Red;
-    }
-
-    public boolean isAllianceBlue() {
-        return getAllianceColor() == Alliance.Blue;
     }
 
     public void overrideAllianceColor(Alliance color) {

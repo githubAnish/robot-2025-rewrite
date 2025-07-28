@@ -2,10 +2,12 @@ package org.frogforce503.robot2025.auto;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.auto.AutoFactoryBuilder;
 import org.frogforce503.lib.auto.AutoMode;
+import org.frogforce503.lib.auto.builder.ChoreoFactoryBuilder;
+import org.frogforce503.lib.drawing.DrawOnField;
 import org.frogforce503.lib.util.SwitchableChooser;
 import org.frogforce503.robot2025.auto.blue.BlueBabyAuton;
 import org.frogforce503.robot2025.auto.red.RedBabyAuton;
@@ -51,6 +53,8 @@ public class AutoChooser {
     private StartingLocation lastStartingSide = null;
     private String lastRoutine = "";
     
+    private final BooleanSupplier selectAllianceFromDS;
+
     private
         HashMap<
             Alliance,
@@ -65,13 +69,16 @@ public class AutoChooser {
         FieldInfo field,
         Superstructure superstructure,
         AutoIntakeCommands autoIntakeCommands,
-        AutoScoreCommands autoScoreCommands
+        AutoScoreCommands autoScoreCommands,
+        BooleanSupplier selectAllianceFromDS
     ) {
         this.drive = drive;
         this.field = field;
         this.superstructure = superstructure;
 
-        this.autoFactory = new AutoFactoryBuilder(drive).buildFactory();
+        this.autoFactory = new ChoreoFactoryBuilder(drive).buildFactory();
+
+        this.selectAllianceFromDS = selectAllianceFromDS;
 
         this.colorSelector = new LoggedDashboardChooser<>("AutoChooser/Alliance Color");
 
@@ -143,6 +150,23 @@ public class AutoChooser {
         );
     }
 
+    private void reset() {
+        selectedAuto = null;
+        autoReadyDisplay.set(false);
+        selectedAutoNameDisplay.set("NO AUTO SELECTED");
+
+        field
+            .getObject("Trajectory")
+            .setPoses(new Pose2d[] {});
+
+        routineChooser.setOptions(
+            AUTO_MAP
+                .get(colorSelector.get())
+                .get(startingSideSelector.get())
+                .keySet()
+                .toArray(String[]::new));
+    }
+
     private void createAuto() {
         if (selectedAuto != null) {
             drive.setPose(
@@ -150,6 +174,7 @@ public class AutoChooser {
 
             Timer autoTimer = new Timer();
 
+            // Create auto command
             selectedAutoCommand =
                 Commands
                     .deferredProxy(selectedAuto::routine)
@@ -159,8 +184,19 @@ public class AutoChooser {
                         autoTimer.stop();
                     });
             
-            drawPathOnField();
+            // Display Path
+            List<Pose2d> poses =
+                selectedAuto
+                    .getRoute()
+                    .getPoses();
+    
+            field
+                .getObject("Trajectory")
+                .setPoses(poses.toArray(Pose2d[]::new));
+    
+            Logger.recordOutput("Swerve/SelectedAuto", DrawOnField.path(poses));
 
+            // Initialize superstructure starting state
             if (RobotBase.isSimulation()) {
                 superstructure.getMeasuredVisualizer().setupAuto();
                 superstructure.getSetpointVisualizer().setupAuto();
@@ -173,14 +209,6 @@ public class AutoChooser {
     public void startAuto() {
         if (selectedAutoCommand != null) {
             selectedAutoCommand.schedule();
-        }
-    }
-
-    public void cleanup() {
-        reset();
-
-        if (selectedAuto != null) {
-            selectedAutoCommand.cancel();
         }
     }
 
@@ -197,8 +225,8 @@ public class AutoChooser {
             reset();
         }
 
-        // Select alliance color only when in simulation, else use DriverStation app to choose
-        if (RobotBase.isSimulation()) {
+        // Select alliance color only when in simulation, else use DriverStation app to choose (only when this feature is enabled)
+        if (RobotBase.isSimulation() && selectAllianceFromDS.getAsBoolean()) {
             field.overrideAllianceColor(colorSelector.get());
         }
         
@@ -206,7 +234,10 @@ public class AutoChooser {
             System.out.println("Commit Button Pressed - Returned from AutoChooser.java");
 
             StartingLocation side = startingSideSelector.get();
-            Alliance color = colorSelector.get();
+            Alliance color =
+                RobotBase.isReal() && selectAllianceFromDS.getAsBoolean()
+                    ? field.getAlliance()
+                    : colorSelector.get();
 
             var choice =
                 AUTO_MAP
@@ -231,21 +262,12 @@ public class AutoChooser {
         lastRoutine = routineChooser.get();
     }
 
-    private void reset() {
-        selectedAuto = null;
-        autoReadyDisplay.set(false);
-        selectedAutoNameDisplay.set("NO AUTO SELECTED");
+    public void cleanup() {
+        reset();
 
-        field
-            .getObject("Trajectory")
-            .setPoses(new Pose2d[] {});
-
-        routineChooser.setOptions(
-            AUTO_MAP
-                .get(colorSelector.get())
-                .get(startingSideSelector.get())
-                .keySet()
-                .toArray(String[]::new));
+        if (selectedAuto != null) {
+            selectedAutoCommand.cancel();
+        }
     }
 
     /** Warms up the auto chooser by running a test Choreo path for 5 seconds on robotInit. */
@@ -257,36 +279,6 @@ public class AutoChooser {
                 .ignoringDisable(true)
                 .withName("Warmup Choreo Autos")
             .schedule();
-    }
-
-    private void drawPathOnField() {
-        List<Pose2d> poses =
-            selectedAuto
-                .getRoute()
-                .getPoses();
-
-        String pointsList = "[";
-
-        int i = 0;
-        int granularity = 25;
-        
-        for (Pose2d pose : poses) {
-            if (i % granularity == 0) {
-                if (i != 0) {
-                    pointsList += ", ";
-                }
-                pointsList += "[" + ((int) (pose.getX() / 100)) + ", " + (int) (pose.getY() / 100) + "]";
-            }
-            i++;
-        }
-
-        pointsList += "]";
-
-        field
-            .getObject("Trajectory")
-            .setPoses(poses.toArray(Pose2d[]::new));
-
-        Logger.recordOutput("Swerve/SelectedAuto", pointsList);
     }
 
     public enum StartingLocation {

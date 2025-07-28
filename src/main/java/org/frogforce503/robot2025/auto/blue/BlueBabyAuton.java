@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.auto.blue;
 
 import org.frogforce503.lib.auto.AutoMode;
-import org.frogforce503.lib.trajectory.routes.ChoreoRoute;
+import org.frogforce503.lib.auto.trajectory.route.ChoreoRoute;
 import org.frogforce503.robot2025.commands.AutoIntakeCommands;
 import org.frogforce503.robot2025.commands.AutoScoreCommands;
 import org.frogforce503.robot2025.commands.coral_score_reef.Branch;

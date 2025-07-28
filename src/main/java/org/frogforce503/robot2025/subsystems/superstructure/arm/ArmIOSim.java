@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
-import org.frogforce503.lib.motor.Sim;
-import org.frogforce503.lib.motor.CANMotor.MotorControlMode;
+import org.frogforce503.lib.motor_wrappers.Sim;
+import org.frogforce503.lib.motor_wrappers.CANMotor.MotorControlMode;
 
 public class ArmIOSim implements ArmIO {
     private Sim sim;

@@ -4,9 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.trajectory.PlannedPath;
-import org.frogforce503.lib.trajectory.SwervePathBuilder;
-import org.frogforce503.lib.trajectory.Waypoint;
+import org.frogforce503.lib.auto.builder.PlannedPathBuilder;
+import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
+import org.frogforce503.lib.auto.trajectory.path.Waypoint;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
@@ -18,7 +18,7 @@ public class DrivePath extends Command {
     private final Drive drive;
     private final FieldInfo field;
     
-    private final SwervePathBuilder pathBuilder;
+    private final PlannedPathBuilder pathBuilder;
 
     private final Supplier<Pose2d> robotPose;
     private final Supplier<Pose2d> target;
@@ -26,14 +26,14 @@ public class DrivePath extends Command {
 
     private final PathLimits limits;
 
-    private SwerveFollowPathCommand pathFollowingCommand;
+    private FollowPlannedPath pathFollowingCommand;
 
     @SuppressWarnings("unchecked")
     public DrivePath(Drive drive, FieldInfo field, PathLimits limits, Supplier<Pose2d> robotPose, Supplier<Pose2d> target, Supplier<Pose2d>... posesBetween) {
         this.drive = drive;
         this.field = field;
 
-        this.pathBuilder = new SwervePathBuilder();
+        this.pathBuilder = new PlannedPathBuilder();
 
         this.robotPose = robotPose;
         this.target = target;
@@ -54,7 +54,7 @@ public class DrivePath extends Command {
         this.waypointsBetween.add(Waypoint.fromHolonomicPose(target.get()));
 
         pathFollowingCommand =
-            new SwerveFollowPathCommand(
+            new FollowPlannedPath(
                 drive,
                 field,
                 pathBuilder

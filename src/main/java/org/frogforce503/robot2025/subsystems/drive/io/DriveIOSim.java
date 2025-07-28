@@ -23,7 +23,7 @@ public class DriveIOSim implements DriveIO {
             new SwerveModuleState(),
             new SwerveModuleState()};
 
-    @Setter private Pose2d currentPose = new Pose2d();
+    @Setter private Pose2d currentPose = Pose2d.kZero;
     private ChassisSpeeds currentVelocity = new ChassisSpeeds();
 
     private double lastUpdate = -1.0;
@@ -36,15 +36,13 @@ public class DriveIOSim implements DriveIO {
     @Override
     public void updateInputs(DriveIOInputs inputs) {
         SwerveDriveState currentState = getCurrentState(currentPose);
-        // Pose2d currentPose = currentState.Pose;
-
-        // currentVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(kinematics.toChassisSpeeds(currentState.ModuleStates), currentPose.getRotation());
 
         inputs.data =
             new DriveIOData(
                 currentState,
                 currentPose,
-                currentVelocity);
+                currentVelocity,
+                currentPose.getRotation());
 
         update();
     }
@@ -55,14 +53,14 @@ public class DriveIOSim implements DriveIO {
     }
 
     @Override
-    public void runVelocity(ChassisSpeeds velocity) {
-        this.currentVelocity = velocity;
-        this.states = kinematics.toSwerveModuleStates(this.currentVelocity);
+    public void brake() {
+        this.currentVelocity = new ChassisSpeeds();
     }
 
     @Override
-    public void brake() {
-        this.currentVelocity = new ChassisSpeeds();
+    public void runVelocity(ChassisSpeeds velocity) {
+        this.currentVelocity = velocity;
+        this.states = kinematics.toSwerveModuleStates(this.currentVelocity);
     }
 
     public void update() {

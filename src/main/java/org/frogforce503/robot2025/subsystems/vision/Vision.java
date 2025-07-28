@@ -134,10 +134,19 @@ public class Vision extends SubsystemBase {
         if (!camerasUsed.isEmpty()) {
             for (AprilTagCamera camera : camerasUsed) {
                 visionEstimateConsumer.accept(camera.getEstimatedPose());
-                camera.getEstimatedPose().targetsUsed.forEach(tag -> tagsUsed.add(tag));
+                camera
+                    .getEstimatedPose()
+                    .targetsUsed
+                    .forEach(
+                        tag -> tagsUsed.add(tag));
             }
             
-            tagsUsed = new ArrayList<>(tagsUsed.stream().distinct().toList()); //Gets rid of duplicate tags and sorts them
+            tagsUsed =
+                new ArrayList<>(
+                    tagsUsed
+                        .stream()
+                        .distinct()
+                        .toList()); // Gets rid of duplicate tags and sorts them
 
             Logger.recordOutput("Vision/CamerasUsed",
                 camerasUsed
@@ -158,7 +167,6 @@ public class Vision extends SubsystemBase {
         if (Robot.isSimulation()) {
             updateSimulation();
         }
-
     }
 
     public boolean doesCameraSeeTag(Camera cam, int tagID) {
@@ -201,8 +209,10 @@ public class Vision extends SubsystemBase {
             cameraMap
                 .values()
                 .stream()
-                .filter(camera -> camera instanceof AprilTagCamera)
-                .mapToInt(camera -> ((AprilTagCamera) camera).getNumberOfTagsDetected())
+                .filter(
+                    camera -> camera instanceof AprilTagCamera)
+                .mapToInt(
+                    camera -> ((AprilTagCamera) camera).getNumberOfTagsDetected())
                 .max()
                 .orElse(0);
     }

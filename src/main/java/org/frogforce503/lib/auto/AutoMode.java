@@ -2,10 +2,10 @@ package org.frogforce503.lib.auto;
 
 import java.util.function.Supplier;
 
+import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
+import org.frogforce503.lib.auto.trajectory.route.BaseRoute;
 import org.frogforce503.lib.commands.DriveToPose;
-import org.frogforce503.lib.commands.SwerveFollowPathCommand;
-import org.frogforce503.lib.trajectory.PlannedPath;
-import org.frogforce503.lib.trajectory.routes.BaseRoute;
+import org.frogforce503.lib.commands.FollowPlannedPath;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
@@ -31,7 +31,9 @@ public abstract class AutoMode {
     public abstract BaseRoute<?> getRoute();
 
     public Pose2d getStartingPose(Supplier<Pose2d> override) {
-        return this.getRoute().getStartingPose(override);
+        return
+            getRoute()
+                .getStartingPose(override);
     }
 
     /**
@@ -47,6 +49,6 @@ public abstract class AutoMode {
 
     // PlannedPath
     public Command drive(PlannedPath path) {
-        return new SwerveFollowPathCommand(drive, field, path);
+        return new FollowPlannedPath(drive, field, path);
     }
 }

@@ -1,10 +1,10 @@
 package org.frogforce503.robot2025.auto.test;
 
 import org.frogforce503.lib.auto.AutoMode;
-import org.frogforce503.lib.trajectory.PlannedPath;
-import org.frogforce503.lib.trajectory.SwervePathBuilder;
-import org.frogforce503.lib.trajectory.Waypoint;
-import org.frogforce503.lib.trajectory.routes.PlannedPathRoute;
+import org.frogforce503.lib.auto.builder.PlannedPathBuilder;
+import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
+import org.frogforce503.lib.auto.trajectory.path.Waypoint;
+import org.frogforce503.lib.auto.trajectory.route.PlannedPathRoute;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
@@ -13,14 +13,14 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
-/** Dummy auto using a PlannedPath. This auto is purely to show the format of how to create a auto using a PlannedPath, so don't try to run this auto, as it will crash. */
+/** Dummy auto using a {@link PlannedPath}. This auto is purely to show the format of how to create a auto using a {@link PlannedPath}, so don't try to run this auto, as it will crash. */
 public class PlannedPathDummyAuto extends AutoMode {
     private final PlannedPath trajectory;
 
     public PlannedPathDummyAuto(Drive drive, FieldInfo field) {
         super(drive, field);
         
-        SwervePathBuilder pathBuilder = new SwervePathBuilder();
+        PlannedPathBuilder pathBuilder = new PlannedPathBuilder();
 
         this.trajectory =
             pathBuilder.generate(0.0, 0.0, 0.0, 0.0,

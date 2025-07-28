@@ -73,7 +73,7 @@ public class Arm extends FFSubsystemBase {
         PRESCORE_L1(0),
         PRESCORE_L2(0),
         PRESCORE_L3(0),
-        PRESCORE_L4(0),
+        PRESCORE_L4(30),
 
         SCORE_L1(0),
         SCORE_L2(0),

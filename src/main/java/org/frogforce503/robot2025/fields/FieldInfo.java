@@ -50,12 +50,16 @@ public class FieldInfo {
     }
 
     // Status
+    public Alliance getAlliance() {
+        return status.getAlliance();
+    }
+
     public boolean onRedAlliance() {
-        return status.isAllianceRed();
+        return getAlliance() == Alliance.Red;
     }
 
     public boolean onBlueAlliance() {
-        return status.isAllianceBlue();
+        return getAlliance() == Alliance.Blue;
     }
 
     public void overrideAllianceColor(Alliance color) {

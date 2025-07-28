@@ -1,5 +1,6 @@
 package org.frogforce503.robot2025.hardware;
 
+
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.robot2025.hardware.tunerconstants.TunerConstantsCompBot;
 
@@ -183,7 +184,8 @@ public class RobotHardwareCompBot extends RobotHardware {
         this.kVehicleToBackLeft = new Translation2d(this.backLeftConstants.LocationX, this.backLeftConstants.LocationY);
 
         this.kWheelbaseLength = kVehicleToFrontLeft.getDistance(kVehicleToBackLeft); 
-        this.kWheelbaseWidth = kVehicleToFrontLeft.getDistance(kVehicleToFrontRight); 
+        this.kWheelbaseWidth = kVehicleToFrontLeft.getDistance(kVehicleToFrontRight);
+        this.kWheelRadius = TunerConstantsCompBot.kWheelRadius;
 
         this.kinematics =
             new SwerveDriveKinematics(
@@ -193,8 +195,14 @@ public class RobotHardwareCompBot extends RobotHardware {
                     kVehicleToBackLeft,
                     kVehicleToBackRight});
 
-        this.autoXController = new PIDController(0.95, 0.0, 0.0);
-        this.autoYController = new PIDController(0.905, 0.0, 0.0);
-        this.autoThetaController = new PIDController(5.0, 0.0, 0.0);
+        this.autoPIDController =
+            AutoPIDController.builder()
+                .autoXController(
+                    new PIDController(0.95, 0.0, 0.0))
+                .autoYController(
+                    new PIDController(0.905, 0.0, 0.0))
+                .autoThetaController(
+                    new PIDController(5.0, 0.0, 0.0))
+                .build();
     }    
 }

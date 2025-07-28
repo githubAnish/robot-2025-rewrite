@@ -15,6 +15,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.units.measure.Distance;
 import lombok.Builder;
 
 public abstract class RobotHardware {
@@ -153,6 +154,7 @@ public abstract class RobotHardware {
     // Swerve Calculations Constants (measurements are in inches)
     public double kWheelbaseLength;
     public double kWheelbaseWidth;
+    public Distance kWheelRadius;
 
     // Swerve Module Positions (relative to the center of the drive base)
     public Translation2d kVehicleToFrontRight;
@@ -161,9 +163,13 @@ public abstract class RobotHardware {
     public Translation2d kVehicleToBackLeft;
 
     // Auto Following PID
-    public PIDController autoXController;
-    public PIDController autoYController;
-    public PIDController autoThetaController;
+    public AutoPIDController autoPIDController;
+
+    @Builder
+    public record AutoPIDController(
+        PIDController autoXController,
+        PIDController autoYController,
+        PIDController autoThetaController) {}
 
     /**
      * @return the MAC address of the robot

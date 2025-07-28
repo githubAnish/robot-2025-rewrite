@@ -1,8 +1,9 @@
 package org.frogforce503.robot2025.subsystems.drive;
 
-import java.util.List;
+import static edu.wpi.first.units.Units.Inches;
 
 import org.frogforce503.lib.util.LoggedTracer;
+import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.io.DriveIO;
 import org.frogforce503.robot2025.subsystems.drive.io.DriveIOInputsAutoLogged;
@@ -18,7 +19,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +29,7 @@ public class Drive extends SubsystemBase {
 
     private final FieldInfo field;
 
-    @Getter private Pose2d currentPose = new Pose2d();
+    @Getter private Pose2d currentPose = Pose2d.kZero;
     @Getter private ChassisSpeeds currentVelocity, lastVelocity = new ChassisSpeeds();
     @Getter private Transform2d currentAcceleration = new Transform2d();
 
@@ -107,7 +107,7 @@ public class Drive extends SubsystemBase {
         visualizer.displayModulePoses(this.currentPose.getTranslation(), getAngle());
 
         // Field
-        Logger.recordOutput("Alliance Color", field.onRedAlliance() ? Alliance.Red : Alliance.Blue);
+        Logger.recordOutput("Alliance Color", field.getAlliance());
         Logger.recordOutput("Current Global Pose", this.currentPose);
         field.setRobotPose(this.currentPose);
     }
@@ -128,7 +128,7 @@ public class Drive extends SubsystemBase {
         io.setAngle(rotation);
     }
 
-    public void resetGyro() {
+    public void resetRotation() {
         setAngle(
             field.onRedAlliance()
                 ? Rotation2d.kZero
@@ -148,18 +148,25 @@ public class Drive extends SubsystemBase {
             visionPose,
             DriveConstants.stdDevs);
     }
-    
-    // For multiple camera pose calculation
-    public void acceptVisionMeasurement(List<EstimatedRobotPose> visionPoses) {
-        visionPoses.forEach(pose -> acceptVisionMeasurement(pose));
-    }
 
     public Rotation2d getAngle() {
         return this.currentPose.getRotation();
     }
 
+    public Rotation2d getGyroRotation() {
+        return inputs.data.rawGyroAngle();
+    }
+
     public ChassisSpeeds getFieldVelocity() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(currentVelocity, getAngle());
+    }
+
+    public void brake() {
+        io.brake();
+    }
+
+    public void coast() {
+        io.coast();
     }
 
     /** Runs a robot-relative ChassisSpeeds to the drivetrain. */
@@ -172,11 +179,30 @@ public class Drive extends SubsystemBase {
         runVelocity(new ChassisSpeeds());
     }
 
-    public void brake() {
-        io.brake();
+    public void runCharacterization(double output) {
+        io.runCharacterization(output);
     }
 
-    public void coast() {
-        io.coast();
+    /** Returns the average velocity of the modules in rotations/sec (Phoenix native units). */
+    public double getFFCharacterizationVelocity() {
+        double output = 0.0;
+        for (int i = 0; i < 4; i++) {
+            output +=
+                Units.radiansToRotations(
+                    inputs.data.state().ModuleStates[0].speedMetersPerSecond) / 4.0;
+        }
+        return output;
+    }
+
+    /** Returns the position of each module in radians. */
+    public double[] getWheelRadiusCharacterizationPositions() {
+        double[] values = new double[4];
+        for (int i = 0; i < 4; i++) {
+            values[i] =
+                Units.radiansToRotations(
+                    inputs.data.state().ModulePositions[i].distanceMeters / Robot.bot.kWheelRadius.in(Inches));
+                // This conversion is to get the position of the drive talon (its default units are rotations)
+        }
+        return values;
     }
 }

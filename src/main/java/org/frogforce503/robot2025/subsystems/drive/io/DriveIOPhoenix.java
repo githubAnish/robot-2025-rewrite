@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
 import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
+import com.ctre.phoenix6.swerve.SwerveRequest.SysIdSwerveTranslation;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -28,6 +29,8 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo);
 
+    private final SysIdSwerveTranslation RUN_CHARACTERIZATION = new SysIdSwerveTranslation();
+
     public DriveIOPhoenix() {
         super(
             TalonFX::new, TalonFX::new, CANcoder::new,
@@ -41,17 +44,20 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         Pose2d currentPose = currentState.Pose;
 
         currentVelocity =
-            // ChassisSpeeds.fromRobotRelativeSpeeds(
-                super
-                    .getKinematics()
-                    .toChassisSpeeds(currentState.ModuleStates);
-                // currentPose.getRotation());
+            super
+                .getKinematics()
+                .toChassisSpeeds(currentState.ModuleStates);
 
         inputs.data =
             new DriveIOData(
                 currentState,
                 currentPose,
-                currentVelocity);
+                currentVelocity,
+                Rotation2d.fromDegrees(
+                    super
+                        .getPigeon2()
+                        .getYaw()
+                        .getValueAsDouble()));
     }
 
     @Override
@@ -67,8 +73,14 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     }
 
     @Override
-    public void runVelocity(ChassisSpeeds speeds) {
-        super.setControl(RUN_CHASSIS_SPEEDS.withSpeeds(speeds));
+    public void acceptVisionMeasurement(Pose2d poseEstimate, double timestamp, Matrix<N3, N1> stdDevs) {
+        double newTimestamp = Utils.fpgaToCurrentTime(timestamp);
+
+        if (stdDevs != null) {
+            super.addVisionMeasurement(poseEstimate, newTimestamp, stdDevs);
+        } else {
+            super.addVisionMeasurement(poseEstimate, newTimestamp);
+        }
     }
 
     @Override
@@ -82,13 +94,12 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     }
 
     @Override
-    public void acceptVisionMeasurement(Pose2d poseEstimate, double timestamp, Matrix<N3, N1> stdDevs) {
-        double newTimestamp = Utils.fpgaToCurrentTime(timestamp);
+    public void runVelocity(ChassisSpeeds speeds) {
+        super.setControl(RUN_CHASSIS_SPEEDS.withSpeeds(speeds));
+    }
 
-        if (stdDevs != null) {
-            super.addVisionMeasurement(poseEstimate, newTimestamp, stdDevs);
-        } else {
-            super.addVisionMeasurement(poseEstimate, newTimestamp);
-        }
+    @Override
+    public void runCharacterization(double output) {
+        super.setControl(RUN_CHARACTERIZATION.withVolts(output));
     }
 }

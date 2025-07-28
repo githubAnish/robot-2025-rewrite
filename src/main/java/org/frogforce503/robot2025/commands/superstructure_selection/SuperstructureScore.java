@@ -1,7 +1,6 @@
 package org.frogforce503.robot2025.commands.superstructure_selection;
 
 import java.util.HashMap;
-import java.util.Set;
 
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
@@ -23,13 +22,5 @@ public class SuperstructureScore extends SelectCommand<Mode> {
                 put(Mode.BARGE, superstructure.scoreBarge());
             }},
             superstructure::getCurrentMode);
-    }
-
-    public Set<Mode> getModes() {
-        return Set.of(
-            Mode.L1,
-            Mode.L2,
-            Mode.L3,
-            Mode.L4);
     }
 }

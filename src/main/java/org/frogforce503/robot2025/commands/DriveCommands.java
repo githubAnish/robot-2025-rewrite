@@ -49,7 +49,7 @@ public class DriveCommands {
     }
 
     /**
-     * Field relative drive command using two joysticks (controlling linear and angular velocities).
+     * Field-relative drive command using two joysticks (controlling linear and angular velocities).
      */
     public static Command joystickDrive(Drive drive, FieldInfo field, JoystickInputs inputs, BooleanSupplier robotRelative) {
         return Commands.run(() -> {

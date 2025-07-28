@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
@@ -99,6 +100,7 @@ public class RobotContainer {
 
     // Dashboard Inputs
     private final AutoChooser autoChooser;
+    private final BooleanSupplier selectAllianceFromDS = () -> false;
 
     // Offset Manager
     private final OffsetManager offsetManager;
@@ -248,7 +250,8 @@ public class RobotContainer {
                 field,
                 superstructure,
                 autoIntakeCommands,
-                autoScoreCommands);
+                autoScoreCommands,
+                selectAllianceFromDS);
     
         // Initialize command mappers
         this.intakeRunner = new HashMap<>() {{
@@ -284,8 +287,14 @@ public class RobotContainer {
             // Algae
             put(Mode.ALGAE_GROUND, superstructure.holdAlgaeFromGround());
             put(Mode.ALGAE_HANDOFF, superstructure.holdAlgaeFromHandoff());
-            put(Mode.ALGAE_PLUCK_HIGH, autoIntakeCommands.algaeBackup());
-            put(Mode.ALGAE_PLUCK_LOW, autoIntakeCommands.algaeBackup());
+            put(Mode.ALGAE_PLUCK_HIGH,
+                autoIntakeCommands  
+                    .algaeBackup()
+                    .andThen(superstructure.holdAlgaeFromPluck()));
+            put(Mode.ALGAE_PLUCK_LOW,
+                autoIntakeCommands
+                    .algaeBackup()
+                    .andThen(superstructure.holdAlgaeFromPluck()));
         }};
 
         this.scoreRunner = new HashMap<>() {{
@@ -381,7 +390,7 @@ public class RobotContainer {
                 trigger
                     .onTrue(Commands.runOnce(runnable));
 
-        bindDriverSwitches.accept(driver.povUp(), drive::resetGyro);
+        bindDriverSwitches.accept(driver.povUp(), drive::resetRotation);
         bindDriverSwitches.accept(driver.back(), drive::toggleSlowMode);
         bindDriverSwitches.accept(driver.start(), drive::toggleRobotRelative);
 
@@ -518,7 +527,10 @@ public class RobotContainer {
         // If cameras disconnected for 5 seconds, then leds will blink red for the rest of the match
         camerasConnected
             .debounce(5.0, DebounceType.kBoth)
-            .onFalse(Commands.runOnce(() -> leds.setCameraDisconnected(true)));
+            .onFalse(
+                Commands.runOnce(
+                    () -> leds.setCameraDisconnected(true))
+                        .ignoringDisable(true));
     }
 
     // Main Driver Commands
@@ -539,6 +551,10 @@ public class RobotContainer {
     }
 
     // Auto Chooser
+    public void warmupAutoChooser() {
+        autoChooser.scheduleWarmupCommand();
+    }
+
     public void startAuto() {
         autoChooser.startAuto();
     }
@@ -549,10 +565,6 @@ public class RobotContainer {
 
     public void cleanupAutoChooser() {
         autoChooser.cleanup();
-    }
-
-    public void warmupAutoChooser() {
-        autoChooser.scheduleWarmupCommand();
     }
 
     // Other
