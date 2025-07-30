@@ -176,8 +176,8 @@ public class AutoChooser {
 
             // Create auto command
             selectedAutoCommand =
-                Commands
-                    .deferredProxy(selectedAuto::routine)
+                selectedAuto
+                    .routine()
                     .beforeStarting(autoTimer::restart)
                     .andThen(() -> {
                         System.out.println("Auto " + selectedAuto.getName() + " finished in " + autoTimer.get() + " seconds."); 
@@ -277,7 +277,7 @@ public class AutoChooser {
                 .withTimeout(5)
                 .andThen(new PrintCommand("Warmup Auto Finished"))
                 .ignoringDisable(true)
-                .withName("Warmup Choreo Autos")
+                .withName("Warmup Choreo Auto")
             .schedule();
     }
 

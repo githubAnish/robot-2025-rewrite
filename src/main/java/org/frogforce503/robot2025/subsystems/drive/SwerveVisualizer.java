@@ -30,7 +30,7 @@ public class SwerveVisualizer {
     private final Color8Bit maxColor = new Color8Bit(Color.kGreen);
 
     // FL, FR, BL, BR
-    final Color8Bit[] moduleColors =
+    private final Color8Bit[] moduleColors =
         new Color8Bit[] {
             new Color8Bit(Color.kGreen),
             new Color8Bit(Color.kBlue),
@@ -40,7 +40,6 @@ public class SwerveVisualizer {
     public SwerveVisualizer(double maxSpeed) {
         this.maxSpeed = maxSpeed;
     
-        /* Mechanisms to represent the swerve module states */
         Mechanism2d visual =
             new Mechanism2d(
                 visualSize,
@@ -80,7 +79,7 @@ public class SwerveVisualizer {
         SmartDashboard.putData("Swerve/Visualizer", visual);
     }
 
-    public void update(SwerveModuleState[] moduleStates, Rotation2d angle) {
+    public void updateModules(SwerveModuleState[] moduleStates, Rotation2d angle) {
         for (int i = 0; i < 4; ++i) {
             boolean moving = moduleStates[i].speedMetersPerSecond > Units.inchesToMeters(3);
             m_moduleSpeeds[i].setColor(moduleColors[i]);

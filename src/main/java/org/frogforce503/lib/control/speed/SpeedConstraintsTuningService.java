@@ -3,14 +3,16 @@ package org.frogforce503.lib.control.speed;
 import org.frogforce503.lib.control.TuningService;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 
-public class SpeedConstraintsTuningService implements TuningService<SpeedConstraintsConfig> {
-    private SpeedConstraintsTuningConfig config;
-    private SpeedConstraintsConfig oldConfig;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 
-    public SpeedConstraintsTuningService(String key, SpeedConstraintsConfig config) {
+public class SpeedConstraintsTuningService implements TuningService<Constraints> {
+    private SpeedConstraintsTuningConfig config;
+    private Constraints oldConfig;
+
+    public SpeedConstraintsTuningService(String key, Constraints config) {
         this.config = new SpeedConstraintsTuningConfig(
-            new LoggedTunableNumber(key + "/MaxVelocityMetersPerSec", config.maxVelocityMetersPerSec()),
-            new LoggedTunableNumber(key + "/MaxAccelerationMetersPerSec2", config.maxAccelerationMetersPerSec2())
+            new LoggedTunableNumber(key + "/MaxVelocityMetersPerSec", config.maxVelocity),
+            new LoggedTunableNumber(key + "/MaxAccelerationMetersPerSec2", config.maxAcceleration)
         );
 
         this.oldConfig = config;
@@ -32,11 +34,11 @@ public class SpeedConstraintsTuningService implements TuningService<SpeedConstra
     }
 
     @Override
-    public SpeedConstraintsConfig getUpdatedConfig() {
+    public Constraints getUpdatedConfig() {
         if (config.maxVelocityMetersPerSec().hasChanged(hashCode()) ||
             config.maxAccelerationMetersPerSec2().hasChanged(hashCode())
         ) {
-            return new SpeedConstraintsConfig(
+            return new Constraints(
                 config.maxVelocityMetersPerSec().get(),
                 config.maxAccelerationMetersPerSec2().get());
         }

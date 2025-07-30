@@ -4,6 +4,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
+import org.frogforce503.lib.auto.follower.AutoPIDController;
 import org.frogforce503.lib.math.Range;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -164,12 +165,6 @@ public abstract class RobotHardware {
 
     // Auto Following PID
     public AutoPIDController autoPIDController;
-
-    @Builder
-    public record AutoPIDController(
-        PIDController autoXController,
-        PIDController autoYController,
-        PIDController autoThetaController) {}
 
     /**
      * @return the MAC address of the robot

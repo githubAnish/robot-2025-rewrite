@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
-import org.frogforce503.lib.motor_wrappers.Sim;
-import org.frogforce503.lib.motor_wrappers.CANMotor.MotorControlMode;
+import org.frogforce503.lib.motor.Sim;
+import org.frogforce503.lib.motor.CANMotor.MotorControlMode;
 
 public class ClawIOSim implements ClawIO {
     private Sim leftSim;

@@ -114,8 +114,8 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
     }
 
     public void seedWristPosition() {
-        if (MathUtils.isBetween(0, 30, arm.getPosition()) &&
-            MathUtils.isBetween(0, 180, wrist.getAbsolutePosition())
+        if (MathUtils.inRange(arm.getPosition(), 0, 30) &&
+            MathUtils.inRange(wrist.getAbsolutePosition(), 0, 180)
         ) {
             wrist.setEncoderPosition(
                 arm.getPosition() + wrist.getAbsolutePosition());

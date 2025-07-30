@@ -21,7 +21,7 @@ public final class DriveConstants {
     public static final double FAST_ROTATION_RADIANS_PER_SECOND = Units.degreesToRadians(720);
     public static final double SUPER_FAST_ROTATION_RADIANS_PER_SECOND = FAST_ROTATION_RADIANS_PER_SECOND * 2.25; 
 
-    public static final double SLOW_ROTATION_RADIANS_PER_SECOND = Units.degreesToRadians(720);
+    public static final double SLOW_ROTATION_RADIANS_PER_SECOND = Units.degreesToRadians(360);
 
     public static final double MAX_ACCELERATION_METERS_PER_SEC_PER_SEC = FAST_TRANSLATION_METERS_PER_SECOND * 1.2;
     public static final double MAX_ANGULAR_ACCLERATION_RAD_PER_SEC_PER_SEC = 5 * Math.PI / 2.0;

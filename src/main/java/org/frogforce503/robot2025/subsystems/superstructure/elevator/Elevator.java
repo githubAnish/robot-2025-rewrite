@@ -3,7 +3,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 import org.frogforce503.lib.control.TuningService;
 import org.frogforce503.lib.control.pidf.PIDFConfig;
 import org.frogforce503.lib.control.pidf.PIDFTuningService;
-import org.frogforce503.lib.control.speed.SpeedConstraintsConfig;
+
 import org.frogforce503.lib.control.speed.SpeedConstraintsTuningService;
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.math.Range;
@@ -19,6 +19,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.Alert;
@@ -51,9 +52,9 @@ public class Elevator extends FFSubsystemBase {
                 Robot.bot.elevatorConstants.kD(),
                 Robot.bot.elevatorConstants.kFF()));
 
-    private TuningService<SpeedConstraintsConfig> speedTuningService =
+    private TuningService<Constraints> speedTuningService =
         new SpeedConstraintsTuningService("Elevator",
-            new SpeedConstraintsConfig(
+            new Constraints(
                 Robot.bot.elevatorConstants.maxVelocityMetersPerSec(),
                 Robot.bot.elevatorConstants.maxAccelerationMetersPerSec2()));
 
@@ -152,7 +153,7 @@ public class Elevator extends FFSubsystemBase {
                 profile
                     .calculate(Constants.loopPeriodSecs, setpoint, goalState);
 
-            if (!MathUtils.isInRange(setpoint.position, range)) {
+            if (!MathUtils.inRange(setpoint.position, range)) {
                 setpoint =
                     new State(
                         MathUtil.clamp(setpoint.position, range.min(), range.max()),
@@ -188,7 +189,7 @@ public class Elevator extends FFSubsystemBase {
             
             if (tuningEnabled) {
                 PIDFConfig newPIDFConfig = pidfTuningService.getUpdatedConfig();
-                SpeedConstraintsConfig newSpeedConfig = speedTuningService.getUpdatedConfig();
+                Constraints newSpeedConfig = speedTuningService.getUpdatedConfig();
 
                 elevatorIO.setPID(
                     newPIDFConfig.kP(),
@@ -200,8 +201,8 @@ public class Elevator extends FFSubsystemBase {
                 profile =
                     new TrapezoidProfile(
                         new TrapezoidProfile.Constraints(
-                            newSpeedConfig.maxVelocityMetersPerSec(),
-                            newSpeedConfig.maxAccelerationMetersPerSec2()));
+                            newSpeedConfig.maxVelocity,
+                            newSpeedConfig.maxAcceleration));
             }
         };
     }

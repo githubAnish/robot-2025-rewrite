@@ -21,6 +21,13 @@ public class PlannedPath {
         this.waypoints = waypoints;
     }
 
+    public PlannedPath() {
+        this(
+            new Trajectory(),
+            new RotationSequence(),
+            List.of());
+    }
+
     public Pose2d getInitialHolonomicPose() {
         Pair<Trajectory.State, RotationSequence.State> sample = _sample(0);
 

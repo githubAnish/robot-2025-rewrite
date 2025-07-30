@@ -14,11 +14,10 @@ public class Waypoint {
     @Getter private final Translation2d translation;
     private Rotation2d driveRotation;
     private Rotation2d holonomicRotation;
-    @Getter private Tag tag = null;
 
     /** Constructs a Waypoint at the origin and without a drive or holonomic rotation. */
     public Waypoint() {
-      this(Translation2d.kZero);
+        this(Translation2d.kZero);
     }
 
     /**
@@ -29,13 +28,13 @@ public class Waypoint {
      * @param holonomicRotation Holonomic rotation (optional, can be null)
      */
     public Waypoint(
-      Translation2d translation,
-      Rotation2d driveRotation,
-      Rotation2d holonomicRotation
+        Translation2d translation,
+        Rotation2d driveRotation,
+        Rotation2d holonomicRotation
     ) {
-      this.translation = requireNonNullParam(translation, "translation", "Waypoint");
-      this.driveRotation = driveRotation;
-      this.holonomicRotation = holonomicRotation;
+        this.translation = requireNonNullParam(translation, "translation", "Waypoint");
+        this.driveRotation = driveRotation;
+        this.holonomicRotation = holonomicRotation;
     }
 
     /**
@@ -44,14 +43,9 @@ public class Waypoint {
      * @param translation Waypoint position (required)
      */
     public Waypoint(Translation2d translation) {
-      this.translation = requireNonNullParam(translation, "translation", "Waypoint");
-      this.driveRotation = null;
-      this.holonomicRotation = null;
-    }
-
-    public Waypoint tagged(Tag tag) {
-      this.tag = tag;
-      return this;
+        this.translation = requireNonNullParam(translation, "translation", "Waypoint");
+        this.driveRotation = null;
+        this.holonomicRotation = null;
     }
 
     /**
@@ -60,12 +54,17 @@ public class Waypoint {
      * @param pose Source pose (where the rotation describes the drive rotation)
      */
     public static Waypoint fromDifferentialPose(Pose2d pose) {
-      requireNonNullParam(pose, "pose", "Waypoint");
-      return new Waypoint(pose.getTranslation(), pose.getRotation(), null);
+        requireNonNullParam(pose, "pose", "Waypoint");
+        return new Waypoint(pose.getTranslation(), pose.getRotation(), null);
     }
 
     public Waypoint invertDriveRotation() {
-      return new Waypoint(this.translation, this.driveRotation.rotateBy(Rotation2d.fromDegrees(180)), this.holonomicRotation);
+        return
+            new Waypoint(
+              translation,
+              driveRotation
+                  .rotateBy(Rotation2d.kPi),
+              holonomicRotation);
     }
 
     /**
@@ -75,8 +74,8 @@ public class Waypoint {
      * @param holonomicRotation Holonomic rotation
      */
     public static Waypoint fromDifferentialPose(Pose2d pose, Rotation2d holonomicRotation) {
-      requireNonNullParam(pose, "pose", "Waypoint");
-      return new Waypoint(pose.getTranslation(), pose.getRotation(), holonomicRotation);
+        requireNonNullParam(pose, "pose", "Waypoint");
+        return new Waypoint(pose.getTranslation(), pose.getRotation(), holonomicRotation);
     }
 
     /**
@@ -85,8 +84,8 @@ public class Waypoint {
      * @param pose Source pose (where the rotation describes the holonomic rotation)
      */
     public static Waypoint fromHolonomicPose(Pose2d pose) {
-      requireNonNullParam(pose, "pose", "Waypoint");
-      return new Waypoint(pose.getTranslation(), null, pose.getRotation());
+        requireNonNullParam(pose, "pose", "Waypoint");
+        return new Waypoint(pose.getTranslation(), null, pose.getRotation());
     }
 
     /**
@@ -96,55 +95,37 @@ public class Waypoint {
      * @param driveRotation Drive rotation
      */
     public static Waypoint fromHolonomicPose(Pose2d pose, Rotation2d driveRotation) {
-      requireNonNullParam(pose, "pose", "Waypoint");
-      return new Waypoint(pose.getTranslation(), driveRotation, pose.getRotation());
+        requireNonNullParam(pose, "pose", "Waypoint");
+        return new Waypoint(pose.getTranslation(), driveRotation, pose.getRotation());
     }
     
     public static Waypoint fromPlannedPathState(PlannedPath.HolonomicState state) {
-      return new Waypoint(state.poseMeters().getTranslation(), null, state.holonomicAngle());
+        return new Waypoint(state.poseMeters().getTranslation(), null, state.holonomicAngle());
     }
 
     public Optional<Rotation2d> getDriveRotation() {
-      return Optional.ofNullable(driveRotation);
+        return Optional.ofNullable(driveRotation);
     }
 
     public Optional<Rotation2d> getHolonomicRotation() {
-      return Optional.ofNullable(holonomicRotation);
+        return Optional.ofNullable(holonomicRotation);
     }
 
     public Waypoint withDriveRotation(Rotation2d newHeading) {
-      this.driveRotation = newHeading;
-      return this;
+        this.driveRotation = newHeading;
+        return this;
     }
 
     public Waypoint withHolonomicRotation(Rotation2d newHeading) {
-      this.holonomicRotation = newHeading;
-      return this;
+        this.holonomicRotation = newHeading;
+        return this;
     }
 
     public Waypoint plus(Translation2d t) {
-      return new Waypoint(this.translation.plus(t), driveRotation, holonomicRotation);
-    }
-
-    public static class Tag {
-      private double timestamp = -1;
-      private boolean passed = false;
-
-      public void pass(boolean p) {
-        if (p)
-          this.passed = true;
-      }
-      
-      public void stamp(double s) {
-        this.timestamp = s;
-      }
-
-      public double getStamp() {
-        return this.timestamp;
-      }
-      
-      public boolean passed() {
-        return this.passed;
-      }
+        return
+            new Waypoint(
+                translation.plus(t),
+                driveRotation,
+                holonomicRotation);
     }
 }

@@ -8,10 +8,13 @@ import org.frogforce503.lib.commands.DriveToPose;
 import org.frogforce503.lib.commands.FollowPlannedPath;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
+import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
+import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import lombok.Getter;
 
 public abstract class AutoMode {
@@ -47,8 +50,14 @@ public abstract class AutoMode {
                 : simulationFallback;
     }
 
-    // PlannedPath
+    // Utilities
     public Command drive(PlannedPath path) {
         return new FollowPlannedPath(drive, field, path);
+    }
+
+    public Command setSuperstructureMode(Superstructure superstructure, Mode mode) {
+        return
+            Commands.runOnce(() -> superstructure.setCurrentMode(mode))
+                .ignoringDisable(true);
     }
 }

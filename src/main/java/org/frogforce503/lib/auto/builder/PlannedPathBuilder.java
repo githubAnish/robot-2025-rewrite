@@ -9,29 +9,45 @@ import org.frogforce503.lib.auto.trajectory.path.Waypoint;
 import org.frogforce503.robot2025.Robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryParameterizer.TrajectoryGenerationException;
 
-/** Static wrapper for the {@link CustomTrajectoryGenerator}. */
+/** Wrapper class for the {@link CustomTrajectoryGenerator}. */
 public class PlannedPathBuilder {
-    public PlannedPath generate(TrajectoryConfig config, List<Waypoint> waypoints) {
-        CustomTrajectoryGenerator generator = new CustomTrajectoryGenerator();
+    private final SwerveDriveKinematics kinematics;
 
+    private final CustomTrajectoryGenerator trajectoryGenerator;
+
+    public PlannedPathBuilder() {
+        this.kinematics = Robot.bot.kinematics;
+        this.trajectoryGenerator = new CustomTrajectoryGenerator();   
+    }
+
+    public TrajectoryConfig config(double vMax, double aMax, double vInitial, double vFinal) {
+        return
+            new TrajectoryConfig(vMax, aMax)
+                .setKinematics(kinematics)
+                .setStartVelocity(vInitial)
+                .setEndVelocity(vFinal);
+    }
+
+    public PlannedPath generate(TrajectoryConfig config, List<Waypoint> waypoints) {
         try {
-            generator.generate(config, waypoints);
+            trajectoryGenerator.generate(config, waypoints);
         } catch (TrajectoryGenerationException exception) {
-            System.out.print("TRAJECTORY GENERATION FAILED");
+            System.out.print("Trajectory generation failed --- Returned from PlannedPathBuilder.java");
             exception.printStackTrace();
             return null;
         }
         
-        return generator.getPlannedPath(waypoints);
+        return trajectoryGenerator.getPlannedPath(waypoints);
     }
 
     public PlannedPath generate(double vMax, double aMax, double vInitial, double vFinal, List<Waypoint> waypoints) {
         return
             generate(
-                makeConfig(vMax, aMax, vInitial, vFinal),
+                config(vMax, aMax, vInitial, vFinal),
                 waypoints);
     }
 
@@ -39,65 +55,35 @@ public class PlannedPathBuilder {
         return generate(vMax, aMax, vInitial, vFinal, Arrays.asList(waypoints));
     }
 
+    /** Re-generate an existing {@link PlannedPath} with a new trajectory configuration. */
     public PlannedPath regenerate(double vMax, double aMax, double vi, double vf, PlannedPath existing) {
         return generate(vMax, aMax, vi, vf, existing.getWaypoints());
     }
 
-    public PlannedPath reversedOf(PlannedPath other, double vMax, double aMax, double vi, double vf) {
-        List<Waypoint> waypoints = other.getWaypoints();
+    /** Returns a reversed version of {@code original}, with all waypoints in reverse order. */
+    public PlannedPath reversedOf(PlannedPath original, double vMax, double aMax, double vi, double vf) {
+        List<Waypoint> waypoints = original.getWaypoints();
         List<Waypoint> reversedWaypoints = new ArrayList<>();
 
         for (int i = waypoints.size() - 1; i >= 0; i--) {
-            Waypoint w = waypoints.get(i);
+            Waypoint waypoint = waypoints.get(i);
             
-            if (w.getDriveRotation().isPresent()) {
-                w =
+            if (waypoint.getDriveRotation().isPresent()) {
+                waypoint =
                     new Waypoint(
-                        w.getTranslation(),
-                        w.getDriveRotation()
+                        waypoint.getTranslation(),
+                        waypoint
+                            .getDriveRotation()
                             .get()
                             .plus(Rotation2d.kPi),
-                        w.getHolonomicRotation().isEmpty()
-                            ? null :
-                            w.getHolonomicRotation().get());
+                        waypoint
+                            .getHolonomicRotation()
+                            .orElse(null));
             }
 
-            reversedWaypoints.add(w);
+            reversedWaypoints.add(waypoint);
         }
 
         return generate(vMax, aMax, vi, vf, reversedWaypoints);
     }
-
-    public PlannedPath reversedOf(PlannedPath other, double vMax, double aMax) {
-        return reversedOf(other, vMax, aMax, 0.0, 0.0);
-    }
-
-    public TrajectoryConfig makeConfig(double vMax, double aMax, double vInitial, double vFinal) {
-        return
-            new TrajectoryConfig(vMax, aMax)
-                .setKinematics(Robot.bot.kinematics)
-                .setStartVelocity(vInitial)
-                .setEndVelocity(vFinal);
-    }
-
-    // private final List<TrajectoryConstraint> crescendoConstraints() {
-    //     TrajectoryConstraint pickupConstraint = new RectangularRegionConstraint(FieldConfig.getInstance().NOTE_D.plus(new Translation2d(-1, -1)), FieldConfig.getInstance().NOTE_H.plus(new Translation2d(1, 1)), new MaxVelocityConstraint(2.0));
-    //     return List.of(pickupConstraint);
-    // }
-
-    // make into method
-    // private List<TrajectoryConstraint> chargedUpTrajectoryConstraints = List.of(
-    //             // Cable bump
-    //             new RectangularRegionConstraint(
-    //                 new Translation2d(Community.chargingStationInnerX, Community.rightY),
-    //                 new Translation2d(Community.chargingStationOuterX, Community.chargingStationRightY),
-    //                 new MaxVelocityConstraint(cableBumpMaxVelocity)),
-
-    //             // Charging station
-    //             new RectangularRegionConstraint(
-    //                 new Translation2d(
-    //                     Community.chargingStationInnerX - 0.8, Community.chargingStationRightY),
-    //                 new Translation2d(
-    //                     Community.chargingStationOuterX + 0.8, Community.chargingStationLeftY),
-    //                 new MaxVelocityConstraint(chargingStationMaxVelocity)));
 }

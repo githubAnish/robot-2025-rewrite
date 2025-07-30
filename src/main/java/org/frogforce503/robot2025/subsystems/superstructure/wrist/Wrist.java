@@ -3,6 +3,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.Alert;
@@ -14,7 +15,7 @@ import lombok.Getter;
 import org.frogforce503.lib.control.TuningService;
 import org.frogforce503.lib.control.pidf.PIDFConfig;
 import org.frogforce503.lib.control.pidf.PIDFTuningService;
-import org.frogforce503.lib.control.speed.SpeedConstraintsConfig;
+
 import org.frogforce503.lib.control.speed.SpeedConstraintsTuningService;
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.math.Range;
@@ -46,9 +47,9 @@ public class Wrist extends FFSubsystemBase {
                 Robot.bot.wristConstants.kD(),
                 Robot.bot.wristConstants.kFF()));
 
-    private TuningService<SpeedConstraintsConfig> speedTuningService =
+    private TuningService<Constraints> speedTuningService =
         new SpeedConstraintsTuningService("Wrist",
-            new SpeedConstraintsConfig(
+            new Constraints(
                 Robot.bot.wristConstants.maxVelocityMetersPerSec(),
                 Robot.bot.wristConstants.maxAccelerationMetersPerSec2()));
 
@@ -145,7 +146,7 @@ public class Wrist extends FFSubsystemBase {
                 profile
                     .calculate(Constants.loopPeriodSecs, setpoint, goalState);
 
-            if (!MathUtils.isInRange(setpoint.position, range)) {
+            if (!MathUtils.inRange(setpoint.position, range)) {
                 setpoint =
                     new State(
                         MathUtil.clamp(setpoint.position, range.min(), range.max()),
@@ -189,7 +190,7 @@ public class Wrist extends FFSubsystemBase {
             
             if (tuningEnabled) {
                 PIDFConfig newPIDFConfig = pidfTuningService.getUpdatedConfig();
-                SpeedConstraintsConfig newSpeedConfig = speedTuningService.getUpdatedConfig();
+                Constraints newSpeedConfig = speedTuningService.getUpdatedConfig();
 
                 io.setPID(
                     newPIDFConfig.kP(),
@@ -201,8 +202,8 @@ public class Wrist extends FFSubsystemBase {
                 profile =
                     new TrapezoidProfile(
                         new TrapezoidProfile.Constraints(
-                            newSpeedConfig.maxVelocityMetersPerSec(),
-                            newSpeedConfig.maxAccelerationMetersPerSec2()));
+                            newSpeedConfig.maxVelocity,
+                            newSpeedConfig.maxAcceleration));
             }
         };
     }

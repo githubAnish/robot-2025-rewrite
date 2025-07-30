@@ -13,7 +13,7 @@ public final class MathUtils {
     private MathUtils() {}
 
     /** Finds the minimum of {@code values}. */
-    public static double minOf(double... values) {
+    public static double min(double... values) {
         return
             Arrays
                 .stream(values)
@@ -22,7 +22,7 @@ public final class MathUtils {
     }
 
     /** Finds max of {@code values} */
-    public static double maxOf(double... values) {
+    public static double max(double... values) {
         return
             Arrays
                 .stream(values)
@@ -32,10 +32,15 @@ public final class MathUtils {
 
     /** Rounds a number to a specified decimal places. */
     public static double roundTo(double num, double digits) {
-        return Math.round(num * Math.pow(10, digits)) / Math.pow(10, digits);
+        if (digits <= 0) {
+            throw new IllegalArgumentException("Digits must be only positive.");
+        }
+        double scalar = Math.pow(10, digits);
+        return
+            Math.round(num * scalar) / scalar;
     }
 
-    public static boolean equalsOneOf(double toCheckValue, double... options) {
+    public static boolean isIn(double toCheckValue, double... options) {
         return
             Arrays
                 .stream(options)
@@ -50,16 +55,16 @@ public final class MathUtils {
      * @param value      The value.
      * @return If the value is in the range.
      */
-    public static boolean isBetween(double lowerBound, double upperBound, double value) {
+    public static boolean inRange(double value, double lowerBound, double upperBound) {
         return lowerBound <= value && value <= upperBound;
     }
 
-    public static boolean isInRange(double measurement, Range range) {
-        return isBetween(range.min(), range.max(), measurement);
+    public static boolean inRange(double measurement, Range range) {
+        return inRange(measurement, range.min(), range.max());
     }
 
     /**
-     * Solves the equation <code>0 = ax<sup>2</sup> + bx + c</code> for x and
+     * Solves the equation {@code 0 = ax² + bx + c} for x and
      * returns the real results.
      *
      * @param a the a coefficient
@@ -69,8 +74,11 @@ public final class MathUtils {
      */
     public static double[] quadratic(double a, double b, double c) {
         double discriminant = Math.sqrt(b * b - 4 * a * c);
+        
         if (Double.isNaN(discriminant)) {
             return new double[0]; // No roots
+        } else if (discriminant == 0) {
+            return new double[] { -b / (2 * a) }; // One root
         }
 
         return

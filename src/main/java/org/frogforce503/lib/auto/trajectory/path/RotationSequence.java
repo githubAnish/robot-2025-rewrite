@@ -1,6 +1,7 @@
 package org.frogforce503.lib.auto.trajectory.path;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -14,6 +15,10 @@ public class RotationSequence {
   /** Constructs a rotation sequence from a series of timed rotation positions. */
   public RotationSequence(TreeMap<Double, Rotation2d> sequence) {
     this.sequence.putAll(sequence);
+  }
+
+  public RotationSequence() {
+    this(new TreeMap<Double, Rotation2d>());
   }
 
   /**

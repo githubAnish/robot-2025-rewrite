@@ -100,7 +100,7 @@ public class RobotContainer {
 
     // Dashboard Inputs
     private final AutoChooser autoChooser;
-    private final BooleanSupplier selectAllianceFromDS = () -> false;
+    private final BooleanSupplier selectAllianceFromDS = () -> true;
 
     // Offset Manager
     private final OffsetManager offsetManager;
@@ -355,7 +355,9 @@ public class RobotContainer {
                     .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)));
 
             // Algae
-            put(Mode.PROCESSOR, superstructure.home());
+            put(Mode.PROCESSOR,
+                new WaitAfterAlgaeEject()
+                    .andThen(superstructure.home()));
             put(Mode.BARGE,
                 superstructure
                     .ejectAlgaeFromClaw()

@@ -56,15 +56,22 @@ public class OffsetManager extends VirtualSubsystem {
             io.setValue(0.0);
         }
 
+        // Record cycle time
+        LoggedTracer.record("OffsetManager");
+    }
+
+    /**
+     * Method to log all offsets to NT.
+     * Publishes an array that consumes a lot of memory,
+     * so call this method only when necessary (e.g. to view that offsets are being recorded correctly.)
+     */
+    public void logData() {
         Logger.recordOutput("Offset Data",
             offsetData
                 .values()
                 .stream()
                 .map(offset -> offset.metersToInches())
                 .toArray(Offset[]::new));
-
-        // Record cycle time
-        LoggedTracer.record("OffsetManager");
     }
 
     private Offset getNewOffset(double oldHorizontal, double oldVertical, String direction, double value) {
@@ -92,12 +99,4 @@ public class OffsetManager extends VirtualSubsystem {
             return 0.0;
         }
     }
-
-    // Use advantagescope points tab / networktables / some sort of way to display a picture and associate values with it
-    // Primitve way is to color points different colors and associate a wanted direction & value boxes for each color (6 sides, therefore 6 colors)
-    // Can use NetworkTables to 
-
-    // select a branch, set a direction & value
-    // apply the change to the selected branch
-    // reset the value to 0.0
 }

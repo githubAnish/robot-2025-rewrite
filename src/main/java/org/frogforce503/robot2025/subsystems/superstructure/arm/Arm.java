@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.Alert;
@@ -19,7 +20,6 @@ import lombok.Getter;
 import org.frogforce503.lib.control.TuningService;
 import org.frogforce503.lib.control.pidf.PIDFConfig;
 import org.frogforce503.lib.control.pidf.PIDFTuningService;
-import org.frogforce503.lib.control.speed.SpeedConstraintsConfig;
 import org.frogforce503.lib.control.speed.SpeedConstraintsTuningService;
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.math.Range;
@@ -47,9 +47,9 @@ public class Arm extends FFSubsystemBase {
                 Robot.bot.armConstants.kD(),
                 Robot.bot.armConstants.kFF()));
 
-    private TuningService<SpeedConstraintsConfig> speedTuningService =
+    private TuningService<Constraints> speedTuningService =
         new SpeedConstraintsTuningService("Arm",
-            new SpeedConstraintsConfig(
+            new Constraints(
                 Robot.bot.armConstants.maxVelocityMetersPerSec(),
                 Robot.bot.armConstants.maxAccelerationMetersPerSec2()));
 
@@ -143,7 +143,7 @@ public class Arm extends FFSubsystemBase {
                 profile
                     .calculate(Constants.loopPeriodSecs, setpoint, goalState);
 
-            if (!MathUtils.isInRange(setpoint.position, range)) {
+            if (!MathUtils.inRange(setpoint.position, range)) {
                 setpoint =
                     new State(
                         MathUtil.clamp(setpoint.position, range.min(), range.max()),
@@ -179,7 +179,7 @@ public class Arm extends FFSubsystemBase {
             
             if (tuningEnabled) {
                 PIDFConfig newPIDFConfig = pidfTuningService.getUpdatedConfig();
-                SpeedConstraintsConfig newSpeedConfig = speedTuningService.getUpdatedConfig();
+                Constraints newSpeedConfig = speedTuningService.getUpdatedConfig();
 
                 io.setPID(
                     newPIDFConfig.kP(),
@@ -191,8 +191,8 @@ public class Arm extends FFSubsystemBase {
                 profile =
                     new TrapezoidProfile(
                         new TrapezoidProfile.Constraints(
-                            newSpeedConfig.maxVelocityMetersPerSec(),
-                            newSpeedConfig.maxAccelerationMetersPerSec2()));
+                            newSpeedConfig.maxVelocity,
+                            newSpeedConfig.maxAcceleration));
             }
         };
     }

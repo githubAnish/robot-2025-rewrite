@@ -84,14 +84,14 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("Swerve/Toggles/RobotRelative", robotRelative);
 
         // Inputs
-        Logger.recordOutput("Swerve/Inputs/Pose", this.currentPose);
-        Logger.recordOutput("Swerve/Inputs/Velocity", this.currentVelocity);
+        Logger.recordOutput("Swerve/Inputs/Pose", currentPose);
+        Logger.recordOutput("Swerve/Inputs/Velocity", currentVelocity);
         Logger.recordOutput("Swerve/Inputs/Velocity/Magnitude", Math.hypot(currentVelocity.vxMetersPerSecond, currentVelocity.vyMetersPerSecond));
-        Logger.recordOutput("Swerve/Inputs/Acceleration/Magnitude", this.currentAcceleration.getTranslation().getNorm());
+        Logger.recordOutput("Swerve/Inputs/Acceleration/Magnitude", currentAcceleration.getTranslation().getNorm());
 
         // Status
         Logger.recordOutput("Swerve/State/AttainedWheelSpeed", Units.metersToFeet(inputs.data.state().ModuleStates[0].speedMetersPerSecond));
-        Logger.recordOutput("Swerve/State/Current Speeds", this.requestedSpeeds.toString());
+        Logger.recordOutput("Swerve/State/Current Speeds", requestedSpeeds.toString());
 
         SwerveModuleState[] states = inputs.data.state().ModuleStates;
         Logger.recordOutput("Swerve/State/ModuleStates", states);
@@ -103,13 +103,13 @@ public class Drive extends SubsystemBase {
             Logger.recordOutput("Swerve/Module/" + DriveConstants.moduleNames[i] + "/Velocity", state.speedMetersPerSecond);
         }
 
-        visualizer.update(states, getAngle());
-        visualizer.displayModulePoses(this.currentPose.getTranslation(), getAngle());
+        visualizer.updateModules(states, getAngle());
+        visualizer.displayModulePoses(currentPose.getTranslation(), getAngle());
 
         // Field
         Logger.recordOutput("Alliance Color", field.getAlliance());
-        Logger.recordOutput("Current Global Pose", this.currentPose);
-        field.setRobotPose(this.currentPose);
+        Logger.recordOutput("Current Global Pose", currentPose);
+        field.setRobotPose(currentPose);
     }
 
     public void toggleSlowMode() {

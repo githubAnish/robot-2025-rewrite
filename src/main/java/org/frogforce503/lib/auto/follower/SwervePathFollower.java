@@ -34,6 +34,13 @@ public class SwervePathFollower {
         this.rotationController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
+    public SwervePathFollower(AutoPIDController autoPIDController) {
+        this(
+            autoPIDController.autoXController(),
+            autoPIDController.autoYController(),
+            autoPIDController.autoThetaController());
+    }
+
     /** Resets the controllers and clears the pose error. */
     public void reset() {
         this.xController.reset();

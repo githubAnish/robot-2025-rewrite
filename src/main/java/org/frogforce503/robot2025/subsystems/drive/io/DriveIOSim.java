@@ -48,6 +48,11 @@ public class DriveIOSim implements DriveIO {
     }
 
     @Override
+    public void setPose(Pose2d pose) {
+        this.currentPose = pose;
+    }
+
+    @Override
     public void setAngle(Rotation2d angle) {
         this.currentPose = new Pose2d(this.currentPose.getTranslation(), angle);
     }

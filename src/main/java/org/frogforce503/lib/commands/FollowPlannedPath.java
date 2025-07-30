@@ -14,7 +14,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -37,9 +36,8 @@ public class FollowPlannedPath extends Command {
 
     private Supplier<Rotation2d> headingOverride = null;
 
+    /** Cuts down time of {@code seek} seconds in the {@link PlannedPath} to seek for a target. */
     private double seek = 0;
-
-    DoubleLogEntry timeLog, xLog, yLog, vxLog, vyLog, desiredXLog, desiredYLog, desiredVxLog, desiredVyLog;
 
     public FollowPlannedPath(Drive drive, FieldInfo field, Supplier<PlannedPath> dynamicPath) {
         this.drive = drive;
@@ -47,13 +45,8 @@ public class FollowPlannedPath extends Command {
 
         this.dynamicPath = dynamicPath;
 
-        this.controller =
-            new SwervePathFollower(
-                Robot.bot.autoPIDController.autoXController(),
-                Robot.bot.autoPIDController.autoYController(),
-                Robot.bot.autoPIDController.autoThetaController());
+        this.controller = new SwervePathFollower(Robot.bot.autoPIDController);
 
-        //originally 1.75 tolerance for x and y
         this.controller.setTolerance(
             new Pose2d(
                 new Translation2d(Units.inchesToMeters(0.1), Units.inchesToMeters(0.0254)),
@@ -74,13 +67,13 @@ public class FollowPlannedPath extends Command {
         addRequirements(drive);
     }
 
+    public FollowPlannedPath(Drive drive, FieldInfo field, PlannedPath path) {
+        this(drive, field, () -> path);
+    }
+
     public FollowPlannedPath(Drive drive, FieldInfo field, PlannedPath path, double seek) {
         this(drive, field, () -> path);
         this.seek = seek;
-    }
-
-    public FollowPlannedPath(Drive drive, FieldInfo field, PlannedPath path) {
-        this(drive, field, () -> path);
     }
 
     public FollowPlannedPath setHeadingOverride(Supplier<Rotation2d> rotationSupplier) {
@@ -105,7 +98,8 @@ public class FollowPlannedPath extends Command {
                 .getDriveTrajectory()
                 .getStates()
                 .stream()
-                    .map(state -> state.poseMeters)
+                .map(
+                    state -> state.poseMeters)
                 .toArray(Pose2d[]::new);
 
         field
@@ -146,27 +140,27 @@ public class FollowPlannedPath extends Command {
         lastPosition = currentPose.getTranslation();
 
         // Log inputs & outputs
-        Logger.recordOutput("SwerveFollowPathCommand/Timestamp", currentTime);
+        Logger.recordOutput("FollowPlannedPath/Timestamp", currentTime);
 
-        Logger.recordOutput("SwerveFollowPathCommand/Current Pose", currentPose);
-        Logger.recordOutput("SwerveFollowPathCommand/Desired Pose", desiredState.poseMeters());
+        Logger.recordOutput("FollowPlannedPath/Current Pose", currentPose);
+        Logger.recordOutput("FollowPlannedPath/Desired Pose", desiredState.poseMeters());
 
-        Logger.recordOutput("SwerveFollowPathCommand/Current Angle", drive.getAngle());
-        Logger.recordOutput("SwerveFollowPathCommand/Desired Angle", desiredState.holonomicAngle());
+        Logger.recordOutput("FollowPlannedPath/Current Angle", drive.getAngle());
+        Logger.recordOutput("FollowPlannedPath/Desired Angle", desiredState.holonomicAngle());
         
-        Logger.recordOutput("SwerveFollowPathCommand/Current Velocity", measuredVelocity);
-        Logger.recordOutput("SwerveFollowPathCommand/Desired Velocity", targetChassisSpeeds);
+        Logger.recordOutput("FollowPlannedPath/Current Velocity", measuredVelocity);
+        Logger.recordOutput("FollowPlannedPath/Desired Velocity", targetChassisSpeeds);
 
-        Logger.recordOutput("SwerveFollowPathCommand/Drive Error", currentPose.getTranslation().getDistance(desiredState.poseMeters().getTranslation()));
-        Logger.recordOutput("SwerveFollowPathCommand/Theta Follower Error", currentPose.getRotation().minus(desiredState.holonomicAngle()));
+        Logger.recordOutput("FollowPlannedPath/Drive Error", currentPose.getTranslation().getDistance(desiredState.poseMeters().getTranslation()));
+        Logger.recordOutput("FollowPlannedPath/Theta Follower Error", currentPose.getRotation().minus(desiredState.holonomicAngle()));
     }
 
     @Override
     public boolean isFinished() {
-        boolean timeHasFinished = this.timer.hasElapsed(this.path.getTotalTimeSeconds());
-        boolean poseTolerance = this.controller.atReference();
+        boolean timeHasFinished = timer.hasElapsed(path.getTotalTimeSeconds());
+        boolean poseTolerance = controller.atReference();
 
-        boolean tooLong = timeHasFinished && this.timer.hasElapsed(this.path.getTotalTimeSeconds() + 0.5);
+        boolean tooLong = timeHasFinished && timer.hasElapsed(path.getTotalTimeSeconds() + 0.5);
 
         boolean m_isFinished = (timeHasFinished && poseTolerance) || tooLong;
         SmartDashboard.putBoolean("Path Has Finished", m_isFinished);
@@ -180,7 +174,9 @@ public class FollowPlannedPath extends Command {
 
         Logger.recordOutput("Swerve/CurrentTrajectory", new Pose2d[] {});
 
-        field.getObject("CurrentTrajectory").setPoses();
+        field
+            .getObject("CurrentTrajectory")
+            .setPoses();
 
         if (this.willStopAtEnd) {
             drive.stop();

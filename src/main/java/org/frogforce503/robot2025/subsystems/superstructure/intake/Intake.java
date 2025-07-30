@@ -14,6 +14,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.Alert;
@@ -25,7 +26,7 @@ import lombok.Getter;
 import org.frogforce503.lib.control.TuningService;
 import org.frogforce503.lib.control.pidf.PIDFConfig;
 import org.frogforce503.lib.control.pidf.PIDFTuningService;
-import org.frogforce503.lib.control.speed.SpeedConstraintsConfig;
+
 import org.frogforce503.lib.control.speed.SpeedConstraintsTuningService;
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.math.Range;
@@ -58,9 +59,9 @@ public class Intake extends FFSubsystemBase {
                 Robot.bot.intakeConstants.pivotConstants().kD(),
                 Robot.bot.intakeConstants.pivotConstants().kFF()));
 
-    private TuningService<SpeedConstraintsConfig> speedTuningService =
+    private TuningService<Constraints> speedTuningService =
         new SpeedConstraintsTuningService("Intake",
-            new SpeedConstraintsConfig(
+            new Constraints(
                 Robot.bot.intakeConstants.pivotConstants().maxVelocityMetersPerSec(),
                 Robot.bot.intakeConstants.pivotConstants().maxAccelerationMetersPerSec2()));
 
@@ -164,7 +165,7 @@ public class Intake extends FFSubsystemBase {
                 profile
                     .calculate(Constants.loopPeriodSecs, setpoint, goalState);
 
-            if (!MathUtils.isInRange(setpoint.position, range)) {
+            if (!MathUtils.inRange(setpoint.position, range)) {
                 setpoint =
                     new State(
                         MathUtil.clamp(setpoint.position, range.min(), range.max()),
@@ -206,7 +207,7 @@ public class Intake extends FFSubsystemBase {
             
             if (tuningEnabled) {
                 PIDFConfig newPIDFConfig = pidfTuningService.getUpdatedConfig();
-                SpeedConstraintsConfig newSpeedConfig = speedTuningService.getUpdatedConfig();
+                Constraints newSpeedConfig = speedTuningService.getUpdatedConfig();
 
                 pivotIO.setPID(
                     newPIDFConfig.kP(),
@@ -218,8 +219,8 @@ public class Intake extends FFSubsystemBase {
                 profile =
                     new TrapezoidProfile(
                         new TrapezoidProfile.Constraints(
-                            newSpeedConfig.maxVelocityMetersPerSec(),
-                            newSpeedConfig.maxAccelerationMetersPerSec2()));
+                            newSpeedConfig.maxVelocity,
+                            newSpeedConfig.maxAcceleration));
             }
         };
     }

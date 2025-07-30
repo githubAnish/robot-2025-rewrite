@@ -1,6 +1,7 @@
 package org.frogforce503.robot2025.hardware;
 
 
+import org.frogforce503.lib.auto.follower.AutoPIDController;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.robot2025.hardware.tunerconstants.TunerConstantsCompBot;
 

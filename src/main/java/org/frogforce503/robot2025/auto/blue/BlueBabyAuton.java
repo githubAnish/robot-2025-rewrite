@@ -8,6 +8,7 @@ import org.frogforce503.robot2025.commands.coral_score_reef.Branch;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
+import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
 
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
@@ -38,13 +39,11 @@ public class BlueBabyAuton extends AutoMode {
             .active()
             .onTrue(
                 Commands.sequence(
+                    setSuperstructureMode(superstructure, Mode.L4),
                     scoreH.cmd(),
-                    superstructure
-                        .scoreL4()
-                        .withTimeout(1.5),
                     autoScoreCommands
                         .coralAutoScore(() -> Branch.RIGHT)
-                        .withTimeout(3),
+                        .withTimeout(4.5),
                     superstructure.ejectCoral(),
                     Commands.waitSeconds(0.5),
                     backUp
@@ -53,7 +52,8 @@ public class BlueBabyAuton extends AutoMode {
                             superstructure
                                 .home()
                                 .withTimeout(0.5)),
-                    Commands.runOnce(drive::stop)
+                    Commands.runOnce(drive::stop),
+                    setSuperstructureMode(superstructure, Mode.CORAL_INTAKE)
             ));
     }
     
