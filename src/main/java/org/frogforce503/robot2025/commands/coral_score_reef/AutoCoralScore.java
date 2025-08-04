@@ -3,6 +3,7 @@ package org.frogforce503.robot2025.commands.coral_score_reef;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
+import org.frogforce503.lib.commands.DriveFromPathToPose;
 import org.frogforce503.lib.commands.DriveToPose;
 import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.util.ProximityService;
@@ -14,6 +15,7 @@ import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 
@@ -43,14 +45,22 @@ public class AutoCoralScore extends ParallelCommandGroup {
                 new SuperstructureScore(superstructure),
                 new SuperstructurePreScore(superstructure),
                 insideBoundary)
-            .repeatedly(),
-            new DriveToPose(
-                drive,
-                field,
-                robotPose,
-                target,
-                inputs.times(0.75))
-            .onlyIf(autoDrivingEnabled));
+                    .repeatedly(),
+            Commands.either(
+                new DriveFromPathToPose(
+                    drive,
+                    field,
+                    robotPose,
+                    target,
+                    inputs.times(0.75)),
+                new DriveToPose(
+                    drive,
+                    field,
+                    robotPose,
+                    target,
+                    inputs.times(0.75)),
+                RobotState::isAutonomous)
+                    .onlyIf(autoDrivingEnabled));
 
         addRequirements(drive, superstructure);
     }

@@ -67,8 +67,7 @@ public class CharacterizationRunner {
             generateNewRoutine(rampRate, stepVoltage, timeout);
 
         return
-            Commands
-                .run(() -> drive.runCharacterization(0.0))
+            Commands.run(() -> drive.runCharacterization(0.0))
                 .withTimeout(1.0)
                 .andThen(routine.quasistatic(direction));
     }
@@ -84,8 +83,7 @@ public class CharacterizationRunner {
             generateNewRoutine(rampRate, stepVoltage, timeout);
 
         return
-            Commands
-                .run(() -> drive.runCharacterization(0.0))
+            Commands.run(() -> drive.runCharacterization(0.0))
                 .withTimeout(1.0)
                 .andThen(routine.dynamic(direction));
     }

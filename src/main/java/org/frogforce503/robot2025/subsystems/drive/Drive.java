@@ -13,7 +13,6 @@ import org.photonvision.EstimatedRobotPose;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
@@ -30,8 +29,7 @@ public class Drive extends SubsystemBase {
     private final FieldInfo field;
 
     @Getter private Pose2d currentPose = Pose2d.kZero;
-    @Getter private ChassisSpeeds currentVelocity, lastVelocity = new ChassisSpeeds();
-    @Getter private Transform2d currentAcceleration = new Transform2d();
+    @Getter private ChassisSpeeds currentVelocity = new ChassisSpeeds();
 
     @Getter private boolean slowModeEnabled = false;
     @Getter private boolean robotRelative = false;
@@ -56,26 +54,13 @@ public class Drive extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Drive", inputs);
         
-        this.updateInputs();
+        currentPose = inputs.data.poseMeters();
+        currentVelocity = inputs.data.velocityMeters();
+
         this.outputTelemetry();
 
         // Record cycle time
         LoggedTracer.record("Drive");
-    }
-
-    private void updateInputs() {
-        currentPose = inputs.data.poseMeters();
-        currentVelocity = inputs.data.velocityMeters();
-
-        ChassisSpeeds temp = inputs.data.velocityMeters();
-        lastVelocity = currentVelocity;
-        currentVelocity = temp;
-
-        currentAcceleration =
-            new Transform2d(
-                (currentVelocity.vxMetersPerSecond - lastVelocity.vxMetersPerSecond) / DriveConstants.dt,
-                (currentVelocity.vyMetersPerSecond - lastVelocity.vyMetersPerSecond) / DriveConstants.dt,
-                new Rotation2d((currentVelocity.omegaRadiansPerSecond - lastVelocity.omegaRadiansPerSecond) / DriveConstants.dt));
     }
 
     private void outputTelemetry() {
@@ -87,7 +72,6 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("Swerve/Inputs/Pose", currentPose);
         Logger.recordOutput("Swerve/Inputs/Velocity", currentVelocity);
         Logger.recordOutput("Swerve/Inputs/Velocity/Magnitude", Math.hypot(currentVelocity.vxMetersPerSecond, currentVelocity.vyMetersPerSecond));
-        Logger.recordOutput("Swerve/Inputs/Acceleration/Magnitude", currentAcceleration.getTranslation().getNorm());
 
         // Status
         Logger.recordOutput("Swerve/State/AttainedWheelSpeed", Units.metersToFeet(inputs.data.state().ModuleStates[0].speedMetersPerSecond));

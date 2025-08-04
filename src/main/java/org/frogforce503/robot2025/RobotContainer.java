@@ -72,6 +72,7 @@ import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIOSim;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIOSpark;
 import org.frogforce503.robot2025.subsystems.vision.Camera;
 import org.frogforce503.robot2025.subsystems.vision.Vision;
+import org.frogforce503.test.UnitTest;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import org.photonvision.EstimatedRobotPose;
 
@@ -87,7 +88,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.ExtensionMethod;
 
 @ExtensionMethod({DoublePressTracker.class, TriggerUtil.class})
-public class RobotContainer {
+public class RobotContainer implements UnitTest {
     // Subsystems
     private Drive drive;
     private Vision vision;
@@ -583,5 +584,10 @@ public class RobotContainer {
         if (RobotState.isDisabled() && drive.isCoastAfterAutoEnd()) {
             drive.coast();
         }
+    }
+
+    @Override
+    public void test() {
+        
     }
 }

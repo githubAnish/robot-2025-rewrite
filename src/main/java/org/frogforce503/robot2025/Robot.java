@@ -112,6 +112,7 @@ public class Robot extends LoggedRobot {
 
     // Initialize RobotContainer
     robotContainer = new RobotContainer(selectedVenue);
+    robotContainer.test(); // Unit tester
 
     // Switch thread to high priority to improve loop timing
     // Threads.setCurrentThreadPriority(true, 10);

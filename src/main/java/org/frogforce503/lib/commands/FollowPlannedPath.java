@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class FollowPlannedPath extends Command {
@@ -47,7 +46,7 @@ public class FollowPlannedPath extends Command {
 
         this.controller = new SwervePathFollower(Robot.bot.autoPIDController);
 
-        this.controller.setTolerance(
+        this.controller.setPoseTolerance(
             new Pose2d(
                 new Translation2d(Units.inchesToMeters(0.1), Units.inchesToMeters(0.0254)),
                 Rotation2d.fromDegrees(1)));
@@ -151,28 +150,24 @@ public class FollowPlannedPath extends Command {
         Logger.recordOutput("FollowPlannedPath/Current Velocity", measuredVelocity);
         Logger.recordOutput("FollowPlannedPath/Desired Velocity", targetChassisSpeeds);
 
-        Logger.recordOutput("FollowPlannedPath/Drive Error", currentPose.getTranslation().getDistance(desiredState.poseMeters().getTranslation()));
-        Logger.recordOutput("FollowPlannedPath/Theta Follower Error", currentPose.getRotation().minus(desiredState.holonomicAngle()));
+        Logger.recordOutput("FollowPlannedPath/Drive Error", controller.getPoseError().getTranslation());
+        Logger.recordOutput("FollowPlannedPath/Theta Error", controller.getRotationError());
+
+        Logger.recordOutput("FollowPlannedPath/IsFinished", isFinished());
     }
 
     @Override
     public boolean isFinished() {
         boolean timeHasFinished = timer.hasElapsed(path.getTotalTimeSeconds());
         boolean poseTolerance = controller.atReference();
-
         boolean tooLong = timeHasFinished && timer.hasElapsed(path.getTotalTimeSeconds() + 0.5);
 
-        boolean m_isFinished = (timeHasFinished && poseTolerance) || tooLong;
-        SmartDashboard.putBoolean("Path Has Finished", m_isFinished);
-
-        return m_isFinished;
+        return (timeHasFinished && poseTolerance) || tooLong;
     }
 
     @Override
     public void end(boolean interrupted) {
         System.out.println("END " + interrupted);
-
-        Logger.recordOutput("Swerve/CurrentTrajectory", new Pose2d[] {});
 
         field
             .getObject("CurrentTrajectory")

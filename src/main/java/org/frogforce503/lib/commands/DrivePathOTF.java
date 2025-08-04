@@ -11,25 +11,30 @@ import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** Follows a runtime-generated {@link PlannedPath}. */
 public class DrivePathOTF extends Command {
     private final Drive drive;
     private final FieldInfo field;
-    
     private final PlannedPathBuilder pathBuilder;
 
     private final Supplier<Pose2d> robotPose;
     private final Supplier<Pose2d> target;
     private final List<Waypoint> waypointsBetween;
-
-    private final PathLimits limits;
+    private final Constraints constraints;
 
     private FollowPlannedPath pathFollowingCommand;
 
-    @SuppressWarnings("unchecked")
-    public DrivePathOTF(Drive drive, FieldInfo field, PathLimits limits, Supplier<Pose2d> robotPose, Supplier<Pose2d> target, Supplier<Pose2d>... posesBetween) {
+    public DrivePathOTF(
+        Drive drive,
+        FieldInfo field,
+        Constraints constraints,
+        Supplier<Pose2d> robotPose,
+        Supplier<Pose2d> target,
+        Supplier<Pose2d>... posesBetween
+    ) {
         this.drive = drive;
         this.field = field;
 
@@ -37,7 +42,7 @@ public class DrivePathOTF extends Command {
 
         this.robotPose = robotPose;
         this.target = target;
-        this.limits = limits;
+        this.constraints = constraints;
 
         this.waypointsBetween =
             Arrays
@@ -46,6 +51,22 @@ public class DrivePathOTF extends Command {
                 .toList();
 
         addRequirements(drive);
+    }
+
+    public DrivePathOTF(
+        Drive drive,
+        FieldInfo field,
+        Supplier<Pose2d> robotPose,
+        Supplier<Pose2d> target,
+        Supplier<Pose2d>... posesBetween
+    ) {
+        this(
+            drive,
+            field,
+            new Constraints(3.0, 6.0),
+            robotPose,
+            target,
+            posesBetween);
     }
 
     @Override
@@ -59,8 +80,8 @@ public class DrivePathOTF extends Command {
                 field,
                 pathBuilder
                     .generate(
-                        limits.maxVelocity(),
-                        limits.maxAcceleration(),
+                        constraints.maxVelocity,
+                        constraints.maxAcceleration,
                         0.0,
                         0.0,
                         waypointsBetween));
@@ -79,12 +100,5 @@ public class DrivePathOTF extends Command {
     @Override
     public void end(boolean interrupted) {
         drive.stop();
-    }
-    
-    public record PathLimits(double maxVelocity, double maxAcceleration) {
-        // Initialize path constraints with default values.
-        public PathLimits() {
-            this(3.0, 6.0);
-        }
     }
 }

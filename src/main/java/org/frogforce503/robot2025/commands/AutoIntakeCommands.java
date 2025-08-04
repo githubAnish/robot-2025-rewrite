@@ -71,16 +71,20 @@ public class AutoIntakeCommands {
 
     public Command algaeAutoHighPluck() {
         return
-            Commands.deferredProxy(() -> new DriveToClosestReefAlgae(drive, field, proximityService))
-                .onlyIf(autoDrivingEnabled)
-                .alongWith(superstructure.pluckHighAlgae());
+            superstructure
+                .pluckHighAlgae()
+                .alongWith(
+                    Commands.deferredProxy(() -> new DriveToClosestReefAlgae(drive, field, proximityService))
+                        .onlyIf(autoDrivingEnabled));
     }
 
     public Command algaeAutoLowPluck() {
         return
-            Commands.deferredProxy(() -> new DriveToClosestReefAlgae(drive, field, proximityService))
-                .onlyIf(autoDrivingEnabled)
-                .alongWith(superstructure.pluckLowAlgae());
+            superstructure
+                .pluckLowAlgae()
+                .alongWith(
+                    Commands.deferredProxy(() -> new DriveToClosestReefAlgae(drive, field, proximityService))
+                        .onlyIf(autoDrivingEnabled));
     }
 
     public Command algaeBackup() {

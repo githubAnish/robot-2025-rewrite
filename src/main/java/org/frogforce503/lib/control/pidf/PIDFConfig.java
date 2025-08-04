@@ -26,4 +26,9 @@ public record PIDFConfig(
         public PIDFConfig(double kP, double kI, double kD) {
                 this(kP, kI, kD, 0.0, 0.0, 0.0, 0.0);
         }
+
+        /** Sets zero PID and zero feedforward. */
+        public PIDFConfig() {
+                this(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        }
 }
