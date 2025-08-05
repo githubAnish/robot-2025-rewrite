@@ -65,7 +65,7 @@ public class OffsetManager extends VirtualSubsystem {
      * Publishes an array that consumes a lot of memory,
      * so call this method only when necessary (e.g. to view that offsets are being recorded correctly.)
      */
-    public void logData() {
+    public void logOffsetData() {
         Logger.recordOutput("Offset Data",
             offsetData
                 .values()

@@ -41,9 +41,9 @@ public class ElevatorIOSpark implements ElevatorIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pid(
-                    Robot.bot.elevatorConstants.kP(),
-                    Robot.bot.elevatorConstants.kI(),
-                    Robot.bot.elevatorConstants.kD(),
+                    Robot.bot.elevatorConstants.kPIDF().kP(),
+                    Robot.bot.elevatorConstants.kPIDF().kI(),
+                    Robot.bot.elevatorConstants.kPIDF().kD(),
                     ClosedLoopSlot.kSlot0);
 
         config.inverted(Robot.bot.elevatorConstants.elevatorInverted());

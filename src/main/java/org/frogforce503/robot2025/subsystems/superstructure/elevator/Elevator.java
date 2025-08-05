@@ -37,7 +37,7 @@ public class Elevator extends FFSubsystemBase {
 
     // Constants
     private final Range range = Robot.bot.elevatorConstants.range();
-    private ElevatorFeedforward feedforward = Robot.bot.elevatorConstants.kFF();
+    private ElevatorFeedforward feedforward = Robot.bot.elevatorConstants.kPIDF().toElevatorFeedforward();
     
     // Control
     private TrapezoidProfile profile;
@@ -45,18 +45,10 @@ public class Elevator extends FFSubsystemBase {
 
     // Tuning
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Elevator",
-            new PIDFConfig(
-                Robot.bot.elevatorConstants.kP(),
-                Robot.bot.elevatorConstants.kI(),
-                Robot.bot.elevatorConstants.kD(),
-                Robot.bot.elevatorConstants.kFF()));
+        new PIDFTuningService("Elevator", Robot.bot.elevatorConstants.kPIDF());
 
     private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Elevator",
-            new Constraints(
-                Robot.bot.elevatorConstants.maxVelocityMetersPerSec(),
-                Robot.bot.elevatorConstants.maxAccelerationMetersPerSec2()));
+        new SpeedConstraintsTuningService("Elevator", Robot.bot.elevatorConstants.kConstraints());
 
     // Overrides
     private LoggedNetworkBoolean tuningEnabled =
@@ -112,8 +104,7 @@ public class Elevator extends FFSubsystemBase {
 
         profile =
             new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(
-                    Robot.bot.elevatorConstants.maxVelocityMetersPerSec(), Robot.bot.elevatorConstants.maxVelocityMetersPerSec()));
+                    Robot.bot.elevatorConstants.kConstraints());
     }
 
     @Override

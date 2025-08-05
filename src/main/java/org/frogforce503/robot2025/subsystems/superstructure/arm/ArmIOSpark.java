@@ -48,9 +48,9 @@ public class ArmIOSpark implements ArmIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
                 .pid(
-                    Robot.bot.armConstants.kP(),
-                    Robot.bot.armConstants.kI(),
-                    Robot.bot.armConstants.kD(),
+                    Robot.bot.armConstants.kPIDF().kP(),
+                    Robot.bot.armConstants.kPIDF().kI(),
+                    Robot.bot.armConstants.kPIDF().kD(),
                     ClosedLoopSlot.kSlot0);
 
         config.inverted(Robot.bot.armConstants.armInverted());

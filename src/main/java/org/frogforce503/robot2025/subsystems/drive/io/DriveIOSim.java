@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.Timer;
 import lombok.Setter;
 
 public class DriveIOSim implements DriveIO {
-    private SwerveDriveKinematics kinematics;
+    private final SwerveDriveKinematics kinematics;
 
     private SwerveModuleState[] states =
         new SwerveModuleState[] {

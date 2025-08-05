@@ -41,10 +41,10 @@ public class RollerIOSpark implements RollerIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pidf(
-                    Robot.bot.intakeConstants.rollerConstants().kP(),
-                    Robot.bot.intakeConstants.rollerConstants().kI(),
-                    Robot.bot.intakeConstants.rollerConstants().kD(),
-                    Robot.bot.intakeConstants.rollerConstants().kFF(),
+                    Robot.bot.intakeConstants.rollerConstants().kPIDF().kP(),
+                    Robot.bot.intakeConstants.rollerConstants().kPIDF().kI(),
+                    Robot.bot.intakeConstants.rollerConstants().kPIDF().kD(),
+                    Robot.bot.intakeConstants.rollerConstants().kPIDF().kV(),
                     ClosedLoopSlot.kSlot0);
 
         config.inverted(Robot.bot.intakeConstants.rollerConstants().rollerInverted());

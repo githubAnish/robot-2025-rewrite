@@ -5,17 +5,16 @@ import java.net.SocketException;
 import java.util.Enumeration;
 
 import org.frogforce503.lib.auto.follower.AutoPIDController;
+import org.frogforce503.lib.control.pidf.PIDFConfig;
 import org.frogforce503.lib.math.Range;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.measure.Distance;
 import lombok.Builder;
 
@@ -46,12 +45,8 @@ public abstract class RobotHardware {
     public record ElevatorConstants(
         int elevatorID,
         boolean elevatorInverted,
-        double kP,
-        double kI,
-        double kD,
-        ElevatorFeedforward kFF,
-        double maxVelocityMetersPerSec,
-        double maxAccelerationMetersPerSec2,
+        PIDFConfig kPIDF,
+        Constraints kConstraints,
         Range range) {}
 
     public ArmConstants armConstants;
@@ -61,12 +56,8 @@ public abstract class RobotHardware {
         int armID,
         boolean armInverted,
         double armOffset,
-        double kP,
-        double kI,
-        double kD,
-        ArmFeedforward kFF,
-        double maxVelocityMetersPerSec,
-        double maxAccelerationMetersPerSec2,
+        PIDFConfig kPIDF,
+        Constraints kConstraints,
         Range range) {}
 
     public WristConstants wristConstants;
@@ -76,12 +67,8 @@ public abstract class RobotHardware {
         int wristID,
         boolean wristInverted,
         double wristOffset,
-        double kP,
-        double kI,
-        double kD,
-        ArmFeedforward kFF,
-        double maxVelocityMetersPerSec,
-        double maxAccelerationMetersPerSec2,
+        PIDFConfig kPIDF,
+        Constraints kConstraints,
         Range range) {}
 
     public ClawConstants clawConstants;
@@ -95,10 +82,7 @@ public abstract class RobotHardware {
     public record ClawMotorConstants(
         int motorID,
         boolean motorInverted,
-        double kP,
-        double kI,
-        double kD,
-        double kFF) {}
+        PIDFConfig kPIDF) {}
 
     public IntakeConstants intakeConstants;
 
@@ -112,12 +96,8 @@ public abstract class RobotHardware {
         int pivotID,
         boolean pivotInverted,
         double pivotOffset,
-        double kP,
-        double kI,
-        double kD,
-        ArmFeedforward kFF,
-        double maxVelocityMetersPerSec,
-        double maxAccelerationMetersPerSec2,
+        PIDFConfig kPIDF,
+        Constraints kConstraints,
         Range range) {}
 
     @Builder
@@ -125,10 +105,7 @@ public abstract class RobotHardware {
         int rollerID,
         boolean rollerInverted,
         boolean rollerIsSparkFlex,
-        double kP,
-        double kI,
-        double kD,
-        double kFF) {}
+        PIDFConfig kPIDF) {}
 
     public ClimberConstants climberConstants;
 
@@ -136,9 +113,7 @@ public abstract class RobotHardware {
     public record ClimberConstants(
         int winchID,
         boolean winchInverted,
-        double kP,
-        double kI,
-        double kD) {}
+        PIDFConfig kPIDF) {}
 
     public int candleID;
 

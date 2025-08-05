@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 
 import org.frogforce503.lib.subsystem.VirtualSubsystem;
 import org.frogforce503.lib.util.LoggedTracer;
+import org.frogforce503.lib.util.NTClientLogger;
 import org.frogforce503.robot2025.Constants.Bot;
 import org.frogforce503.robot2025.fields.FieldConfig.Venue;
 import org.frogforce503.robot2025.hardware.RobotHardware;
@@ -133,6 +134,9 @@ public class Robot extends LoggedRobot {
     LoggedTracer.record("CommandScheduler");
 
     SmartDashboard.putData(CommandScheduler.getInstance());
+
+    // Log NT client list
+    NTClientLogger.log();
 
     // Record cycle time
     LoggedTracer.record("RobotPeriodic");

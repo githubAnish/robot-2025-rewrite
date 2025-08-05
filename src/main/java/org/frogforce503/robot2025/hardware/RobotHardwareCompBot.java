@@ -2,6 +2,7 @@ package org.frogforce503.robot2025.hardware;
 
 
 import org.frogforce503.lib.auto.follower.AutoPIDController;
+import org.frogforce503.lib.control.pidf.PIDFConfig;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.robot2025.hardware.tunerconstants.TunerConstantsCompBot;
 
@@ -13,6 +14,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 
 public class RobotHardwareCompBot extends RobotHardware {
@@ -32,12 +34,8 @@ public class RobotHardwareCompBot extends RobotHardware {
             ElevatorConstants.builder()
                 .elevatorID(2)
                 .elevatorInverted(false)
-                .kP(2.0)
-                .kI(0.0)
-                .kD(0.04)
-                .kFF(new ElevatorFeedforward(0.01, 0.0, 0.0, 0.002))
-                .maxVelocityMetersPerSec(5200.0)
-                .maxAccelerationMetersPerSec2(600.0)
+                .kPIDF(new PIDFConfig(2.0, 0.0, 0.04, new ElevatorFeedforward(0.01, 0.0, 0.0, 0.002)))
+                .kConstraints(new Constraints(5200.0, 600.0))
                 .range(new Range(0.0, 33.0))
                 .build();
 
@@ -47,12 +45,8 @@ public class RobotHardwareCompBot extends RobotHardware {
                 .armID(6)
                 .armInverted(false)
                 .armOffset(0.893)
-                .kP(0.014)
-                .kI(0)
-                .kD(0.1)
-                .kFF(new ArmFeedforward(0.0, 0.75, 0.0, 0.0))
-                .maxVelocityMetersPerSec(1.0)
-                .maxAccelerationMetersPerSec2(1.0)
+                .kPIDF(new PIDFConfig(0.014, 0.0, 0.1, new ArmFeedforward(0.0, 0.75, 0.0, 0.0)))
+                .kConstraints(new Constraints(1.0, 1.0))
                 .range(new Range(0.0, 180.0))
                 .build();
         
@@ -62,12 +56,8 @@ public class RobotHardwareCompBot extends RobotHardware {
                 .wristID(7)
                 .wristInverted(true)
                 .wristOffset(0.187)
-                .kP(0.014)
-                .kI(0.0)
-                .kD(0.0)
-                .kFF(new ArmFeedforward(0.0, 0.0, 0.0, 0.0))
-                .maxVelocityMetersPerSec(1.0)
-                .maxAccelerationMetersPerSec2(1.0)
+                .kPIDF(new PIDFConfig(0.014, 0.0, 0.0, new ArmFeedforward(0.0, 0.0, 0.0, 0.0)))
+                .kConstraints(new Constraints(1.0, 1.0))
                 .range(new Range(0.0, 300.0))
                 .build();
 
@@ -78,19 +68,13 @@ public class RobotHardwareCompBot extends RobotHardware {
                     ClawMotorConstants.builder()
                         .motorID(5)
                         .motorInverted(true)
-                        .kP(0.0001)
-                        .kI(0.0)
-                        .kD(0.00005)
-                        .kFF(0.000096)
+                        .kPIDF(new PIDFConfig(0.0001, 0.0, 0.00005, 0.0, 0.0, 0.000096, 0.0))
                         .build())
                 .rightMotorConstants(
                     ClawMotorConstants.builder()
                         .motorID(8)
                         .motorInverted(false)
-                        .kP(0.0001)
-                        .kI(0.0)
-                        .kD(0.00005)
-                        .kFF(0.000096)
+                        .kPIDF(new PIDFConfig(0.0001, 0.0, 0.00005, 0.0, 0.0, 0.000096, 0.0))
                         .build())
                 .build();
 
@@ -102,12 +86,8 @@ public class RobotHardwareCompBot extends RobotHardware {
                         .pivotID(3)
                         .pivotInverted(false)
                         .pivotOffset(0.4)
-                        .kP(0.01)
-                        .kI(0.0)
-                        .kD(0.0)
-                        .kFF(new ArmFeedforward(0.0, 0.75, 0.0, 0.0))
-                        .maxVelocityMetersPerSec(1.0)
-                        .maxAccelerationMetersPerSec2(1.0)
+                        .kPIDF(new PIDFConfig(0.01, 0.0, 0.0, new ArmFeedforward(0.0, 0.75, 0.0, 0.0)))
+                        .kConstraints(new Constraints(1.0, 1.0))
                         .range(new Range(35, 193))
                         .build())
                 .rollerConstants(
@@ -115,10 +95,7 @@ public class RobotHardwareCompBot extends RobotHardware {
                         .rollerID(4)
                         .rollerInverted(true)
                         .rollerIsSparkFlex(true)
-                        .kP(0.000001)
-                        .kI(0.0)
-                        .kD(0.0)
-                        .kFF(0.0001575)
+                        .kPIDF(new PIDFConfig(0.000001, 0.0, 0.0, 0.0, 0.0, 0.0001575, 0.0))
                         .build())
                 .build();
 
@@ -127,9 +104,7 @@ public class RobotHardwareCompBot extends RobotHardware {
             ClimberConstants.builder()
                 .winchID(9)
                 .winchInverted(false)
-                .kP(0.0)
-                .kI(0.0)
-                .kD(0.0)
+                .kPIDF(new PIDFConfig(0.0, 0.0, 0.0))
                 .build();
 
         candleID = 11;

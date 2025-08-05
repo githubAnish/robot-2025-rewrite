@@ -32,7 +32,7 @@ public class Wrist extends FFSubsystemBase {
 
     // Constants
     private final Range range = Robot.bot.wristConstants.range();
-    private ArmFeedforward feedforward = Robot.bot.wristConstants.kFF();
+    private ArmFeedforward feedforward = Robot.bot.wristConstants.kPIDF().toArmFeedforward();
 
     // Control
     private TrapezoidProfile profile;
@@ -40,18 +40,10 @@ public class Wrist extends FFSubsystemBase {
 
     // Tuning
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Wrist",
-            new PIDFConfig(
-                Robot.bot.wristConstants.kP(),
-                Robot.bot.wristConstants.kI(),
-                Robot.bot.wristConstants.kD(),
-                Robot.bot.wristConstants.kFF()));
+        new PIDFTuningService("Wrist", Robot.bot.wristConstants.kPIDF());
 
     private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Wrist",
-            new Constraints(
-                Robot.bot.wristConstants.maxVelocityMetersPerSec(),
-                Robot.bot.wristConstants.maxAccelerationMetersPerSec2()));
+        new SpeedConstraintsTuningService("Wrist", Robot.bot.wristConstants.kConstraints());
 
     // Overrides
     private LoggedNetworkBoolean tuningEnabled =
@@ -113,8 +105,7 @@ public class Wrist extends FFSubsystemBase {
 
         profile =
             new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(
-                    Robot.bot.wristConstants.maxVelocityMetersPerSec(), Robot.bot.wristConstants.maxVelocityMetersPerSec()));
+                    Robot.bot.wristConstants.kConstraints());
     }
 
     @Override

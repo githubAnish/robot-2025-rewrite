@@ -73,7 +73,7 @@ public class AutoIntakeCommands {
         return
             superstructure
                 .pluckHighAlgae()
-                .alongWith(
+                .andThen(
                     Commands.deferredProxy(() -> new DriveToClosestReefAlgae(drive, field, proximityService))
                         .onlyIf(autoDrivingEnabled));
     }
@@ -82,7 +82,7 @@ public class AutoIntakeCommands {
         return
             superstructure
                 .pluckLowAlgae()
-                .alongWith(
+                .andThen(
                     Commands.deferredProxy(() -> new DriveToClosestReefAlgae(drive, field, proximityService))
                         .onlyIf(autoDrivingEnabled));
     }

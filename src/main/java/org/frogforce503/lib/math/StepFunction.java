@@ -15,7 +15,7 @@ public class StepFunction {
         return getFloorEntry(lookupX);
     }
 
-    private double checkIfNull(Optional<Entry<Double, Double>> entry) {
+    private double handleNull(Optional<Entry<Double, Double>> entry) {
         return
             entry
                 .orElse(map.firstEntry())
@@ -24,15 +24,13 @@ public class StepFunction {
     
     public double getFloorEntry(double lookupX) {
         return
-            checkIfNull(
-                Optional.ofNullable(
-                    map.floorEntry(lookupX)));
+            handleNull(
+                Optional.ofNullable(map.floorEntry(lookupX)));
     }
 
     public double getCeilingEntry(double lookupX) {
         return
-            checkIfNull(
-                Optional.ofNullable(
-                    map.ceilingEntry(lookupX)));
+            handleNull(
+                Optional.ofNullable(map.ceilingEntry(lookupX)));
     }
 }

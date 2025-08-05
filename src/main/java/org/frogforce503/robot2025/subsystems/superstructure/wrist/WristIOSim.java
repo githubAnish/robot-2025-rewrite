@@ -1,13 +1,13 @@
 package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
-import org.frogforce503.lib.motor.Sim;
-import org.frogforce503.lib.motor.CANMotor.MotorControlMode;
+import org.frogforce503.lib.motor.MotorSim;
+import org.frogforce503.lib.motor.MotorControlMode;
 
 public class WristIOSim implements WristIO {
-    private Sim sim;
+    private MotorSim sim;
 
     public WristIOSim() {
-        sim = new Sim(3.25,360.0);
+        sim = new MotorSim(3.25,360.0);
     }
 
     @Override
@@ -27,7 +27,7 @@ public class WristIOSim implements WristIO {
 
     @Override
     public void runOpenLoop(double output) {
-        sim.set(MotorControlMode.PercentOutput, output);
+        sim.set(MotorControlMode.DutyCycle, output);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class WristIOSim implements WristIO {
 
     @Override
     public void stop() {
-        sim.set(MotorControlMode.PercentOutput, 0);
+        sim.set(MotorControlMode.DutyCycle, 0);
     }
 
     @Override

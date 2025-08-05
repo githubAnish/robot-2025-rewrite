@@ -33,11 +33,7 @@ public class Climber extends FFSubsystemBase {
 
     // Tuning
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Climber",
-            new PIDFConfig(
-                Robot.bot.climberConstants.kP(),
-                Robot.bot.climberConstants.kI(),
-                Robot.bot.climberConstants.kD()));
+        new PIDFTuningService("Climber", Robot.bot.climberConstants.kPIDF());
 
     // Overrides
     private LoggedNetworkBoolean tuningEnabled =

@@ -19,7 +19,6 @@ public class PrescoreBoundaryBuilder {
 
     public PrescoreBoundaryBuilder(FieldInfo field, Supplier<Pose2d> robotPose) {
         this.field = field;
-
         this.robotPose = robotPose;
     }
 

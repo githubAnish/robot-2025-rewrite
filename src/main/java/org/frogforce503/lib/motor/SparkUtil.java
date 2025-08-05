@@ -1,5 +1,7 @@
 package org.frogforce503.lib.motor;
 
+import org.frogforce503.lib.util.ErrorUtil;
+
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
@@ -12,6 +14,7 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 
 /** Helper class for Spark IO implementations */
 public final class SparkUtil {
+    public static final int DEFAULT_CURRENT_LIMIT = 80;
     private static final int THROUGH_BORE_ENCODER_COUNTS = 8192;
 
     private SparkUtil() {}
@@ -30,7 +33,7 @@ public final class SparkUtil {
             case 1 -> ClosedLoopSlot.kSlot1;
             case 2 -> ClosedLoopSlot.kSlot2;
             case 3 -> ClosedLoopSlot.kSlot3;
-            default -> throw new IllegalArgumentException("Invalid slot ID: " + slot);
+            default -> throw new IllegalArgumentException("Invalid slot ID: " + slot + ErrorUtil.attachJavaClassName(SparkUtil.class));
         };
     }
 
@@ -42,7 +45,7 @@ public final class SparkUtil {
     }
 
     /** Optimizes motor signals to limit unnecessary data over CAN. */
-    public static SignalsConfig optimizeSignals(SparkBaseConfig config) {
+    public static SignalsConfig withOptimizedSignals() {
         return
             new SignalsConfig()
                 .analogPositionAlwaysOn(false)

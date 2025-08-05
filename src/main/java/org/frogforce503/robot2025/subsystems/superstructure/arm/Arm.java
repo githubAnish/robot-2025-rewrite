@@ -32,7 +32,7 @@ public class Arm extends FFSubsystemBase {
 
     // Constants
     private final Range range = Robot.bot.armConstants.range();
-    private ArmFeedforward feedforward = Robot.bot.armConstants.kFF();
+    private ArmFeedforward feedforward = Robot.bot.armConstants.kPIDF().toArmFeedforward();
 
     // Control
     private TrapezoidProfile profile;
@@ -40,18 +40,10 @@ public class Arm extends FFSubsystemBase {
 
     // Tuning
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Arm",
-            new PIDFConfig(
-                Robot.bot.armConstants.kP(),
-                Robot.bot.armConstants.kI(),
-                Robot.bot.armConstants.kD(),
-                Robot.bot.armConstants.kFF()));
+        new PIDFTuningService("Arm", Robot.bot.armConstants.kPIDF());
 
     private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Arm",
-            new Constraints(
-                Robot.bot.armConstants.maxVelocityMetersPerSec(),
-                Robot.bot.armConstants.maxAccelerationMetersPerSec2()));
+        new SpeedConstraintsTuningService("Arm", Robot.bot.armConstants.kConstraints());
 
     // Overrides
     private LoggedNetworkBoolean tuningEnabled =
@@ -110,8 +102,7 @@ public class Arm extends FFSubsystemBase {
 
         profile =
             new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(
-                    Robot.bot.armConstants.maxVelocityMetersPerSec(), Robot.bot.armConstants.maxVelocityMetersPerSec()));
+                    Robot.bot.armConstants.kConstraints());
     }
 
     @Override

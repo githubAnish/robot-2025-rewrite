@@ -56,9 +56,9 @@ public class WristIOSpark implements WristIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pid(
-                    Robot.bot.wristConstants.kP(),
-                    Robot.bot.wristConstants.kI(),
-                    Robot.bot.wristConstants.kD(),
+                    Robot.bot.wristConstants.kPIDF().kP(),
+                    Robot.bot.wristConstants.kPIDF().kI(),
+                    Robot.bot.wristConstants.kPIDF().kD(),
                     ClosedLoopSlot.kSlot0);
 
         config.inverted(Robot.bot.wristConstants.wristInverted());

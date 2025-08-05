@@ -50,10 +50,10 @@ public class ClawIOSpark implements ClawIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pidf(
-                    Robot.bot.clawConstants.leftMotorConstants().kP(),
-                    Robot.bot.clawConstants.leftMotorConstants().kI(),
-                    Robot.bot.clawConstants.leftMotorConstants().kD(),
-                    Robot.bot.clawConstants.leftMotorConstants().kFF(),
+                    Robot.bot.clawConstants.leftMotorConstants().kPIDF().kP(),
+                    Robot.bot.clawConstants.leftMotorConstants().kPIDF().kI(),
+                    Robot.bot.clawConstants.leftMotorConstants().kPIDF().kD(),
+                    Robot.bot.clawConstants.leftMotorConstants().kPIDF().kV(),
                     ClosedLoopSlot.kSlot0);
 
         leftConfig.inverted(Robot.bot.clawConstants.leftMotorConstants().motorInverted());
@@ -67,10 +67,10 @@ public class ClawIOSpark implements ClawIO {
         rightConfig
             .closedLoop
             .pidf(
-                Robot.bot.clawConstants.rightMotorConstants().kP(),
-                Robot.bot.clawConstants.rightMotorConstants().kI(),
-                Robot.bot.clawConstants.rightMotorConstants().kD(),
-                Robot.bot.clawConstants.rightMotorConstants().kFF(),
+                Robot.bot.clawConstants.rightMotorConstants().kPIDF().kP(),
+                Robot.bot.clawConstants.rightMotorConstants().kPIDF().kI(),
+                Robot.bot.clawConstants.rightMotorConstants().kPIDF().kD(),
+                Robot.bot.clawConstants.rightMotorConstants().kPIDF().kV(),
                 ClosedLoopSlot.kSlot0);
 
         leftMotor.clearFaults();

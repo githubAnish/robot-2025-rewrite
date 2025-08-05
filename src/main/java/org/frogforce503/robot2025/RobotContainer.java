@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import org.frogforce503.lib.commands.RumbleCommand;
 import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.util.DoublePressTracker;
+import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.lib.util.Logic;
 import org.frogforce503.lib.util.ProximityService;
 import org.frogforce503.lib.util.TriConsumer;
@@ -192,7 +193,7 @@ public class RobotContainer implements UnitTest {
                 leds = new Leds(new LedsIO() {});
             }
             default -> {
-                System.err.println("What happened here? --- Returned by RobotContainer.java");
+                System.err.println("What happened here?" + ErrorUtil.attachJavaClassName(RobotContainer.class));
             }
         }
     

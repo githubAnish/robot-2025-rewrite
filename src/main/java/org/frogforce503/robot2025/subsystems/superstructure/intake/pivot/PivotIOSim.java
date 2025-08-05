@@ -1,13 +1,13 @@
 package org.frogforce503.robot2025.subsystems.superstructure.intake.pivot;
 
-import org.frogforce503.lib.motor.Sim;
-import org.frogforce503.lib.motor.CANMotor.MotorControlMode;
+import org.frogforce503.lib.motor.MotorSim;
+import org.frogforce503.lib.motor.MotorControlMode;
 
 public class PivotIOSim implements PivotIO {
-    private Sim sim;
+    private MotorSim sim;
 
     public PivotIOSim() {
-        sim = new Sim(3.25,360.0);
+        sim = new MotorSim(3.25,360.0);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class PivotIOSim implements PivotIO {
 
     @Override
     public void runOpenLoop(double output) {
-        sim.set(MotorControlMode.PercentOutput, output);
+        sim.set(MotorControlMode.DutyCycle, output);
     }
 
     @Override
@@ -41,6 +41,6 @@ public class PivotIOSim implements PivotIO {
 
     @Override
     public void stop() {
-        sim.set(MotorControlMode.PercentOutput, 0);
+        sim.set(MotorControlMode.DutyCycle, 0);
     }  
 }

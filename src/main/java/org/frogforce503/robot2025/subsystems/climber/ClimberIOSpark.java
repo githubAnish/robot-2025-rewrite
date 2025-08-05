@@ -41,9 +41,9 @@ public class ClimberIOSpark implements ClimberIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pid(
-                    Robot.bot.climberConstants.kP(),
-                    Robot.bot.climberConstants.kI(),
-                    Robot.bot.climberConstants.kD(),
+                    Robot.bot.climberConstants.kPIDF().kP(),
+                    Robot.bot.climberConstants.kPIDF().kI(),
+                    Robot.bot.climberConstants.kPIDF().kD(),
                     ClosedLoopSlot.kSlot0);
 
         config.inverted(Robot.bot.climberConstants.winchInverted());

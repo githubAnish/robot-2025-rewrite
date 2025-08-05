@@ -44,7 +44,7 @@ public class Intake extends FFSubsystemBase {
 
     // Constants
     private final Range range = Robot.bot.intakeConstants.pivotConstants().range();
-    private ArmFeedforward feedforward = Robot.bot.intakeConstants.pivotConstants().kFF();
+    private ArmFeedforward feedforward = Robot.bot.intakeConstants.pivotConstants().kPIDF().toArmFeedforward();
 
     // Control
     private TrapezoidProfile profile;
@@ -52,18 +52,10 @@ public class Intake extends FFSubsystemBase {
 
     // Tuning
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Intake",
-            new PIDFConfig(
-                Robot.bot.intakeConstants.pivotConstants().kP(),
-                Robot.bot.intakeConstants.pivotConstants().kI(),
-                Robot.bot.intakeConstants.pivotConstants().kD(),
-                Robot.bot.intakeConstants.pivotConstants().kFF()));
+        new PIDFTuningService("Intake", Robot.bot.intakeConstants.pivotConstants().kPIDF());
 
     private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Intake",
-            new Constraints(
-                Robot.bot.intakeConstants.pivotConstants().maxVelocityMetersPerSec(),
-                Robot.bot.intakeConstants.pivotConstants().maxAccelerationMetersPerSec2()));
+        new SpeedConstraintsTuningService("Intake", Robot.bot.intakeConstants.pivotConstants().kConstraints());
 
     // Overrides
     private LoggedNetworkBoolean tuningEnabled =
@@ -129,8 +121,7 @@ public class Intake extends FFSubsystemBase {
 
         profile =
             new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(
-                    Robot.bot.intakeConstants.pivotConstants().maxVelocityMetersPerSec(), Robot.bot.intakeConstants.pivotConstants().maxVelocityMetersPerSec()));
+                Robot.bot.intakeConstants.pivotConstants().kConstraints());
     }
 
     @Override

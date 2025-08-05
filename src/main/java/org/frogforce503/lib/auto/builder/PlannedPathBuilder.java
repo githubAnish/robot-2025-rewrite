@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
 import org.frogforce503.lib.auto.trajectory.path.Waypoint;
+import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.robot2025.Robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -36,7 +37,7 @@ public class PlannedPathBuilder {
         try {
             trajectoryGenerator.generate(config, waypoints);
         } catch (TrajectoryGenerationException exception) {
-            System.out.print("Trajectory generation failed --- Returned from PlannedPathBuilder.java");
+            System.out.print("Trajectory generation failed" + ErrorUtil.attachJavaClassName(PlannedPathBuilder.class));
             exception.printStackTrace();
             return null;
         }

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.frogforce503.lib.util.ErrorUtil;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -47,7 +48,7 @@ public class OffsetDecoder {
                         new FileReader(
                             Filesystem.getDeployDirectory().getAbsolutePath() + "/offsets/" + fileName));
         } catch (IOException | ParseException e) {
-            System.out.println("Error reading offsets file: " + fileName + " --- Returned from OffsetDecoder.java");
+            System.out.println("Error reading offsets file: " + fileName  + ErrorUtil.attachJavaClassName(OffsetDecoder.class));
             e.printStackTrace();
         }
     }

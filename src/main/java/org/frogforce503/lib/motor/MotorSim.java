@@ -1,46 +1,44 @@
 package org.frogforce503.lib.motor;
 
-import org.frogforce503.lib.motor.CANMotor.MotorControlMode;
-
 import edu.wpi.first.wpilibj.Timer;
 
-public class Sim {
-    private double timeForOne; // number of seconds to complete a full revolution
-    private double timeConstantFactor; // MOTOR IS MODELED AS LOGARITHMIC GROWTH, LIKE A CHARGING CAPACITOR
-    private double CPR;
+public class MotorSim {
+    private final double timeForOne; // Number of seconds to complete a full revolution
+    private final double timeConstantFactor; // MOTOR IS MODELED AS LOGARITHMIC GROWTH, LIKE A CHARGING CAPACITOR
+    private final double CPR;
+
+    private double currentPosition = 0;
+    private double currentVelocity = 0;
 
     private Setpoint lastCommand;
     private double lastUpdateTime;
     private double lastPosition = 0;
-    
-    private double currentPosition = 0;
-    private double currentVelocity = 0;
 
-    public Sim(double timeConstantFactor, double CPR) {
+    public MotorSim(double timeConstantFactor, double CPR) {
         this.timeConstantFactor = timeConstantFactor;
-        this.timeForOne = Math.sqrt(timeConstantFactor); // 5 * (1 / timeConstantFactor); // https://www.electronics-tutorials.ws/rc/rc_1.html
+        this.timeForOne = Math.sqrt(timeConstantFactor); // https://www.electronics-tutorials.ws/rc/rc_1.html
         this.CPR = CPR;
 
-        this.lastCommand = new Setpoint(Timer.getFPGATimestamp(), MotorControlMode.PercentOutput, 0, 0);
+        this.lastCommand = new Setpoint(Timer.getFPGATimestamp(), MotorControlMode.DutyCycle, 0, 0);
         this.lastUpdateTime = Timer.getFPGATimestamp();
     }
 
     public void set(MotorControlMode controlMode, double value) {
-        if (controlMode == MotorControlMode.Position || controlMode == MotorControlMode.ProfiledPosition)
+        if (controlMode == MotorControlMode.Position) {
             value /= CPR;
-        
-        else if (controlMode == MotorControlMode.Velocity)
+        } else if (controlMode == MotorControlMode.Velocity) {
             value *= 60;
+        }
 
         lastCommand = new Setpoint(Timer.getFPGATimestamp(), controlMode, value, this.currentPosition);
     }
 
     public void update() {
-        // updates speed and position
+        // Updates speed and position
         double time = Timer.getFPGATimestamp();
 
         switch(lastCommand.controlMode) {
-            case PercentOutput: {
+            case DutyCycle: {
                 this.currentVelocity = (1 / this.timeForOne) * this.lastCommand.demand; // basically, 1.0 power is max velocity
                 this.currentPosition += (time - this.lastUpdateTime) * this.currentVelocity;
                 break;
@@ -50,18 +48,16 @@ public class Sim {
                 this.currentPosition += (time - this.lastUpdateTime) * this.currentVelocity;
                 break;
             }
-            case Current: {
+            case Current: { // Isn't modeled correctly (since it's based on DutyCycle logic), try to find better logic
                 this.currentVelocity = (1 / this.timeForOne) * this.lastCommand.demand;
                 this.currentPosition += (time - this.lastUpdateTime) * this.currentVelocity;
                 break;
             }
-            case ProfiledVelocity:
             case Velocity: {
                 this.currentVelocity = this.lastCommand.demand;
                 this.currentPosition += (time - this.lastUpdateTime) * this.currentVelocity;
                 break;
             }
-            case ProfiledPosition:
             case Position: {
                 // https://www.desmos.com/calculator/euno0nwy5h
                 double t = time - this.lastCommand.startTimestamp;

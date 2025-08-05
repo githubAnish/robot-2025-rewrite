@@ -48,9 +48,9 @@ public class PivotIOSpark implements PivotIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
                 .pid(
-                    Robot.bot.intakeConstants.pivotConstants().kP(),
-                    Robot.bot.intakeConstants.pivotConstants().kI(),
-                    Robot.bot.intakeConstants.pivotConstants().kD(),
+                    Robot.bot.intakeConstants.pivotConstants().kPIDF().kP(),
+                    Robot.bot.intakeConstants.pivotConstants().kPIDF().kI(),
+                    Robot.bot.intakeConstants.pivotConstants().kPIDF().kD(),
                     ClosedLoopSlot.kSlot0);
 
         config.inverted(Robot.bot.intakeConstants.pivotConstants().pivotInverted());

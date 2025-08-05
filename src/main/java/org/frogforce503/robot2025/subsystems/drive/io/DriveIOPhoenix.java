@@ -24,12 +24,14 @@ import edu.wpi.first.math.numbers.N3;
 public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> implements DriveIO {
     private ChassisSpeeds currentVelocity;
 
-    private final ApplyRobotSpeeds RUN_CHASSIS_SPEEDS = new ApplyRobotSpeeds()
-        .withCenterOfRotation(DriveConstants.CENTER_OF_ROTATION)
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo);
+    private final ApplyRobotSpeeds RUN_CHASSIS_SPEEDS =
+        new ApplyRobotSpeeds()
+            .withCenterOfRotation(DriveConstants.CENTER_OF_ROTATION)
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo);
 
-    private final SysIdSwerveTranslation RUN_CHARACTERIZATION = new SysIdSwerveTranslation();
+    private final SysIdSwerveTranslation RUN_CHARACTERIZATION =
+        new SysIdSwerveTranslation();
 
     public DriveIOPhoenix() {
         super(
