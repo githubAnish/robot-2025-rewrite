@@ -1,4 +1,4 @@
-package org.frogforce503.lib.control.pidf;
+package org.frogforce503.lib.motorcontrol.tuning.pidf;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;

@@ -1,4 +1,4 @@
-package org.frogforce503.lib.auto.trajectory.path;
+package org.frogforce503.lib.planning.planned_path;
 
 import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 

@@ -2,8 +2,8 @@ package org.frogforce503.robot2025.hardware;
 
 
 import org.frogforce503.lib.auto.follower.AutoPIDController;
-import org.frogforce503.lib.control.pidf.PIDFConfig;
 import org.frogforce503.lib.math.Range;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.robot2025.hardware.tunerconstants.TunerConstantsCompBot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -57,7 +57,6 @@ public class RobotHardwareCompBot extends RobotHardware {
                 .wristInverted(true)
                 .wristOffset(0.187)
                 .kPIDF(new PIDFConfig(0.014, 0.0, 0.0, new ArmFeedforward(0.0, 0.0, 0.0, 0.0)))
-                .kConstraints(new Constraints(1.0, 1.0))
                 .range(new Range(0.0, 300.0))
                 .build();
 

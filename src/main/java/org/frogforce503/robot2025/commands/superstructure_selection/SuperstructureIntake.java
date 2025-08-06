@@ -1,6 +1,7 @@
 package org.frogforce503.robot2025.commands.superstructure_selection;
 
 import java.util.HashMap;
+import java.util.function.Supplier;
 
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
@@ -8,7 +9,7 @@ import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 
 public class SuperstructureIntake extends SelectCommand<Mode> {
-    public SuperstructureIntake(Superstructure superstructure) {
+    public SuperstructureIntake(Superstructure superstructure, Supplier<Mode> superstructureModeSupplier) {
         super(
             new HashMap<>() {{
                 // Coral
@@ -20,6 +21,6 @@ public class SuperstructureIntake extends SelectCommand<Mode> {
                 put(Mode.ALGAE_PLUCK_HIGH, superstructure.pluckHighAlgae());
                 put(Mode.ALGAE_PLUCK_LOW, superstructure.pluckLowAlgae());
             }},
-            superstructure::getCurrentMode);
+            superstructureModeSupplier);
     }
 }

@@ -1,4 +1,4 @@
-package org.frogforce503.lib.motor;
+package org.frogforce503.lib.motorcontrol;
 
 import edu.wpi.first.wpilibj.Timer;
 

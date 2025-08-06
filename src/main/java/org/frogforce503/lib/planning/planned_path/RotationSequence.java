@@ -1,4 +1,4 @@
-package org.frogforce503.lib.auto.trajectory.path;
+package org.frogforce503.lib.planning.planned_path;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 

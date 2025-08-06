@@ -1,4 +1,4 @@
-package org.frogforce503.lib.auto.trajectory.path;
+package org.frogforce503.lib.planning.planned_path;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,8 @@
-package org.frogforce503.lib.auto.trajectory.route;
+package org.frogforce503.lib.auto.route;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import choreo.auto.AutoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -36,6 +37,6 @@ public class ChoreoRoute extends BaseRoute<AutoTrajectory> {
                 .flatMap(
                     traj ->
                         Arrays.stream(traj.getRawTrajectory().getPoses()))
-                .toList();
+                .collect(Collectors.toList());
     }
 }

@@ -1,6 +1,6 @@
 package org.frogforce503.lib.auto.follower;
 
-import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
+import org.frogforce503.lib.planning.planned_path.PlannedPath;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;

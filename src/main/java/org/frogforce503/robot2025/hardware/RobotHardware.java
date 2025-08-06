@@ -5,8 +5,8 @@ import java.net.SocketException;
 import java.util.Enumeration;
 
 import org.frogforce503.lib.auto.follower.AutoPIDController;
-import org.frogforce503.lib.control.pidf.PIDFConfig;
 import org.frogforce503.lib.math.Range;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -68,7 +68,6 @@ public abstract class RobotHardware {
         boolean wristInverted,
         double wristOffset,
         PIDFConfig kPIDF,
-        Constraints kConstraints,
         Range range) {}
 
     public ClawConstants clawConstants;

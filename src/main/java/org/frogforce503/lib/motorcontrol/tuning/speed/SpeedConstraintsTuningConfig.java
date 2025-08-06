@@ -1,4 +1,4 @@
-package org.frogforce503.lib.control.speed;
+package org.frogforce503.lib.motorcontrol.tuning.speed;
 
 import org.frogforce503.lib.util.LoggedTunableNumber;
 

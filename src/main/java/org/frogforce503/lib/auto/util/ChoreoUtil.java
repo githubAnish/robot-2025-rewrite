@@ -1,6 +1,7 @@
 package org.frogforce503.lib.auto.util;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
@@ -24,6 +25,6 @@ public class ChoreoUtil {
                         routine.trajectory(
                             choreoFileName,
                             splits.indexOf(split)))
-                .toList();
+                .collect(Collectors.toList());
     }
 }

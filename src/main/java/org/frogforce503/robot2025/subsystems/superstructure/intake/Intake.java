@@ -23,11 +23,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import lombok.Getter;
 
-import org.frogforce503.lib.control.TuningService;
-import org.frogforce503.lib.control.pidf.PIDFConfig;
-import org.frogforce503.lib.control.pidf.PIDFTuningService;
-
-import org.frogforce503.lib.control.speed.SpeedConstraintsTuningService;
+import org.frogforce503.lib.motorcontrol.tuning.TuningService;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
+import org.frogforce503.lib.motorcontrol.tuning.speed.SpeedConstraintsTuningService;
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
@@ -45,6 +44,7 @@ public class Intake extends FFSubsystemBase {
     // Constants
     private final Range range = Robot.bot.intakeConstants.pivotConstants().range();
     private ArmFeedforward feedforward = Robot.bot.intakeConstants.pivotConstants().kPIDF().toArmFeedforward();
+    private final double parallelToGroundAngle = 107;
 
     // Control
     private TrapezoidProfile profile;
@@ -165,13 +165,13 @@ public class Intake extends FFSubsystemBase {
 
             double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
 
-            pivotIO.runPosition(setpoint.position, feedforward.calculate(Math.toRadians(currentGoal.pivotPosition - 107), setpoint.velocity, accel));
+            pivotIO.runPosition(setpoint.position, feedforward.calculate(Math.toRadians(currentGoal.pivotPosition - parallelToGroundAngle), setpoint.velocity, accel));
             rollerIO.runVolts(currentGoal.rollerVolts);
 
             // Log state
-            Logger.recordOutput("Intake/Profile/SetpointPositionMeters", setpoint.position);
-            Logger.recordOutput("Intake/Profile/SetpointVelocityMetersPerSec", setpoint.velocity);
-            Logger.recordOutput("Intake/Profile/GoalPositionMeters", goalState.position);
+            Logger.recordOutput("Intake/Profile/SetpointPosition", setpoint.position);
+            Logger.recordOutput("Intake/Profile/SetpointVelocity", setpoint.velocity);
+            Logger.recordOutput("Intake/Profile/GoalPosition", goalState.position);
         }
 
         Logger.recordOutput("Intake/Goal", currentGoal.name());

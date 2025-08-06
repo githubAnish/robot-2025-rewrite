@@ -3,7 +3,7 @@ package org.frogforce503.lib.commands;
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.auto.follower.SwervePathFollower;
-import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
+import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;

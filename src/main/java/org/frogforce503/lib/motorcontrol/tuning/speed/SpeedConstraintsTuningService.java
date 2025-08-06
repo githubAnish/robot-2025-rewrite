@@ -1,6 +1,6 @@
-package org.frogforce503.lib.control.speed;
+package org.frogforce503.lib.motorcontrol.tuning.speed;
 
-import org.frogforce503.lib.control.TuningService;
+import org.frogforce503.lib.motorcontrol.tuning.TuningService;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;

@@ -81,7 +81,7 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
         setpointVisualizer.updateOnlyIfInSimulation(
             elevator.getSetpoint().position,
             arm.getSetpoint().position,
-            wrist.getSetpoint().position,
+            wrist.getSetpoint(),
             intake.getSetpoint().position);
 
         Logger.recordOutput("Superstructure/Brake Mode Enabled", brakeModeEnabled);

@@ -3,9 +3,9 @@ package org.frogforce503.lib.commands;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.control.pidf.PIDFConfig;
 import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.math.GeomUtil;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.robot2025.commands.DriveCommands;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;

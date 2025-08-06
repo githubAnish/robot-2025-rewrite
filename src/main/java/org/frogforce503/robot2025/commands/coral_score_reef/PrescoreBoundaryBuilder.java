@@ -1,6 +1,7 @@
 package org.frogforce503.robot2025.commands.coral_score_reef;
 
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.frogforce503.lib.math.GeomUtil;
 import org.frogforce503.lib.math.Polygon2d;
@@ -52,6 +53,6 @@ public class PrescoreBoundaryBuilder {
                     .getVertices()
                     .stream()
                     .map(v -> GeomUtil.toPose2d(v))
-                    .toList());
+                    .collect(Collectors.toList()));
     }
 }

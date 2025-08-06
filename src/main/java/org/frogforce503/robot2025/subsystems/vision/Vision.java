@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.fields.FieldInfo;
@@ -146,7 +147,7 @@ public class Vision extends SubsystemBase {
                     tagsUsed
                         .stream()
                         .distinct()
-                        .toList()); // Gets rid of duplicate tags and sorts them
+                        .collect(Collectors.toList())); // Gets rid of duplicate tags and sorts them
 
             Logger.recordOutput("Vision/CamerasUsed",
                 camerasUsed

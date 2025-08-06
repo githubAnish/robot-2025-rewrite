@@ -303,19 +303,19 @@ public class RobotContainer implements UnitTest {
             // Coral
             put(Mode.L1,
                 autoScoreCommands
-                    .coralAutoScoreL1()
+                    .coralAutoScoreL1(() -> Mode.L1)
                     .alongWith(leds.scoreCoral()));
             put(Mode.L2,
                 autoScoreCommands
-                    .coralAutoScore()
+                    .coralAutoScore(() -> Mode.L2)
                     .alongWith(leds.scoreCoral()));
             put(Mode.L3,
                 autoScoreCommands
-                    .coralAutoScore()
+                    .coralAutoScore(() -> Mode.L3)
                     .alongWith(leds.scoreCoral()));
             put(Mode.L4,
                 autoScoreCommands
-                    .coralAutoScore()
+                    .coralAutoScore(() -> Mode.L4)
                     .alongWith(leds.scoreCoral()));
 
             // Algae
@@ -589,6 +589,10 @@ public class RobotContainer implements UnitTest {
 
     @Override
     public void test() {
-        
+        RobotModeTriggers
+            .teleop()
+            .onTrue(
+                Commands.none()
+            );
     }
 }

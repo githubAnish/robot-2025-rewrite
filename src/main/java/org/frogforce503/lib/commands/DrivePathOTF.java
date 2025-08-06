@@ -1,12 +1,13 @@
 package org.frogforce503.lib.commands;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.auto.builder.PlannedPathBuilder;
-import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
-import org.frogforce503.lib.auto.trajectory.path.Waypoint;
+import org.frogforce503.lib.planning.planned_path.PlannedPath;
+import org.frogforce503.lib.planning.planned_path.Waypoint;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
@@ -15,6 +16,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** Follows a runtime-generated {@link PlannedPath}. */
+@SuppressWarnings("unchecked")
 public class DrivePathOTF extends Command {
     private final Drive drive;
     private final FieldInfo field;
@@ -22,7 +24,6 @@ public class DrivePathOTF extends Command {
 
     private final Supplier<Pose2d> robotPose;
     private final Supplier<Pose2d> target;
-    private final List<Waypoint> waypointsBetween;
     private final Constraints constraints;
 
     private FollowPlannedPath pathFollowingCommand;
@@ -32,8 +33,7 @@ public class DrivePathOTF extends Command {
         FieldInfo field,
         Constraints constraints,
         Supplier<Pose2d> robotPose,
-        Supplier<Pose2d> target,
-        Supplier<Pose2d>... posesBetween
+        Supplier<Pose2d> target
     ) {
         this.drive = drive;
         this.field = field;
@@ -44,12 +44,6 @@ public class DrivePathOTF extends Command {
         this.target = target;
         this.constraints = constraints;
 
-        this.waypointsBetween =
-            Arrays
-                .stream(posesBetween)
-                .map(poseSupplier -> Waypoint.fromHolonomicPose(poseSupplier.get()))
-                .toList();
-
         addRequirements(drive);
     }
 
@@ -57,23 +51,18 @@ public class DrivePathOTF extends Command {
         Drive drive,
         FieldInfo field,
         Supplier<Pose2d> robotPose,
-        Supplier<Pose2d> target,
-        Supplier<Pose2d>... posesBetween
+        Supplier<Pose2d> target
     ) {
         this(
             drive,
             field,
             new Constraints(3.0, 6.0),
             robotPose,
-            target,
-            posesBetween);
+            target);
     }
 
     @Override
     public void initialize() {
-        this.waypointsBetween.add(0, Waypoint.fromHolonomicPose(robotPose.get()));
-        this.waypointsBetween.add(Waypoint.fromHolonomicPose(target.get()));
-
         pathFollowingCommand =
             new FollowPlannedPath(
                 drive,
@@ -84,7 +73,9 @@ public class DrivePathOTF extends Command {
                         constraints.maxAcceleration,
                         0.0,
                         0.0,
-                        waypointsBetween));
+                        List.of(
+                            Waypoint.fromHolonomicPose(robotPose.get()),
+                            Waypoint.fromHolonomicPose(target.get()))));
 
         pathFollowingCommand.schedule();
     }

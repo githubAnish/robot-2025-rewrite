@@ -1,4 +1,4 @@
-package org.frogforce503.lib.control.pidf;
+package org.frogforce503.lib.motorcontrol.tuning.pidf;
 
 import org.frogforce503.lib.util.LoggedTunableNumber;
 

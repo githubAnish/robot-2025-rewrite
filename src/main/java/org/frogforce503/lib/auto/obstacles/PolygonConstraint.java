@@ -1,4 +1,4 @@
-package org.frogforce503.lib.auto.trajectory;
+package org.frogforce503.lib.auto.obstacles;
 
 import org.frogforce503.lib.math.Polygon2d;
 

@@ -2,8 +2,9 @@ package org.frogforce503.lib.auto.util;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import org.frogforce503.lib.auto.trajectory.path.Waypoint;
+import org.frogforce503.lib.planning.planned_path.Waypoint;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,7 +20,7 @@ public class WaypointUtil {
             input
                 .stream()
                 .map(changeFunction)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public static List<Waypoint> shift(List<Waypoint> input, Translation2d delta) {

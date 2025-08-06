@@ -2,9 +2,9 @@ package org.frogforce503.robot2025.auto.test;
 
 import org.frogforce503.lib.auto.AutoMode;
 import org.frogforce503.lib.auto.builder.PlannedPathBuilder;
-import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
-import org.frogforce503.lib.auto.trajectory.path.Waypoint;
-import org.frogforce503.lib.auto.trajectory.route.PlannedPathRoute;
+import org.frogforce503.lib.auto.route.PlannedPathRoute;
+import org.frogforce503.lib.planning.planned_path.PlannedPath;
+import org.frogforce503.lib.planning.planned_path.Waypoint;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 

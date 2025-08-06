@@ -2,10 +2,10 @@ package org.frogforce503.lib.auto;
 
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
-import org.frogforce503.lib.auto.trajectory.route.BaseRoute;
+import org.frogforce503.lib.auto.route.BaseRoute;
 import org.frogforce503.lib.commands.DriveToPose;
 import org.frogforce503.lib.commands.FollowPlannedPath;
+import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;

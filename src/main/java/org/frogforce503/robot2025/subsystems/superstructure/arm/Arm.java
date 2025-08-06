@@ -17,10 +17,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import lombok.Getter;
 
-import org.frogforce503.lib.control.TuningService;
-import org.frogforce503.lib.control.pidf.PIDFConfig;
-import org.frogforce503.lib.control.pidf.PIDFTuningService;
-import org.frogforce503.lib.control.speed.SpeedConstraintsTuningService;
+import org.frogforce503.lib.motorcontrol.tuning.TuningService;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
+import org.frogforce503.lib.motorcontrol.tuning.speed.SpeedConstraintsTuningService;
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
@@ -33,6 +33,7 @@ public class Arm extends FFSubsystemBase {
     // Constants
     private final Range range = Robot.bot.armConstants.range();
     private ArmFeedforward feedforward = Robot.bot.armConstants.kPIDF().toArmFeedforward();
+    private final double parallelToGroundAngle = 88.5;
 
     // Control
     private TrapezoidProfile profile;
@@ -143,12 +144,12 @@ public class Arm extends FFSubsystemBase {
 
             double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
 
-            io.runPosition(setpoint.position, feedforward.calculate(Math.toRadians(currentGoal.position - 88.5), setpoint.velocity, accel));
+            io.runPosition(setpoint.position, feedforward.calculate(Math.toRadians(currentGoal.position - parallelToGroundAngle), setpoint.velocity, accel));
 
             // Log state
-            Logger.recordOutput("Arm/Profile/SetpointPositionMeters", setpoint.position);
-            Logger.recordOutput("Arm/Profile/SetpointVelocityMetersPerSec", setpoint.velocity);
-            Logger.recordOutput("Arm/Profile/GoalPositionMeters", goalState.position);
+            Logger.recordOutput("Arm/Profile/SetpointPosition", setpoint.position);
+            Logger.recordOutput("Arm/Profile/SetpointVelocity", setpoint.velocity);
+            Logger.recordOutput("Arm/Profile/GoalPosition", goalState.position);
         }
 
         Logger.recordOutput("Arm/Goal", currentGoal.name());

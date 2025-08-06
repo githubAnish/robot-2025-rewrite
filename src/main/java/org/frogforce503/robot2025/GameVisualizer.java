@@ -168,5 +168,8 @@ public class GameVisualizer {
         }
     }
 
-    private record AlgaeInfo(Translation2d loc, SimHeights height, double rotDegrees) {}
+    private record AlgaeInfo(
+        Translation2d loc,
+        SimHeights height,
+        double rotDegrees) {}
 }

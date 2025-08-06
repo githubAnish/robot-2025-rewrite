@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.auto.test;
 
 import org.frogforce503.lib.auto.AutoMode;
-import org.frogforce503.lib.auto.trajectory.route.ChoreoRoute;
+import org.frogforce503.lib.auto.route.ChoreoRoute;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 

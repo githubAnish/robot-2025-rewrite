@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.auto.blue;
 
 import org.frogforce503.lib.auto.AutoMode;
-import org.frogforce503.lib.auto.trajectory.route.ChoreoRoute;
+import org.frogforce503.lib.auto.route.ChoreoRoute;
 import org.frogforce503.robot2025.commands.AutoIntakeCommands;
 import org.frogforce503.robot2025.commands.AutoScoreCommands;
 import org.frogforce503.robot2025.commands.coral_score_reef.Branch;
@@ -39,10 +39,9 @@ public class BlueBabyAuton extends AutoMode {
             .active()
             .onTrue(
                 Commands.sequence(
-                    setSuperstructureMode(superstructure, Mode.L4),
                     scoreH.cmd(),
                     autoScoreCommands
-                        .coralAutoScore(() -> Branch.RIGHT)
+                        .coralAutoScore(() -> Branch.RIGHT, () -> Mode.L4)
                         .withTimeout(4.5),
                     superstructure.ejectCoral(),
                     Commands.waitSeconds(0.5),

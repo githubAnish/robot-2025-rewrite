@@ -1,10 +1,10 @@
-package org.frogforce503.lib.auto.trajectory.route;
+package org.frogforce503.lib.auto.route;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
+import org.frogforce503.lib.planning.planned_path.PlannedPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 

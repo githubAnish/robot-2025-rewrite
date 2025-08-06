@@ -1,8 +1,8 @@
 package org.frogforce503.robot2025.subsystems.climber;
 
-import org.frogforce503.lib.control.TuningService;
-import org.frogforce503.lib.control.pidf.PIDFConfig;
-import org.frogforce503.lib.control.pidf.PIDFTuningService;
+import org.frogforce503.lib.motorcontrol.tuning.TuningService;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.Robot;

@@ -1,6 +1,6 @@
-package org.frogforce503.lib.control.pidf;
+package org.frogforce503.lib.motorcontrol.tuning.pidf;
 
-import org.frogforce503.lib.control.TuningService;
+import org.frogforce503.lib.motorcontrol.tuning.TuningService;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 
 public class PIDFTuningService implements TuningService<PIDFConfig> {

@@ -1,6 +1,6 @@
 package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
-import org.frogforce503.lib.motor.SparkUtil;
+import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
 
 import com.revrobotics.REVLibError;

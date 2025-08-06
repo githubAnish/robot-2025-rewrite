@@ -15,6 +15,7 @@ import org.frogforce503.robot2025.offsets.OffsetManager;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.leds.Leds;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
+import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
 import org.frogforce503.robot2025.subsystems.vision.Vision;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -69,7 +70,7 @@ public class AutoScoreCommands {
         this.autoDrivingEnabled = autoDrivingEnabled;
     }
 
-    public Command coralAutoScore(Supplier<Branch> branchSupplier) {
+    public Command coralAutoScore(Supplier<Branch> branchSupplier, Supplier<Mode> superstructureModeSupplier) {
         return
             Commands.deferredProxy(
                 () ->
@@ -80,19 +81,21 @@ public class AutoScoreCommands {
                         driverInputs.get(),
                         offsetManager,
                         proximityService,
+                        superstructureModeSupplier,
                         vision.getReefSpecializedPose(leds::usingGlobalPose),
                         branchSupplier,
                         prescoreBoundaryBuilder::insideBoundary,
                         autoDrivingEnabled));
     }
 
-    public Command coralAutoScore() {
+    public Command coralAutoScore(Supplier<Mode> superstructureModeSupplier) {
         return
             coralAutoScore(
-                superstructure::getCurrentBranch);
+                superstructure::getCurrentBranch,
+                superstructureModeSupplier);
     }
 
-    public Command coralAutoScoreL1() {
+    public Command coralAutoScoreL1(Supplier<Mode> superstructureModeSupplier) {
         return
             Commands.deferredProxy(
                 () ->
@@ -102,6 +105,7 @@ public class AutoScoreCommands {
                         superstructure,
                         driverInputs.get(),
                         proximityService,
+                        superstructureModeSupplier,
                         vision.getReefSpecializedPose(leds::usingGlobalPose),
                         proximityService::getClosestReefSide,
                         prescoreBoundaryBuilder::insideBoundary,

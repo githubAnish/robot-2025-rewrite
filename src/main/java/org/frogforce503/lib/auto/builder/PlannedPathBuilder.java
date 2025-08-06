@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
-import org.frogforce503.lib.auto.trajectory.path.Waypoint;
+import org.frogforce503.lib.planning.planned_path.PlannedPath;
+import org.frogforce503.lib.planning.planned_path.Waypoint;
 import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.robot2025.Robot;
 

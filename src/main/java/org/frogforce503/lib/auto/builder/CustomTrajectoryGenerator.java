@@ -12,10 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
-import org.frogforce503.lib.auto.trajectory.path.PlannedPath;
-import org.frogforce503.lib.auto.trajectory.path.RotationSequence;
-import org.frogforce503.lib.auto.trajectory.path.Waypoint;
+import org.frogforce503.lib.planning.planned_path.PlannedPath;
+import org.frogforce503.lib.planning.planned_path.RotationSequence;
+import org.frogforce503.lib.planning.planned_path.Waypoint;
 
 /** Generator for creating a drive trajectory and rotation sequence from a series of waypoints. */
 public class CustomTrajectoryGenerator {
@@ -54,11 +55,11 @@ public class CustomTrajectoryGenerator {
 
         // Generate drive waypoints
         List<Translation2d> driveTranslations =
-            waypoints.stream().map(waypoint -> waypoint.getTranslation()).toList();
+            waypoints.stream().map(waypoint -> waypoint.getTranslation()).collect(Collectors.toList());
         List<Optional<Rotation2d>> driveRotations =
             waypoints.stream()
                 .map(waypoint -> waypoint.getDriveRotation())
-                .toList();
+                .collect(Collectors.toList());
         driveRotations.remove(0);
         driveRotations.remove(driveRotations.size() - 1);
 
