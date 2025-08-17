@@ -21,6 +21,7 @@ import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist.WristGoa
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -62,8 +63,8 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
         this.intake = intake;
         this.coralSensorIO = coralSensorIO;
 
-        this.measuredVisualizer = new SuperstructureVisualizer("Measured", claw, robotPoseSupplier);
-        this.setpointVisualizer = new SuperstructureVisualizer("Setpoint", claw, robotPoseSupplier);
+        this.measuredVisualizer = new SuperstructureVisualizer("Measured", this, robotPoseSupplier);
+        this.setpointVisualizer = new SuperstructureVisualizer("Setpoint", this, robotPoseSupplier);
     }
 
     @Override
@@ -81,7 +82,7 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
         setpointVisualizer.updateOnlyIfInSimulation(
             elevator.getSetpoint().position,
             arm.getSetpoint().position,
-            wrist.getSetpoint(),
+            wrist.getCurrentGoal().position,
             intake.getSetpoint().position);
 
         Logger.recordOutput("Superstructure/Brake Mode Enabled", brakeModeEnabled);
@@ -114,7 +115,8 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
     }
 
     public void seedWristPosition() {
-        if (MathUtils.inRange(arm.getPosition(), 0, 30) &&
+        if (RobotBase.isReal() &&
+            MathUtils.inRange(arm.getPosition(), 0, 30) &&
             MathUtils.inRange(wrist.getAbsolutePosition(), 0, 180)
         ) {
             wrist.setEncoderPosition(
@@ -331,7 +333,8 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
     public Command intakeAlgaeFromGround() {
         return
             Commands.sequence(
-                intake.runGoal(IntakeGoal.INTAKE_ALGAE_FROM_GROUND)
+                intake.runGoal(IntakeGoal.INTAKE_ALGAE_FROM_GROUND),
+                Commands.runOnce(() -> hasAlgaeInIntake = true)
             )
             .onlyIf(() -> !hasAlgaeInIntake);
     }
@@ -353,7 +356,9 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
                     arm.runGoal(ArmGoal.HANDOFF),
                     wrist.runGoal(WristGoal.HANDOFF),
                     claw.runGoal(ClawGoal.INTAKE_ALGAE)
-                )
+                ),
+                Commands.waitUntil(intake::algaeCurrentThresholdForHoldMet),
+                Commands.runOnce(() -> hasAlgaeInIntake = true)
             );
     }
 
@@ -362,6 +367,7 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
         return
             Commands.sequence(
                 intake.runGoal(IntakeGoal.HANDOFF_RELEASE),
+                Commands.runOnce(() -> hasAlgaeInIntake = false),
                 Commands.parallel(
                     arm.runGoal(ArmGoal.HANDOFF_RELEASE),
                     wrist.runGoal(WristGoal.HANDOFF_RELEASE)

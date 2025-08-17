@@ -17,7 +17,6 @@ import edu.wpi.first.math.trajectory.TrajectoryParameterizer.TrajectoryGeneratio
 /** Wrapper class for the {@link CustomTrajectoryGenerator}. */
 public class PlannedPathBuilder {
     private final SwerveDriveKinematics kinematics;
-
     private final CustomTrajectoryGenerator trajectoryGenerator;
 
     public PlannedPathBuilder() {

@@ -1,7 +1,6 @@
 package org.frogforce503.robot2025.commands.superstructure_selection;
 
 import java.util.HashMap;
-import java.util.function.Supplier;
 
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
@@ -9,7 +8,7 @@ import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 
 public class SuperstructurePreScore extends SelectCommand<Mode> {
-    public SuperstructurePreScore(Superstructure superstructure, Supplier<Mode> modeSupplier) {
+    public SuperstructurePreScore(Superstructure superstructure) {
         super(
             new HashMap<>() {{
                 // Coral
@@ -18,6 +17,6 @@ public class SuperstructurePreScore extends SelectCommand<Mode> {
                 put(Mode.L3, superstructure.preScoreL3());
                 put(Mode.L4, superstructure.preScoreL4());
             }},
-            modeSupplier);
+            superstructure::getCurrentMode);
     }
 }

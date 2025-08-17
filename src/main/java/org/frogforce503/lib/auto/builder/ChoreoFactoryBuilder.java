@@ -6,13 +6,12 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
+import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
 public class ChoreoFactoryBuilder {
     private final Drive drive;
-
-    private final boolean useAllianceFlipping = false;
 
     public ChoreoFactoryBuilder(Drive drive) {
         this.drive = drive;
@@ -29,7 +28,7 @@ public class ChoreoFactoryBuilder {
                         Robot.bot.autoPIDController.autoXController(),
                         Robot.bot.autoPIDController.autoYController(),
                         Robot.bot.autoPIDController.autoThetaController()),
-                useAllianceFlipping,
+                Constants.useAllianceFlipping,
                 drive);
     }
     

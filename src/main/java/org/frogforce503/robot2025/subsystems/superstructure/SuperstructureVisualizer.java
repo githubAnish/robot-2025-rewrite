@@ -2,8 +2,6 @@ package org.frogforce503.robot2025.subsystems.superstructure;
 
 import java.util.function.Supplier;
 
-import org.frogforce503.robot2025.subsystems.superstructure.claw.Claw;
-import org.frogforce503.robot2025.subsystems.superstructure.claw.Claw.ClawGoal;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -16,27 +14,25 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public class SuperstructureVisualizer {
-    private final Claw claw;
-    private final Supplier<Pose2d> robotPoseSupplier;
-    
     private final String name;
+    private final Superstructure superstructure;
+    private final Supplier<Pose2d> robotPoseSupplier;
 
     private Pose3d armPose, intakePose, movingStagePose, gearboxPose;
 
     private final Translation3d armPos = new Translation3d(0, 0.00, 1);
     private final Translation3d intakePos = new Translation3d(0.305, 0, .23);
 
-    private LoggedNetworkBoolean simulationHasAlgae;
-    private LoggedNetworkBoolean simulationHasCoral;
+    private LoggedNetworkBoolean hasAlgaeInClaw;
+    private LoggedNetworkBoolean hasCoral;
     
-    public SuperstructureVisualizer(String name, Claw claw, Supplier<Pose2d> robotPoseSupplier) {
-        this.claw = claw;
+    public SuperstructureVisualizer(String name, Superstructure superstructure, Supplier<Pose2d> robotPoseSupplier) {
+        this.name = name;
+        this.superstructure = superstructure;
         this.robotPoseSupplier = robotPoseSupplier;
 
-        this.name = name;
-
-        simulationHasAlgae = new LoggedNetworkBoolean("Simulation/" + name + "/Simulation Has Algae");
-        simulationHasCoral = new LoggedNetworkBoolean("Simulation/" + name + "/Simulation Has Coral");
+        hasAlgaeInClaw = new LoggedNetworkBoolean("Simulation/" + name + "/Simulation Has Algae");
+        hasCoral = new LoggedNetworkBoolean("Simulation/" + name + "/Simulation Has Coral");
         
         armPose = new Pose3d();
         intakePose = new Pose3d();
@@ -88,9 +84,10 @@ public class SuperstructureVisualizer {
         Logger.recordOutput("Simulation/" + name + "/Mechanism", armPose, clawPose, intakePose, stagePose, gearboxPose);
 
         // Gamepiece Held
-        handleClawGoalLogic(claw::getCurrentGoal);
+        hasCoral.set(superstructure.isHasCoral());
+        hasAlgaeInClaw.set(superstructure.isHasAlgaeInClaw());
 
-        if (simulationHasAlgae.get()) {
+        if (hasAlgaeInClaw.get()) {
             Pose3d heldAlgaePose =
                 drivePose3d
                     .transformBy(
@@ -105,7 +102,7 @@ public class SuperstructureVisualizer {
             Logger.recordOutput("Simulation/" + name + "/HeldAlgae", heldAlgaePose);
         }
 
-        if (simulationHasCoral.get()) {
+        if (hasCoral.get()) {
             Pose3d heldCoralPose =
                 drivePose3d
                     .transformBy(
@@ -118,15 +115,6 @@ public class SuperstructureVisualizer {
     }
 
     public void setupAuto() {
-        simulationHasCoral.set(true);
-    }
-
-    private void handleClawGoalLogic(Supplier<ClawGoal> goalSupplier) {
-        switch (goalSupplier.get()) {
-            case INTAKE_CORAL -> simulationHasCoral.set(true);
-            case EJECT_CORAL -> simulationHasCoral.set(false);
-            case EJECT_ALGAE -> simulationHasAlgae.set(false);
-            default -> {}
-        }
+        hasCoral.set(true);
     }
 }

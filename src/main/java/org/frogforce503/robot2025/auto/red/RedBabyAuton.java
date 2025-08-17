@@ -29,7 +29,7 @@ public class RedBabyAuton extends AutoMode {
         AutoIntakeCommands autoIntakeCommands,
         AutoScoreCommands autoScoreCommands
     ) {
-        super(drive, field);
+        super(drive, field, superstructure);
 
         routine = autoFactory.newRoutine("Routine");
         scoreH = routine.trajectory("Red-Baby-Score_H");
@@ -55,7 +55,7 @@ public class RedBabyAuton extends AutoMode {
                                 .home()
                                 .withTimeout(0.5)),
                     Commands.runOnce(drive::stop),
-                    setSuperstructureMode(superstructure, Mode.CORAL_INTAKE)
+                    setSuperstructureMode(() -> Mode.CORAL_INTAKE)
             ));
     }
 

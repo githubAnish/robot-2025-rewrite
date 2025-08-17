@@ -110,6 +110,9 @@ public class RobotContainer implements UnitTest {
     // Controllers
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController operator = new CommandXboxController(1);
+    private final Supplier<Trigger> driverLeftPaddle = driver::leftStick;
+    private final Supplier<Trigger> driverRightPaddle = driver::rightStick;
+    
     private final Supplier<JoystickInputs> driverInputs = () -> new JoystickInputs(driver);
 
     // Triggers
@@ -303,19 +306,19 @@ public class RobotContainer implements UnitTest {
             // Coral
             put(Mode.L1,
                 autoScoreCommands
-                    .coralAutoScoreL1(() -> Mode.L1)
+                    .coralAutoScoreL1()
                     .alongWith(leds.scoreCoral()));
             put(Mode.L2,
                 autoScoreCommands
-                    .coralAutoScore(() -> Mode.L2)
+                    .coralAutoScore()
                     .alongWith(leds.scoreCoral()));
             put(Mode.L3,
                 autoScoreCommands
-                    .coralAutoScore(() -> Mode.L3)
+                    .coralAutoScore()
                     .alongWith(leds.scoreCoral()));
             put(Mode.L4,
                 autoScoreCommands
-                    .coralAutoScore(() -> Mode.L4)
+                    .coralAutoScore()
                     .alongWith(leds.scoreCoral()));
 
             // Algae
@@ -388,15 +391,10 @@ public class RobotContainer implements UnitTest {
         coralMode.onTrue(Commands.runOnce(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)));
         algaeMode.onTrue(Commands.runOnce(() -> superstructure.setCurrentMode(Mode.ALGAE_GROUND)));
 
-        // Driver Toggles / Overrides
-        BiConsumer<Trigger, Runnable> bindDriverSwitches =
+        BiConsumer<Trigger, Runnable> bindSwitches =
             (trigger, runnable) ->
                 trigger
                     .onTrue(Commands.runOnce(runnable));
-
-        bindDriverSwitches.accept(driver.povUp(), drive::resetRotation);
-        bindDriverSwitches.accept(driver.back(), drive::toggleSlowMode);
-        bindDriverSwitches.accept(driver.start(), drive::toggleRobotRelative);
 
         // Joystick drive command
         Supplier<Command> joystickDriveCommandFactory =
@@ -415,51 +413,46 @@ public class RobotContainer implements UnitTest {
                 .whileTrue(score())
                 .whileFalse(releaseScore());
 
-        bindDriverSwitches.accept(driver.leftBumper(), () -> superstructure.setCurrentBranch(Branch.LEFT));
-        bindDriverSwitches.accept(driver.rightBumper(), () -> superstructure.setCurrentBranch(Branch.RIGHT));
+        bindSwitches.accept(driver.leftBumper(), () -> superstructure.setCurrentBranch(Branch.LEFT));
+        bindSwitches.accept(driver.rightBumper(), () -> superstructure.setCurrentBranch(Branch.RIGHT));
 
         // Preset Selection
-        operator
-            .start()
-            .onTrue(Commands.runOnce(superstructure::setPiece));
-
-        BiConsumer<Trigger, Mode> bindOperatorCoralSelection =
-            (trigger, mode) ->
+        TriConsumer<Trigger, Gamepiece, Mode> bindSelection =
+            (trigger, gamepiece, mode) ->
                 trigger
-                    .and(coralMode)
                     .onTrue(
-                        Commands.runOnce(() -> superstructure.setCurrentMode(mode)));
+                        Commands.sequence(
+                            Commands.runOnce(() -> superstructure.setCurrentPiece(gamepiece)),
+                            Commands.runOnce(() -> superstructure.setCurrentMode(mode))));
 
-        bindOperatorCoralSelection.accept(operator.y(), Mode.L1);
-        bindOperatorCoralSelection.accept(operator.b(), Mode.L2);
-        bindOperatorCoralSelection.accept(operator.a(), Mode.L3);
-        bindOperatorCoralSelection.accept(operator.x(), Mode.L4);
+        bindSelection.accept(driver.y(), Gamepiece.CORAL, Mode.L1);
+        bindSelection.accept(driver.b(), Gamepiece.CORAL, Mode.L2);
+        bindSelection.accept(driver.a(), Gamepiece.CORAL, Mode.L3);
+        bindSelection.accept(driver.x(), Gamepiece.CORAL, Mode.L4);
 
-        BiConsumer<Trigger, Mode> bindOperatorAlgaeSelection =
-            (trigger, mode) ->
-                trigger
-                    .and(algaeMode)
-                    .onTrue(
-                        Commands.runOnce(() -> superstructure.setCurrentMode(mode)));
+        bindSelection.accept(driver.povUp(), Gamepiece.ALGAE, Mode.ALGAE_PLUCK_HIGH);
+        bindSelection.accept(driver.povDown(), Gamepiece.ALGAE, Mode.ALGAE_PLUCK_LOW);
+        bindSelection.accept(driver.povLeft(), Gamepiece.ALGAE, Mode.PROCESSOR);
+        bindSelection.accept(driver.povRight(), Gamepiece.ALGAE, Mode.BARGE);
 
-        bindOperatorAlgaeSelection.accept(operator.y(), Mode.ALGAE_PLUCK_HIGH);
-        bindOperatorAlgaeSelection.accept(operator.a(), Mode.ALGAE_PLUCK_LOW);
-        bindOperatorAlgaeSelection.accept(operator.povUp(), Mode.ALGAE_GROUND);
-        bindOperatorAlgaeSelection.accept(operator.povDown(), Mode.ALGAE_HANDOFF);
-        bindOperatorAlgaeSelection.accept(operator.povLeft(), Mode.PROCESSOR);
-        bindOperatorAlgaeSelection.accept(operator.povRight(), Mode.BARGE);
+        bindSelection.accept(operator.y(), Gamepiece.ALGAE, Mode.ALGAE_GROUND);
+        bindSelection.accept(operator.a(), Gamepiece.ALGAE, Mode.ALGAE_HANDOFF);
 
-        BiConsumer<Trigger, Command> bindOperatorClimbing =
+        BiConsumer<Trigger, Command> bindClimbing =
             (trigger, command) ->
                 trigger
                     .whileTrue(command)
                     .whileFalse(superstructure.stop().alongWith(climber.stop()));
 
-        bindOperatorClimbing.accept(operator.leftBumper(), superstructure.setPivotDown());
-        bindOperatorClimbing.accept(operator.rightBumper(), superstructure.bringPivotUp());
-        bindOperatorClimbing.accept(operator.rightTrigger(), climber.runGoal(ClimberGoal.FAST_WIND));
+        bindClimbing.accept(driverLeftPaddle.get(), superstructure.setPivotDown());
+        bindClimbing.accept(driverRightPaddle.get(), superstructure.bringPivotUp());
+        bindClimbing.accept(operator.b(), climber.runGoal(ClimberGoal.FAST_WIND));
 
-        // Overrides
+        // Toggles / Overrides
+        bindSwitches.accept(driver.back(), drive::toggleSlowMode);
+        bindSwitches.accept(driver.start(), drive::toggleRobotRelative);
+        bindSwitches.accept(operator.povUp(), drive::resetRotation);
+
         operator
             .leftTrigger()
             .onTrue(Commands.runOnce(this::seedWristPosition));
@@ -467,29 +460,6 @@ public class RobotContainer implements UnitTest {
         operator
             .back()
             .onTrue(Commands.runOnce(superstructure::toggleManualControl));
-
-        Function<Double, Double> limiter =
-            input ->
-                MathUtil.clamp(
-                    MathUtil.applyDeadband(input, 0.2), -1.0, 1.0);
-
-        TriConsumer<DoubleSupplier, DoubleSupplier, DoubleSupplier> bindOperatorManualControl =
-            (elevatorPercent, armPercent, wristPercent) ->
-                manualControlEnabled.whileTrue(
-                    Commands.parallel(
-                        superstructure.manualElevatorControl(
-                            limiter.apply(elevatorPercent.getAsDouble())),
-
-                        superstructure.manualArmControl(
-                            limiter.apply(armPercent.getAsDouble())),
-                                
-                        superstructure.manualWristControl(
-                            limiter.apply(wristPercent.getAsDouble()))));
-
-        bindOperatorManualControl.accept(
-            operator::getLeftY,
-            operator::getRightY,
-            operator::getRightTriggerAxis);
 
         // Coast superstructure only if the robot is disabled, manual control is enabled, and specified button is true
         BiConsumer<Trigger, BooleanConsumer> bindSuperstructureCoast =
@@ -506,15 +476,39 @@ public class RobotContainer implements UnitTest {
                                 .ignoringDisable(true));
 
         bindSuperstructureCoast.accept(operator.start(), superstructure::setBrakeMode);
+
+        Function<Double, Double> limiter =
+            input ->
+                MathUtil.clamp(
+                    MathUtil.applyDeadband(input, 0.2), -1.0, 1.0);
+
+        TriConsumer<DoubleSupplier, DoubleSupplier, DoubleSupplier> bindManualControl =
+            (elevatorPercent, armPercent, wristPercent) ->
+                manualControlEnabled
+                    .whileTrue(
+                        Commands.parallel(
+                            superstructure.manualElevatorControl(
+                                limiter.apply(elevatorPercent.getAsDouble())),
+
+                            superstructure.manualArmControl(
+                                limiter.apply(armPercent.getAsDouble())),
+                                    
+                            superstructure.manualWristControl(
+                                limiter.apply(wristPercent.getAsDouble()))));
+
+        bindManualControl.accept(
+            operator::getLeftY,
+            operator::getRightY,
+            operator::getRightTriggerAxis);
         
         // Leds
         BiConsumer<Trigger, Command> gotPiece =
             (trigger, command) ->
                 trigger
                     .onTrue(
-                        command
-                            .alongWith(
-                                new RumbleCommand(driver)));
+                        Commands.parallel(
+                            command,
+                            new RumbleCommand(driver)));
 
         Trigger gotCoral = new Trigger(superstructure::isHasCoral);
         Trigger gotAlgaeInClaw = new Trigger(superstructure::isHasAlgaeInClaw);
@@ -589,10 +583,6 @@ public class RobotContainer implements UnitTest {
 
     @Override
     public void test() {
-        RobotModeTriggers
-            .teleop()
-            .onTrue(
-                Commands.none()
-            );
+        
     }
 }

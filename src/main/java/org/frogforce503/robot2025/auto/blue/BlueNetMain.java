@@ -37,7 +37,7 @@
 //         AutoIntakeCommands autoIntakeCommands,
 //         AutoScoreCommands autoScoreCommands
 //     ) {
-//         super(drive, field);
+//         super(drive, field, superstructure);
         
 //         routine = autoFactory.newRoutine("Routine");
 //         scoreJ = routine.trajectory( "Blue-Net-Score_J");

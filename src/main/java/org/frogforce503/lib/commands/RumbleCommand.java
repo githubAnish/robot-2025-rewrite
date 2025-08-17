@@ -14,6 +14,8 @@ public class RumbleCommand extends StartEndCommand {
     }
 
     public RumbleCommand(CommandXboxController joystick) {
-        this(joystick, new Range(0.0, 1.0));
+        this(
+            joystick,
+            new Range(0.0, 1.0));
     }
 }

@@ -46,7 +46,7 @@ public class RobotHardwareCompBot extends RobotHardware {
                 .armInverted(false)
                 .armOffset(0.893)
                 .kPIDF(new PIDFConfig(0.014, 0.0, 0.1, new ArmFeedforward(0.0, 0.75, 0.0, 0.0)))
-                .kConstraints(new Constraints(1.0, 1.0))
+                .kConstraints(new Constraints(1000, 500))
                 .range(new Range(0.0, 180.0))
                 .build();
         
@@ -86,7 +86,7 @@ public class RobotHardwareCompBot extends RobotHardware {
                         .pivotInverted(false)
                         .pivotOffset(0.4)
                         .kPIDF(new PIDFConfig(0.01, 0.0, 0.0, new ArmFeedforward(0.0, 0.75, 0.0, 0.0)))
-                        .kConstraints(new Constraints(1.0, 1.0))
+                        .kConstraints(new Constraints(1000, 500))
                         .range(new Range(35, 193))
                         .build())
                 .rollerConstants(

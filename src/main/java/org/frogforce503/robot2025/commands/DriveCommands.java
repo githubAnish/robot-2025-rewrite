@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.math.GeomUtil;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
@@ -14,37 +15,38 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class DriveCommands {
-    public static final double DEADBAND = 0.2;
+    public static final double kDeadband = 0.2;
 
-    private static final double ANGLE_KP = 5.0;
-    private static final double ANGLE_KD = 0.4;
-    private static final double ANGLE_MAX_VELOCITY = 8.0;
-    private static final double ANGLE_MAX_ACCELERATION = 20.0;
-    private static final double SNAP_TO_ANGLE_TOLERANCE = 3.0; // Degrees
+    private static final PIDFConfig thetaPID = new PIDFConfig(5.0, 0.0, 0.4);
+    private static final Constraints thetaConstraints = new Constraints(8.0, 20.0);
+
+    private static final double snapToAngleTolerance = 3.0; // Degrees
 
     private DriveCommands() {}
 
     public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
         // Apply deadband
-        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
+        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), kDeadband);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
         // Square magnitude for more precise control
         linearMagnitude = Math.pow(linearMagnitude, 2);
 
         // Return new linear velocity
-        return GeomUtil.toPose2d(linearDirection)
-            .transformBy(GeomUtil.toTransform2d(linearMagnitude, 0.0))
-            .getTranslation();
+        return
+            GeomUtil
+                .toPose2d(linearDirection)
+                .transformBy(GeomUtil.toTransform2d(linearMagnitude, 0.0))
+                .getTranslation();
     }
 
     public static double getOmegaFromJoysticks(double driverOmega) {
-        double omega = MathUtil.applyDeadband(driverOmega, DEADBAND);
+        double omega = MathUtil.applyDeadband(driverOmega, kDeadband);
         return omega * omega * Math.signum(omega);
     }
 
@@ -73,9 +75,7 @@ public class DriveCommands {
             double maxOmega =
                 slowModeEnabled.getAsBoolean()
                     ? DriveConstants.SLOW_ROTATION_RADIANS_PER_SECOND
-                    : (inputs.fastSpinEnabled().getAsBoolean()
-                        ? DriveConstants.SUPER_FAST_ROTATION_RADIANS_PER_SECOND
-                        : DriveConstants.FAST_ROTATION_RADIANS_PER_SECOND);
+                    : DriveConstants.FAST_ROTATION_RADIANS_PER_SECOND;
 
             ChassisSpeeds speeds =
                 new ChassisSpeeds(
@@ -103,10 +103,10 @@ public class DriveCommands {
         // Create PID controller
         ProfiledPIDController angleController =
             new ProfiledPIDController(
-                ANGLE_KP,
-                0.0,
-                ANGLE_KD,
-                new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+                thetaPID.kP(),
+                thetaPID.kI(),
+                thetaPID.kD(),
+                thetaConstraints);
 
         angleController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -147,6 +147,6 @@ public class DriveCommands {
             joystickDriveAtAngle(drive, field, JoystickInputs.kZero, rotationSupplier)
             .until(
                 () ->
-                    Math.abs(drive.getAngle().minus(rotationSupplier.get()).getDegrees()) < SNAP_TO_ANGLE_TOLERANCE);
+                    Math.abs(drive.getAngle().minus(rotationSupplier.get()).getDegrees()) < snapToAngleTolerance);
     }
 }

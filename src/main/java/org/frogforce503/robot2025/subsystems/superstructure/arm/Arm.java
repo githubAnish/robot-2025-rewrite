@@ -89,7 +89,7 @@ public class Arm extends FFSubsystemBase {
 
         BARGE(0);
         
-        private double position;
+        public double position;
 
         private ArmGoal(double position) {
             this.position = position;
@@ -103,7 +103,7 @@ public class Arm extends FFSubsystemBase {
 
         profile =
             new TrapezoidProfile(
-                    Robot.bot.armConstants.kConstraints());
+                Robot.bot.armConstants.kConstraints());
     }
 
     @Override
@@ -182,7 +182,7 @@ public class Arm extends FFSubsystemBase {
 
                 profile =
                     new TrapezoidProfile(
-                        new TrapezoidProfile.Constraints(
+                        new Constraints(
                             newSpeedConfig.maxVelocity,
                             newSpeedConfig.maxAcceleration));
             }

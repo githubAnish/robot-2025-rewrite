@@ -4,6 +4,7 @@ import org.frogforce503.lib.auto.AutoMode;
 import org.frogforce503.lib.auto.route.ChoreoRoute;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
+import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
@@ -15,8 +16,8 @@ public class ChoreoDummyAuto extends AutoMode {
     private final AutoRoutine routine;
     private final AutoTrajectory trajectory;
 
-    public ChoreoDummyAuto(Drive drive, FieldInfo field, AutoFactory factory) {
-        super(drive, field);
+    public ChoreoDummyAuto(Drive drive, FieldInfo field, Superstructure superstructure, AutoFactory factory) {
+        super(drive, field, superstructure);
 
         this.routine = factory.newRoutine("Routine");
 

@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.frogforce503.robot2025.Constants;
+
 import choreo.auto.AutoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 
@@ -25,7 +27,7 @@ public class ChoreoRoute extends BaseRoute<AutoTrajectory> {
         return
             getFirstPath()
                 .getRawTrajectory()
-                .getInitialPose(false)
+                .getInitialPose(Constants.useAllianceFlipping)
                 .orElseGet(Pose2d::new);
     }
 
@@ -36,7 +38,10 @@ public class ChoreoRoute extends BaseRoute<AutoTrajectory> {
                 .stream()
                 .flatMap(
                     traj ->
-                        Arrays.stream(traj.getRawTrajectory().getPoses()))
+                        Arrays.stream(
+                            traj
+                                .getRawTrajectory()
+                                .getPoses()))
                 .collect(Collectors.toList());
     }
 }

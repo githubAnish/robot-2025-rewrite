@@ -9,6 +9,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -90,12 +91,20 @@ public class Claw extends FFSubsystemBase {
     }
 
     public boolean coralCurrentThresholdForIntookMet() {
+        if (RobotBase.isSimulation()) {
+            return true;
+        }
+
         return coralFilter.calculate(
             inputs.leftMotorData.statorCurrentAmps() > 10 ||
             inputs.rightMotorData.statorCurrentAmps() > 10);
     }
 
     public boolean algaeCurrentThresholdForHoldMet() {
+        if (RobotBase.isSimulation()) {
+            return true;
+        }
+
         return algaeFilter.calculate(
             inputs.leftMotorData.statorCurrentAmps() > 15 ||
             inputs.rightMotorData.statorCurrentAmps() > 15);

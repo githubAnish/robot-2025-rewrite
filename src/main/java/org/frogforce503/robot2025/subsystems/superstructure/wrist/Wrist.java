@@ -78,7 +78,7 @@ public class Wrist extends FFSubsystemBase {
 
         NET_RELEASE(230);
         
-        private double position;
+        public double position;
 
         private WristGoal(double position) {
             this.position = position;
@@ -131,10 +131,6 @@ public class Wrist extends FFSubsystemBase {
 
     public double getPosition() {
         return inputs.data.relativePosition();
-    }
-
-    public double getSetpoint() {
-        return currentGoal.position;
     }
 
     public double getAbsolutePosition() {

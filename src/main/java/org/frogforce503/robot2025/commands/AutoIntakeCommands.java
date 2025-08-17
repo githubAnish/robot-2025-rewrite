@@ -64,7 +64,7 @@ public class AutoIntakeCommands {
 
     public Command coralAutoIntake() {
         return
-            Commands.deferredProxy(() -> new DriveToClosestStation(drive, field, proximityService))
+            Commands.deferredProxy(() -> new DriveToClosestStation(drive, field, proximityService, driverInputs.get()))
                 .onlyIf(autoDrivingEnabled)
                 .alongWith(superstructure.intakeCoral());
     }

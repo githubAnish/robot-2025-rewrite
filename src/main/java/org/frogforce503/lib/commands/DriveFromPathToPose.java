@@ -57,7 +57,7 @@ public class DriveFromPathToPose extends Command {
             0.0,
             0.0,
             0.0,
-            new TrapezoidProfile.Constraints(0.0, 0.0));
+            new Constraints(0.0, 0.0));
 
     private Supplier<Translation2d> linearFF = () -> Translation2d.kZero;
     private DoubleSupplier omegaFF = () -> 0.0;

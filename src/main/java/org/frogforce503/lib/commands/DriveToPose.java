@@ -44,14 +44,14 @@ public class DriveToPose extends Command {
             0.0,
             0.0,
             0.0,
-            new TrapezoidProfile.Constraints(0.0, 0.0));
+            new Constraints(0.0, 0.0));
             
     private final ProfiledPIDController thetaController =
         new ProfiledPIDController(
             0.0,
             0.0,
             0.0,
-            new TrapezoidProfile.Constraints(0.0, 0.0));
+            new Constraints(0.0, 0.0));
 
     private Translation2d lastSetpointTranslation;
 

@@ -271,7 +271,7 @@ public class AutoChooser {
 
     /** Warms up the auto chooser by running a test Choreo path for 5 seconds on robotInit. */
     public void scheduleWarmupCommand() {
-        new ChoreoWarmupAuto(drive, field, autoFactory)
+        new ChoreoWarmupAuto(drive, field, superstructure, autoFactory)
             .routine()
                 .withTimeout(5)
                 .andThen(new PrintCommand("Warmup Auto Finished"))

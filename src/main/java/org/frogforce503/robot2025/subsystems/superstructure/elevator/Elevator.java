@@ -88,7 +88,7 @@ public class Elevator extends FFSubsystemBase {
 
         SWITCH_MODE(20);
         
-        private double position;
+        public double position;
 
         private ElevatorGoal(double position) {
             this.position = position;
@@ -103,7 +103,7 @@ public class Elevator extends FFSubsystemBase {
 
         profile =
             new TrapezoidProfile(
-                    Robot.bot.elevatorConstants.kConstraints());
+                Robot.bot.elevatorConstants.kConstraints());
     }
 
     @Override
@@ -190,7 +190,7 @@ public class Elevator extends FFSubsystemBase {
 
                 profile =
                     new TrapezoidProfile(
-                        new TrapezoidProfile.Constraints(
+                        new Constraints(
                             newSpeedConfig.maxVelocity,
                             newSpeedConfig.maxAcceleration));
             }

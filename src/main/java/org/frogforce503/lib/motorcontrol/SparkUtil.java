@@ -14,8 +14,8 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 
 /** Helper class for Spark IO implementations */
 public final class SparkUtil {
-    public static final int DEFAULT_CURRENT_LIMIT = 80;
-    private static final int THROUGH_BORE_ENCODER_COUNTS = 8192;
+    public static final int kDefaultCurrentLimit = 80;
+    public static final int kThroughBoreEncoderCounts = 8192;
 
     private SparkUtil() {}
 
@@ -45,7 +45,7 @@ public final class SparkUtil {
     }
 
     /** Optimizes motor signals to limit unnecessary data over CAN. */
-    public static SignalsConfig withOptimizedSignals() {
+    public static SignalsConfig signalsOptimized() {
         return
             new SignalsConfig()
                 .analogPositionAlwaysOn(false)

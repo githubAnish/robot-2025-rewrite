@@ -18,6 +18,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -182,6 +183,10 @@ public class Intake extends FFSubsystemBase {
     }
 
     public boolean algaeCurrentThresholdForHoldMet() {
+        if (RobotBase.isSimulation()) {
+            return true;
+        }
+
         return algaeFilter.calculate(
             rollerInputs.data.statorCurrentAmps() > 15);
     }
@@ -209,7 +214,7 @@ public class Intake extends FFSubsystemBase {
 
                 profile =
                     new TrapezoidProfile(
-                        new TrapezoidProfile.Constraints(
+                        new Constraints(
                             newSpeedConfig.maxVelocity,
                             newSpeedConfig.maxAcceleration));
             }

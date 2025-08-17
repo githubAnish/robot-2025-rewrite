@@ -20,12 +20,14 @@ import lombok.Getter;
 public abstract class AutoMode {
     private final Drive drive;
     private final FieldInfo field;
+    private final Superstructure superstructure;
 
     @Getter private final String name;
 
-    public AutoMode(Drive drive, FieldInfo field) {
+    public AutoMode(Drive drive, FieldInfo field, Superstructure superstructure) {
         this.drive = drive;
         this.field = field;
+        this.superstructure = superstructure;
 
         this.name = this.getClass().getSimpleName();
     }
@@ -55,9 +57,9 @@ public abstract class AutoMode {
         return new FollowPlannedPath(drive, field, path);
     }
 
-    public Command setSuperstructureMode(Superstructure superstructure, Mode mode) {
+    public Command setSuperstructureMode(Supplier<Mode> superstructureModeSupplier) {
         return
-            Commands.runOnce(() -> superstructure.setCurrentMode(mode))
+            Commands.runOnce(() -> superstructure.setCurrentMode(superstructureModeSupplier.get()))
                 .ignoringDisable(true);
     }
 }

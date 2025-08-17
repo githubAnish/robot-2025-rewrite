@@ -7,6 +7,7 @@ import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.lib.planning.planned_path.Waypoint;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
+import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -17,8 +18,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class PlannedPathDummyAuto extends AutoMode {
     private final PlannedPath trajectory;
 
-    public PlannedPathDummyAuto(Drive drive, FieldInfo field) {
-        super(drive, field);
+    public PlannedPathDummyAuto(Drive drive, FieldInfo field, Superstructure superstructure) {
+        super(drive, field, superstructure);
         
         PlannedPathBuilder pathBuilder = new PlannedPathBuilder();
 

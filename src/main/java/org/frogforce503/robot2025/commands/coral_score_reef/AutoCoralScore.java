@@ -13,7 +13,6 @@ import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.offsets.OffsetManager;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
-import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotState;
@@ -36,7 +35,6 @@ public class AutoCoralScore extends ParallelCommandGroup {
         FieldInfo field,
         Superstructure superstructure,
         JoystickInputs inputs,
-        Supplier<Mode> superstructureModeSupplier,
         Supplier<Pose2d> robotPose,
         Supplier<Pose2d> target,
         BooleanSupplier insideBoundary,
@@ -44,8 +42,8 @@ public class AutoCoralScore extends ParallelCommandGroup {
     ) {
         super(
             Commands.either(
-                new SuperstructureScore(superstructure, superstructureModeSupplier),
-                new SuperstructurePreScore(superstructure, superstructureModeSupplier),
+                new SuperstructureScore(superstructure),
+                new SuperstructurePreScore(superstructure),
                 insideBoundary)
                     .repeatedly(),
             Commands.either(
@@ -53,8 +51,7 @@ public class AutoCoralScore extends ParallelCommandGroup {
                     drive,
                     field,
                     robotPose,
-                    target,
-                    inputs.times(0.75)),
+                    target),
                 new DriveToPose(
                     drive,
                     field,
@@ -75,7 +72,6 @@ public class AutoCoralScore extends ParallelCommandGroup {
         JoystickInputs inputs,
         OffsetManager offsetManager,
         ProximityService proximityService,
-        Supplier<Mode> superstructureModeSupplier,
         Supplier<Pose2d> robotPose,
         Supplier<Branch> branchSupplier,
         BooleanSupplier insideBoundary,
@@ -86,7 +82,6 @@ public class AutoCoralScore extends ParallelCommandGroup {
             field,
             superstructure,
             inputs,
-            superstructureModeSupplier,
             robotPose,
             branchSupplier
                 .get()
@@ -102,7 +97,6 @@ public class AutoCoralScore extends ParallelCommandGroup {
         Superstructure superstructure,
         JoystickInputs inputs,
         ProximityService proximityService,
-        Supplier<Mode> superstructureModeSupplier,
         Supplier<Pose2d> robotPose,
         Supplier<ReefSide> reefSideSupplier,
         BooleanSupplier insideBoundary,
@@ -113,7 +107,6 @@ public class AutoCoralScore extends ParallelCommandGroup {
             field,
             superstructure,
             inputs,
-            superstructureModeSupplier,
             robotPose,
             reefSideSupplier
                 .get()

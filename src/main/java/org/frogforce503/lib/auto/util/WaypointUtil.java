@@ -15,11 +15,11 @@ public class WaypointUtil {
         return new Pose2d(existing.getTranslation(), existing.getRotation().unaryMinus());
     }
 
-    private static List<Waypoint> changeAllWaypoints(List<Waypoint> input, Function<Waypoint, Waypoint> changeFunction) {
+    private static List<Waypoint> changeAllWaypoints(List<Waypoint> input, Function<Waypoint, Waypoint> editor) {
         return
             input
                 .stream()
-                .map(changeFunction)
+                .map(editor)
                 .collect(Collectors.toList());
     }
 

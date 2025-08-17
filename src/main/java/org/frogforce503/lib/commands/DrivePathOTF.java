@@ -1,7 +1,5 @@
 package org.frogforce503.lib.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -12,11 +10,11 @@ import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** Follows a runtime-generated {@link PlannedPath}. */
-@SuppressWarnings("unchecked")
 public class DrivePathOTF extends Command {
     private final Drive drive;
     private final FieldInfo field;
@@ -63,6 +61,13 @@ public class DrivePathOTF extends Command {
 
     @Override
     public void initialize() {
+        ChassisSpeeds currentVelocity = drive.getCurrentVelocity();
+            
+        final double initialRobotTranslationalVelocity =
+            Math.hypot(
+                currentVelocity.vxMetersPerSecond,
+                currentVelocity.vyMetersPerSecond);
+
         pathFollowingCommand =
             new FollowPlannedPath(
                 drive,
@@ -71,7 +76,7 @@ public class DrivePathOTF extends Command {
                     .generate(
                         constraints.maxVelocity,
                         constraints.maxAcceleration,
-                        0.0,
+                        initialRobotTranslationalVelocity,
                         0.0,
                         List.of(
                             Waypoint.fromHolonomicPose(robotPose.get()),

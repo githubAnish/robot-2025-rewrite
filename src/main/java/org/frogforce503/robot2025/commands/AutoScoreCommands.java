@@ -20,7 +20,6 @@ import org.frogforce503.robot2025.subsystems.vision.Vision;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import lombok.Getter;
 
 public class AutoScoreCommands {
     // Subsystems
@@ -39,7 +38,7 @@ public class AutoScoreCommands {
     private final ProximityService proximityService;
 
     // Reef Boundary (Used for L2 - L4 coral scoring)
-    @Getter private final PrescoreBoundaryBuilder prescoreBoundaryBuilder;
+    private final PrescoreBoundaryBuilder prescoreBoundaryBuilder;
 
     // Joystick Inputs
     private final Supplier<JoystickInputs> driverInputs;
@@ -70,7 +69,7 @@ public class AutoScoreCommands {
         this.autoDrivingEnabled = autoDrivingEnabled;
     }
 
-    public Command coralAutoScore(Supplier<Branch> branchSupplier, Supplier<Mode> superstructureModeSupplier) {
+    public Command coralAutoScore(Supplier<Branch> branchSupplier) {
         return
             Commands.deferredProxy(
                 () ->
@@ -81,21 +80,27 @@ public class AutoScoreCommands {
                         driverInputs.get(),
                         offsetManager,
                         proximityService,
-                        superstructureModeSupplier,
                         vision.getReefSpecializedPose(leds::usingGlobalPose),
                         branchSupplier,
                         prescoreBoundaryBuilder::insideBoundary,
                         autoDrivingEnabled));
     }
 
-    public Command coralAutoScore(Supplier<Mode> superstructureModeSupplier) {
+    public Command coralAutoScore() {
         return
             coralAutoScore(
-                superstructure::getCurrentBranch,
-                superstructureModeSupplier);
+                superstructure::getCurrentBranch);
     }
 
-    public Command coralAutoScoreL1(Supplier<Mode> superstructureModeSupplier) {
+    public Command coralAutoScore(Supplier<Branch> branchSupplier, Supplier<Mode> superstructureModeSupplier) {
+        return
+            Commands.sequence(
+                Commands.runOnce(() -> superstructure.setCurrentMode(superstructureModeSupplier.get()))
+                    .ignoringDisable(true),
+                coralAutoScore(branchSupplier));
+    }
+
+    public Command coralAutoScoreL1() {
         return
             Commands.deferredProxy(
                 () ->
@@ -105,7 +110,6 @@ public class AutoScoreCommands {
                         superstructure,
                         driverInputs.get(),
                         proximityService,
-                        superstructureModeSupplier,
                         vision.getReefSpecializedPose(leds::usingGlobalPose),
                         proximityService::getClosestReefSide,
                         prescoreBoundaryBuilder::insideBoundary,
