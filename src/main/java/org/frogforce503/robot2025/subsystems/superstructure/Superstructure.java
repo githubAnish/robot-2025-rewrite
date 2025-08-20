@@ -86,6 +86,7 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
             intake.getSetpoint().position);
 
         Logger.recordOutput("Superstructure/Brake Mode Enabled", brakeModeEnabled);
+        Logger.recordOutput("Superstructure/Manual Control Enabled", manualControlEnabled);
 
         Logger.recordOutput("Superstructure/Inputs/Has Coral", hasCoral);
         Logger.recordOutput("Superstructure/Inputs/Algae In Claw", hasAlgaeInClaw);

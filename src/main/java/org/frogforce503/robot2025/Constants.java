@@ -10,6 +10,8 @@ public final class Constants {
   public static final double loopPeriodSecs = 0.02;
 
   public static final boolean useAllianceFlipping = false;
+
+  public static final boolean selectAllianceFromDS = true;
   
   @Setter private static Bot robotType = Bot.CompBot;
 

@@ -41,8 +41,7 @@ public class DriveIOSim implements DriveIO {
             new DriveIOData(
                 currentState,
                 currentPose,
-                currentVelocity,
-                currentPose.getRotation());
+                currentVelocity);
 
         update();
     }

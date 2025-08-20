@@ -97,8 +97,7 @@ public class FollowPlannedPath extends Command {
                 .getDriveTrajectory()
                 .getStates()
                 .stream()
-                .map(
-                    state -> state.poseMeters)
+                .map(state -> state.poseMeters)
                 .toArray(Pose2d[]::new);
 
         field
@@ -121,9 +120,7 @@ public class FollowPlannedPath extends Command {
         }
         
         // Calculate speeds
-        ChassisSpeeds targetChassisSpeeds =
-            this.controller
-                .calculate(currentPose, desiredState);
+        ChassisSpeeds targetChassisSpeeds = controller.calculate(currentPose, desiredState);
 
         Translation2d measuredVelocity =
             currentPose

@@ -91,6 +91,6 @@ public class AutoIntakeCommands {
         return
             Commands.deferredProxy(() -> new BackupFromClosestReefAlgae(drive, field, proximityService))
                 .onlyIf(autoDrivingEnabled)
-                .alongWith(superstructure.holdAlgaeFromPluck());
+                .andThen(superstructure.holdAlgaeFromPluck());
     }
 }

@@ -1,5 +1,7 @@
 package org.frogforce503.robot2025.subsystems.drive;
 
+import org.frogforce503.lib.math.MathUtils;
+import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.robot2025.Robot;
 
 import edu.wpi.first.math.Matrix;
@@ -26,7 +28,26 @@ public final class DriveConstants {
     public static final double MAX_ACCELERATION_METERS_PER_SEC_PER_SEC = FAST_TRANSLATION_METERS_PER_SECOND * 1.2;
     public static final double MAX_ANGULAR_ACCLERATION_RAD_PER_SEC_PER_SEC = 5 * Math.PI / 2.0;
 
-    public static final String[] moduleNames = { "FrontLeft", "FrontRight", "BackLeft", "BackRight" };
-
     public static final Matrix<N3, N1> stdDevs = VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(30));
+
+    public enum ModuleName {
+        FrontLeft(0),
+        FrontRight(1),
+        BackLeft(2),
+        BackRight(3);
+
+        public final int moduleIndex;
+
+        private ModuleName(int moduleIndex) {
+            this.moduleIndex = moduleIndex;
+        }
+
+        public static ModuleName fromIndex(int index) {
+            if (!MathUtils.inRange(index, 0, 3)) {
+                throw new IllegalArgumentException("Module index must be between 0 and 3, inclusive." + ErrorUtil.attachJavaClassName(ModuleName.class));
+            }
+
+            return values()[index];
+        }
+    }
 }

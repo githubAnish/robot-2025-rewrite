@@ -9,6 +9,7 @@ import org.frogforce503.lib.auto.AutoMode;
 import org.frogforce503.lib.auto.builder.ChoreoFactoryBuilder;
 import org.frogforce503.lib.drawing.DrawOnField;
 import org.frogforce503.lib.util.SwitchableChooser;
+import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.auto.blue.BlueBabyAuton;
 import org.frogforce503.robot2025.auto.red.RedBabyAuton;
 import org.frogforce503.robot2025.auto.test.ChoreoWarmupAuto;
@@ -51,8 +52,6 @@ public class AutoChooser {
     private Alliance lastAlliance = null;
     private StartingLocation lastStartingSide = null;
     private String lastRoutine = "";
-    
-    private final BooleanSupplier selectAllianceFromDS;
 
     private
         HashMap<
@@ -68,16 +67,13 @@ public class AutoChooser {
         FieldInfo field,
         Superstructure superstructure,
         AutoIntakeCommands autoIntakeCommands,
-        AutoScoreCommands autoScoreCommands,
-        BooleanSupplier selectAllianceFromDS
+        AutoScoreCommands autoScoreCommands
     ) {
         this.drive = drive;
         this.field = field;
         this.superstructure = superstructure;
 
         this.autoFactory = new ChoreoFactoryBuilder(drive).buildFactory();
-
-        this.selectAllianceFromDS = selectAllianceFromDS;
 
         this.colorSelector = new LoggedDashboardChooser<>("AutoChooser/Alliance Color");
 
@@ -225,18 +221,19 @@ public class AutoChooser {
         }
 
         // Select alliance color only when in simulation, else use DriverStation app to choose (only when this feature is enabled)
-        if (RobotBase.isSimulation() && selectAllianceFromDS.getAsBoolean()) {
+        if (RobotBase.isSimulation() && Constants.selectAllianceFromDS) {
             field.overrideAllianceColor(colorSelector.get());
         }
         
         if (commitAuton.get()) {
             System.out.println("Commit Button Pressed - Returned from AutoChooser.java");
 
-            StartingLocation side = startingSideSelector.get();
             Alliance color =
-                RobotBase.isReal() && selectAllianceFromDS.getAsBoolean()
+                RobotBase.isReal() && Constants.selectAllianceFromDS
                     ? field.getAlliance()
                     : colorSelector.get();
+
+            StartingLocation side = startingSideSelector.get();
 
             var choice =
                 AUTO_MAP

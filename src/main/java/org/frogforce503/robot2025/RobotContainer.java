@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
@@ -102,7 +101,6 @@ public class RobotContainer implements UnitTest {
 
     // Dashboard Inputs
     private final AutoChooser autoChooser;
-    private final BooleanSupplier selectAllianceFromDS = () -> true;
 
     // Offset Manager
     private final OffsetManager offsetManager;
@@ -255,8 +253,7 @@ public class RobotContainer implements UnitTest {
                 field,
                 superstructure,
                 autoIntakeCommands,
-                autoScoreCommands,
-                selectAllianceFromDS);
+                autoScoreCommands);
     
         // Initialize command mappers
         this.intakeRunner = new HashMap<>() {{

@@ -152,6 +152,11 @@ public class RobotHardwareCompBot extends RobotHardware {
         this.backLeftConstants = TunerConstantsCompBot.BackLeft;
         this.backRightConstants = TunerConstantsCompBot.BackRight;
 
+        this.kFrontLeftEncoderOffset = TunerConstantsCompBot.kFrontLeftEncoderOffset;
+        this.kFrontRightEncoderOffset = TunerConstantsCompBot.kFrontRightEncoderOffset;
+        this.kBackLeftEncoderOffset = TunerConstantsCompBot.kBackLeftEncoderOffset;
+        this.kBackRightEncoderOffset = TunerConstantsCompBot.kBackRightEncoderOffset;
+
         // Swerve Module Positions (relative to the center of the drive base)
         this.kVehicleToFrontLeft = new Translation2d(this.frontLeftConstants.LocationX, this.frontLeftConstants.LocationY);
         this.kVehicleToFrontRight = new Translation2d(this.frontRightConstants.LocationX, this.frontRightConstants.LocationY);

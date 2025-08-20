@@ -1,11 +1,11 @@
 package org.frogforce503.robot2025.subsystems.drive;
 
-import static edu.wpi.first.units.Units.Inches;
-
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.fields.FieldInfo;
+import org.frogforce503.robot2025.subsystems.drive.DriveConstants.ModuleName;
 import org.frogforce503.robot2025.subsystems.drive.io.DriveIO;
+import org.frogforce503.robot2025.subsystems.drive.io.DriveIO.ModuleIOData;
 import org.frogforce503.robot2025.subsystems.drive.io.DriveIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
@@ -83,8 +83,8 @@ public class Drive extends SubsystemBase {
         for (int i = 0; i < states.length; i++) {
             SwerveModuleState state = states[i];
 
-            Logger.recordOutput("Swerve/Module/" + DriveConstants.moduleNames[i] + "/Angle", state.angle.getDegrees());
-            Logger.recordOutput("Swerve/Module/" + DriveConstants.moduleNames[i] + "/Velocity", state.speedMetersPerSecond);
+            Logger.recordOutput("Swerve/Module/" + ModuleName.fromIndex(i) + "/Angle", state.angle.getDegrees());
+            Logger.recordOutput("Swerve/Module/" + ModuleName.fromIndex(i) + "/Velocity", state.speedMetersPerSecond);
         }
 
         visualizer.updateModules(states, getAngle());
@@ -96,6 +96,7 @@ public class Drive extends SubsystemBase {
         field.setRobotPose(currentPose);
     }
 
+    // Toggles
     public void toggleSlowMode() {
         slowModeEnabled = !slowModeEnabled;
     }
@@ -104,6 +105,7 @@ public class Drive extends SubsystemBase {
         robotRelative = !robotRelative;
     }
 
+    // Setters
     public void setPose(Pose2d pose) {
         io.setPose(pose);
     }
@@ -133,24 +135,58 @@ public class Drive extends SubsystemBase {
             DriveConstants.stdDevs);
     }
 
+    // Getters
     public Rotation2d getAngle() {
         return this.currentPose.getRotation();
     }
 
-    public Rotation2d getGyroRotation() {
-        return inputs.data.rawGyroAngle();
+    public ModuleIOData getModuleData(ModuleName module) {
+        return
+            io.getModuleData(
+                module.moduleIndex,
+                new Rotation2d(
+                    switch (module) {
+                        case FrontLeft -> Robot.bot.kFrontLeftEncoderOffset;
+                        case FrontRight -> Robot.bot.kFrontRightEncoderOffset;
+                        case BackLeft -> Robot.bot.kBackLeftEncoderOffset;
+                        case BackRight -> Robot.bot.kBackRightEncoderOffset;
+                }));
     }
 
     public ChassisSpeeds getFieldVelocity() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(currentVelocity, getAngle());
     }
 
-    public void brake() {
-        io.brake();
+    /** Returns the position of each module in radians. */
+    public double[] getWheelRadiusCharacterizationPositions() {
+        double[] values = new double[4];
+        for (int i = 0; i < 4; i++) {
+            values[i] = getModuleData(ModuleName.fromIndex(i)).drivePositionRad();
+        }
+        return values;
     }
 
+    /** Returns the average velocity of the modules in rotations/sec (Phoenix native units). */
+    public double getFFCharacterizationVelocity() {
+        double output = 0.0;
+        for (int i = 0; i < 4; i++) {
+            output +=
+                Units.radiansToRotations(getModuleData(ModuleName.fromIndex(i)).driveVelocityRadPerSec()) / 4.0;
+        }
+        return output;
+    }
+
+    public Rotation2d getGyroRotation() {
+        return io.getRawGyroAngle();
+    }
+
+    // Actions
     public void coast() {
         io.coast();
+    }
+
+    public void brake() {
+        io.brake();
     }
 
     /** Runs a robot-relative ChassisSpeeds to the drivetrain. */
@@ -159,34 +195,12 @@ public class Drive extends SubsystemBase {
         this.requestedSpeeds = speeds;
     }
 
-    public void stop() {
-        runVelocity(new ChassisSpeeds());
-    }
-
+    /** Runs the drive in a straight line with the specified drive output. */
     public void runCharacterization(double output) {
         io.runCharacterization(output);
     }
 
-    /** Returns the average velocity of the modules in rotations/sec (Phoenix native units). */
-    public double getFFCharacterizationVelocity() {
-        double output = 0.0;
-        for (int i = 0; i < 4; i++) {
-            output +=
-                Units.radiansToRotations(
-                    inputs.data.state().ModuleStates[0].speedMetersPerSecond) / 4.0;
-        }
-        return output;
-    }
-
-    /** Returns the position of each module in radians. */
-    public double[] getWheelRadiusCharacterizationPositions() {
-        double[] values = new double[4];
-        for (int i = 0; i < 4; i++) {
-            values[i] =
-                Units.radiansToRotations(
-                    inputs.data.state().ModulePositions[i].distanceMeters / Robot.bot.kWheelRadius.in(Inches));
-                // This conversion is to get the position of the drive talon (its default units are rotations)
-        }
-        return values;
+    public void stop() {
+        runVelocity(new ChassisSpeeds());
     }
 }
