@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 
-public class ChoreoUtil {
+public final class ChoreoUtil {
     private ChoreoUtil() {}
     
     /** Returns auto trajectories from an {@code AutoRoutine} based on splits in the given choreo file. */

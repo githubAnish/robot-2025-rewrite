@@ -7,17 +7,17 @@ import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.lib.util.Logic;
 import org.frogforce503.robot2025.commands.coral_score_reef.Branch;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
-import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm.ArmGoal;
+import org.frogforce503.robot2025.subsystems.superstructure.arm.ArmGoal;
 import org.frogforce503.robot2025.subsystems.superstructure.claw.Claw;
-import org.frogforce503.robot2025.subsystems.superstructure.claw.Claw.ClawGoal;
+import org.frogforce503.robot2025.subsystems.superstructure.claw.ClawGoal;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.Elevator;
-import org.frogforce503.robot2025.subsystems.superstructure.elevator.Elevator.ElevatorGoal;
+import org.frogforce503.robot2025.subsystems.superstructure.elevator.ElevatorGoal;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.Intake;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.Intake.IntakeGoal;
+import org.frogforce503.robot2025.subsystems.superstructure.intake.IntakeGoal;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIO;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIOInputsAutoLogged;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
-import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist.WristGoal;
+import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristGoal;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -442,8 +442,7 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
     public Command scoreProcessorFromIntake() {
         return
             Commands.sequence(
-                intake.runGoal(IntakeGoal.PROCESSOR_EJECT_ALGAE)
-            );
+                intake.runGoal(IntakeGoal.PROCESSOR_EJECT_ALGAE));
     }
 
     @Override

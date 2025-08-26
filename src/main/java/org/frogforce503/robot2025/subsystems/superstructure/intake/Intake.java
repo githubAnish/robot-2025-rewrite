@@ -28,7 +28,6 @@ import org.frogforce503.lib.motorcontrol.tuning.TuningService;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.motorcontrol.tuning.speed.SpeedConstraintsTuningService;
-import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
@@ -71,49 +70,6 @@ public class Intake extends FFSubsystemBase {
     private final Alert coastModeWhileRunning =
         new Alert("Intake/Warnings", "Intake is in coast mode while running!", Alert.AlertType.kWarning);
 
-    public enum IntakeGoal {
-        INTAKE_CLEARANCE(187),
-        SCORE_CLEARANCE(137),
-
-        INTAKE_ALGAE_FROM_GROUND(115, 3000.0*12.0/10000.0),
-        HOLD_ALGAE(187, 1000.0*12.0/10000.0),
-
-        IDLE(193),
-
-        HANDOFF_RELEASE(187, -500*12/10000),
-        HANDOFF_EJECT(187, -500*12/10000),
-
-        PROCESSOR_FROM_INTAKE(180),
-        PROCESSOR_EJECT_ALGAE(180, -500*12/10000), // Eject algae from intake rollers
-
-        LOW_CLEARANCE(187),
-        LOW_CLEARANCE_AUTON(137),
-        SCORING_CLEARANCE(137),
-
-        CORAL_HOLD(170),
-
-        INTAKE(115, 3000*12/10000),
-        HOLD(187, 1000*12/10000),
-        HOLD_CLAW(187),
-
-        HANDOFF(187, 500*12/10000),
-
-        UP_PIVOT(-0.2), // pct, volts
-        DOWN_PIVOT(0.7); // pct volts
-        
-        private double pivotPosition, rollerVolts;
-        
-        private IntakeGoal(double pivotPosition, double rollerVolts) {
-            this.pivotPosition = pivotPosition;
-            this.rollerVolts = rollerVolts;
-        }
-
-        private IntakeGoal(double pivotPosition) {
-            this.pivotPosition = pivotPosition;
-            this.rollerVolts = 0.0;
-        }
-    }
-
     @Getter private IntakeGoal currentGoal = IntakeGoal.IDLE;
 
     public Intake(PivotIO pivotIO, RollerIO rollerIO) {
@@ -148,7 +104,7 @@ public class Intake extends FFSubsystemBase {
         if (requestPositionControl) {
             var goalState =
                 new State(
-                    MathUtil.clamp(currentGoal.pivotPosition, range.min(), range.max()),
+                    range.clamp(currentGoal.pivotPosition),
                     0.0);
 
             double previousVelocity = setpoint.velocity;
@@ -157,10 +113,10 @@ public class Intake extends FFSubsystemBase {
                 profile
                     .calculate(Constants.loopPeriodSecs, setpoint, goalState);
 
-            if (!MathUtils.inRange(setpoint.position, range)) {
+            if (!range.contains(setpoint.position)) {
                 setpoint =
                     new State(
-                        MathUtil.clamp(setpoint.position, range.min(), range.max()),
+                        range.clamp(setpoint.position),
                         0.0);
             }
 

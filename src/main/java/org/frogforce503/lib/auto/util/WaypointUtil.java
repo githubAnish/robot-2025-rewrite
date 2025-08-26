@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
-public class WaypointUtil {
+public final class WaypointUtil {
     public static Pose2d flipHeading(Pose2d existing) {
         return new Pose2d(existing.getTranslation(), existing.getRotation().unaryMinus());
     }

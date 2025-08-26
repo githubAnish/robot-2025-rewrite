@@ -59,10 +59,6 @@ public final class MathUtils {
         return lowerBound <= value && value <= upperBound;
     }
 
-    public static boolean inRange(double measurement, Range range) {
-        return inRange(measurement, range.min(), range.max());
-    }
-
     /**
      * Solves the equation {@code 0 = ax² + bx + c} for x and
      * returns the real results.

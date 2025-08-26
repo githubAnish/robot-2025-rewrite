@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.commands.RumbleCommand;
@@ -78,12 +77,11 @@ import org.photonvision.EstimatedRobotPose;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.util.function.BooleanConsumer;
+import edu.wpi.first.units.UnaryFunction;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.ExtensionMethod;
 
@@ -115,7 +113,7 @@ public class RobotContainer implements UnitTest {
 
     // Triggers
     private Trigger coralMode, algaeMode;
-    private Trigger manualControlEnabled;
+    private Trigger manualControlEnabled, superstructureCoastEnabled;
     private Trigger camerasConnected;
 
     // Command Mappers
@@ -137,6 +135,10 @@ public class RobotContainer implements UnitTest {
 
     private final AutoIntakeCommands autoIntakeCommands;
     private final AutoScoreCommands autoScoreCommands;
+    
+    // Overrides
+    private LoggedNetworkBoolean superstructureCoastOverride =
+        new LoggedNetworkBoolean("Coast Mode/Superstructure", false);
     
     public RobotContainer(final Venue venue) {
         field.setVenue(venue);
@@ -375,6 +377,7 @@ public class RobotContainer implements UnitTest {
         coralMode = new Trigger(() -> superstructure.getCurrentPiece() == Gamepiece.CORAL);
         algaeMode = new Trigger(() -> superstructure.getCurrentPiece() == Gamepiece.ALGAE);
         manualControlEnabled = new Trigger(superstructure::isManualControlEnabled);
+        superstructureCoastEnabled = new Trigger(superstructureCoastOverride::get);
         camerasConnected =
             new Trigger(
                 Logic.and(
@@ -458,23 +461,18 @@ public class RobotContainer implements UnitTest {
             .back()
             .onTrue(Commands.runOnce(superstructure::toggleManualControl));
 
-        // Coast superstructure only if the robot is disabled, manual control is enabled, and specified button is true
-        BiConsumer<Trigger, BooleanConsumer> bindSuperstructureCoast =
-            (trigger, brakeModeSetter) ->
-                RobotModeTriggers
-                    .disabled()
-                    .and(manualControlEnabled)
+        // Coast superstructure if manual control is enabled and specified trigger is true
+        Consumer<Trigger> bindSuperstructureCoast =
+            trigger ->
+                manualControlEnabled
                     .and(trigger)
-                        .onTrue(
-                            Commands.runOnce(() -> brakeModeSetter.accept(false))
-                                .ignoringDisable(true))
-                        .onFalse(
-                            Commands.runOnce(() -> brakeModeSetter.accept(true))
+                        .onChange(
+                            Commands.runOnce(() -> superstructure.setBrakeMode(!superstructure.isBrakeModeEnabled()))
                                 .ignoringDisable(true));
 
-        bindSuperstructureCoast.accept(operator.start(), superstructure::setBrakeMode);
+        bindSuperstructureCoast.accept(superstructureCoastEnabled);
 
-        Function<Double, Double> limiter =
+        UnaryFunction limiter =
             input ->
                 MathUtil.clamp(
                     MathUtil.applyDeadband(input, 0.2), -1.0, 1.0);
@@ -510,7 +508,7 @@ public class RobotContainer implements UnitTest {
         Trigger gotCoral = new Trigger(superstructure::isHasCoral);
         Trigger gotAlgaeInClaw = new Trigger(superstructure::isHasAlgaeInClaw);
         Trigger gotAlgaeInIntake = new Trigger(superstructure::isHasAlgaeInIntake);
-        
+
         // Signal when robot intook a gamepiece
         gotPiece.accept(gotCoral, leds.gotCoral());
         gotPiece.accept(gotAlgaeInClaw.or(gotAlgaeInIntake), leds.gotAlgae());

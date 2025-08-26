@@ -4,7 +4,6 @@ import org.frogforce503.lib.motorcontrol.tuning.TuningService;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.motorcontrol.tuning.speed.SpeedConstraintsTuningService;
-import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
@@ -62,39 +61,6 @@ public class Elevator extends FFSubsystemBase {
     private final Alert coastModeWhileRunning =
         new Alert("Elevator/Warnings", "Elevator is in coast mode while running!", Alert.AlertType.kWarning);
 
-    public enum ElevatorGoal {
-        DOWN(0),
-
-        PRESCORE_L1(0),
-        PRESCORE_L2(0),
-        PRESCORE_L3(0),
-        PRESCORE_L4(0),
-
-        SCORE_L1(0),
-        SCORE_L2(0),
-        SCORE_L3(0),
-        SCORE_L4(0),
-
-        PLUCK_ALGAE_HIGH(0),
-        PLUCK_ALGAE_LOW(0),
-
-        HOLD_CORAL(10),
-        HOLD_ALGAE(0),
-
-        HANDOFF(17),
-        HANDOFF_RELEASE(0),
-
-        BARGE(0),
-
-        SWITCH_MODE(20);
-        
-        public double position;
-
-        private ElevatorGoal(double position) {
-            this.position = position;
-        }
-    }
-
     @Getter private ElevatorGoal currentGoal = ElevatorGoal.DOWN;
 
     public Elevator(ElevatorIO elevatorIO, DigitalIO digitalIO) {
@@ -134,7 +100,7 @@ public class Elevator extends FFSubsystemBase {
         if (requestPositionControl) {
             var goalState =
                 new State(
-                    MathUtil.clamp(currentGoal.position, range.min(), range.max()),
+                    range.clamp(currentGoal.position),
                     0.0);
 
             double previousVelocity = setpoint.velocity;
@@ -143,10 +109,10 @@ public class Elevator extends FFSubsystemBase {
                 profile
                     .calculate(Constants.loopPeriodSecs, setpoint, goalState);
 
-            if (!MathUtils.inRange(setpoint.position, range)) {
+            if (!range.contains(setpoint.position)) {
                 setpoint =
                     new State(
-                        MathUtil.clamp(setpoint.position, range.min(), range.max()),
+                        range.clamp(setpoint.position),
                         0.0);
             }
 

@@ -63,10 +63,12 @@ public interface DriveIO {
 
     default void updateInputs(DriveIOInputs inputs) {}
 
+    // Required in only some cases, doesn't need to be retrieved during normal operation.
     default ModuleIOData getModuleData(int moduleIndex, Rotation2d encoderOffsetForModule) {
         return new ModuleIOData();
     }
 
+    // Required in only some cases, doesn't need to be retrieved during normal operation.
     default Rotation2d getRawGyroAngle() {
         return Rotation2d.kZero;
     }

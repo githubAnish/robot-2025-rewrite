@@ -12,6 +12,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 
 public final class DriveConstants {
+    public static final double odometryFrequency = 250;
+
     public static final double dt = 0.02;
 
     public static final double driveBaseRadius = Math.hypot(Robot.bot.kWheelbaseLength / 2, Robot.bot.kWheelbaseWidth / 2);

@@ -10,6 +10,7 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
@@ -37,8 +38,7 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
             .withDriveRequestType(DriveRequestType.Velocity)
             .withSteerRequestType(SteerRequestType.MotionMagicExpo);
 
-    private final SysIdSwerveTranslation RUN_CHARACTERIZATION =
-        new SysIdSwerveTranslation();
+    private final SysIdSwerveTranslation RUN_CHARACTERIZATION = new SysIdSwerveTranslation();
 
     public DriveIOPhoenix() {
         super(
@@ -66,9 +66,11 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
 
     @Override
     public ModuleIOData getModuleData(int moduleIndex, Rotation2d encoderOffsetForModule) {
-        TalonFX driveMotor = super.getModule(moduleIndex).getDriveMotor();
-        TalonFX steerMotor = super.getModule(moduleIndex).getSteerMotor();
-        CANcoder steerEncoder = super.getModule(moduleIndex).getEncoder();
+        SwerveModule<TalonFX, TalonFX, CANcoder> module = super.getModule(moduleIndex);
+        
+        TalonFX driveMotor = module.getDriveMotor();
+        TalonFX steerMotor = module.getSteerMotor();
+        CANcoder steerEncoder = module.getEncoder();
 
         // Inputs from drive motor
         final StatusSignal<Angle> drivePosition = driveMotor.getPosition();

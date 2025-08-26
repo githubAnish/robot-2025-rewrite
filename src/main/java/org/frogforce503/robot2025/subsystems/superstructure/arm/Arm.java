@@ -21,7 +21,6 @@ import org.frogforce503.lib.motorcontrol.tuning.TuningService;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.motorcontrol.tuning.speed.SpeedConstraintsTuningService;
-import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
@@ -59,44 +58,7 @@ public class Arm extends FFSubsystemBase {
     private final Alert coastModeWhileRunning =
         new Alert("Arm/Warnings", "Arm is in coast mode while running!", Alert.AlertType.kWarning);
 
-    public enum ArmGoal {
-        IDLE(18),
-        DOWN(18),
-
-        PRESCORE_L1(0),
-        PRESCORE_L2(0),
-        PRESCORE_L3(0),
-        PRESCORE_L4(30),
-
-        SCORE_L1(0),
-        SCORE_L2(0),
-        SCORE_L3(0),
-        SCORE_L4(1),
-
-        POSTSCORE_L4(0),
-
-        PLUCK_ALGAE_HIGH(0),
-        PLUCK_ALGAE_LOW(0),
-
-        HOLD_ALGAE(70),
-
-        PROCESSOR_FROM_CLAW(70),
-
-        NET_RELEASE(180),
-
-        HANDOFF(130), // handoff is like arm 130 deg
-        HANDOFF_RELEASE(70),
-
-        BARGE(0);
-        
-        public double position;
-
-        private ArmGoal(double position) {
-            this.position = position;
-        }
-    }
-
-    @Getter private ArmGoal currentGoal = ArmGoal.IDLE;
+    @Getter private ArmGoal currentGoal = ArmGoal.DOWN;
 
     public Arm(ArmIO io) {
         this.io = io;
@@ -126,7 +88,7 @@ public class Arm extends FFSubsystemBase {
         if (requestPositionControl) {
             var goalState =
                 new State(
-                    MathUtil.clamp(currentGoal.position, range.min(), range.max()),
+                    range.clamp(currentGoal.position),
                     0.0);
 
             double previousVelocity = setpoint.velocity;
@@ -135,10 +97,10 @@ public class Arm extends FFSubsystemBase {
                 profile
                     .calculate(Constants.loopPeriodSecs, setpoint, goalState);
 
-            if (!MathUtils.inRange(setpoint.position, range)) {
+            if (!range.contains(setpoint.position)) {
                 setpoint =
                     new State(
-                        MathUtil.clamp(setpoint.position, range.min(), range.max()),
+                        range.clamp(setpoint.position),
                         0.0);
             }
 

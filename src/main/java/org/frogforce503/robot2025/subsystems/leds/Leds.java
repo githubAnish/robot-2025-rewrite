@@ -1,12 +1,10 @@
 package org.frogforce503.robot2025.subsystems.leds;
 
-import java.util.function.Consumer;
-
-import org.frogforce503.lib.leds.Animations;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lombok.Setter;
 
@@ -17,30 +15,6 @@ public class Leds extends SubsystemBase {
     @Setter public LedsGoal currentGoal = LedsGoal.OFF;
 
     @Setter private boolean cameraDisconnected = false;
-
-    // Goals
-    public enum LedsGoal {
-        OFF(io -> io.stop()),
-
-        NEUTRAL_CORAL(io -> io.runAnimation(Animations.BREATHE_PURPLE.getAnimation())),
-        INTAKE_CORAL(io -> io.runAnimation(Animations.FLASH_PURPLE.getAnimation())),
-        GOT_CORAL(io -> io.runAnimation(Animations.FLASH_GREEN.getAnimation())),
-        SCORE_CORAL(io -> io.runAnimation(Animations.FLASH_GREEN.getAnimation())),
-
-        NEUTRAL_ALGAE(io -> io.runAnimation(Animations.BREATHE_BLUE.getAnimation())),
-        INTAKE_ALGAE(io -> io.runAnimation(Animations.FLASH_BLUE.getAnimation())),
-        GOT_ALGAE(io -> io.runAnimation(Animations.FLASH_GREEN.getAnimation())),
-        SCORE_ALGAE(io -> io.runAnimation(Animations.FLASH_GREEN.getAnimation())),
-
-        GLOBAL_POSE_USED(io -> io.runAnimation(Animations.FLASH_RED.getAnimation())),
-        CAMERA_DISCONNECTED(io -> io.runAnimation(Animations.FLASH_RED.getAnimation()));
-    
-        private Consumer<LedsIO> action;
-    
-        private LedsGoal(Consumer<LedsIO> action) {
-            this.action = action;
-        }
-    }
 
     public Leds(LedsIO io) {
         this.io = io;
@@ -55,7 +29,7 @@ public class Leds extends SubsystemBase {
             currentGoal = LedsGoal.CAMERA_DISCONNECTED;
         }
 
-        currentGoal.action.accept(io);
+        currentGoal.getAction().accept(io);
 
         Logger.recordOutput("Leds/Goal", currentGoal.name());
 
@@ -71,20 +45,42 @@ public class Leds extends SubsystemBase {
                     .ignoringDisable(true);
     }
 
-    private Command runCoralGoal(LedsGoal goal) {
+    private Command runCoralGoalTimed(LedsGoal goal, double timeToRunGoalSeconds) {
         return
-            startEnd(
-                () -> setCurrentGoal(goal),
-                () -> setCurrentGoal(LedsGoal.NEUTRAL_CORAL))
-                    .ignoringDisable(true);
+            Commands.sequence(
+                Commands.runOnce(() -> setCurrentGoal(goal)),
+                Commands.waitSeconds(timeToRunGoalSeconds),
+                Commands.runOnce(() -> setCurrentGoal(LedsGoal.NEUTRAL_CORAL))
+            )
+            .ignoringDisable(true);
     }
 
-    private Command runAlgaeGoal(LedsGoal goal) {
+    private Command runAlgaeGoalTimed(LedsGoal goal, double timeToRunGoalSeconds) {
+        return
+            Commands.sequence(
+                Commands.runOnce(() -> setCurrentGoal(goal)),
+                Commands.waitSeconds(timeToRunGoalSeconds),
+                Commands.runOnce(() -> setCurrentGoal(LedsGoal.NEUTRAL_ALGAE))
+            )
+            .ignoringDisable(true);
+    }
+
+    private Command runCoralGoalUntilCancel(LedsGoal goal) {
         return
             startEnd(
                 () -> setCurrentGoal(goal),
-                () -> setCurrentGoal(LedsGoal.NEUTRAL_ALGAE))
-                    .ignoringDisable(true);
+                () -> setCurrentGoal(LedsGoal.NEUTRAL_CORAL)
+            )
+            .ignoringDisable(true);
+    }
+
+    private Command runAlgaeGoalUntilCancel(LedsGoal goal) {
+        return
+            startEnd(
+                () -> setCurrentGoal(goal),
+                () -> setCurrentGoal(LedsGoal.NEUTRAL_ALGAE)
+            )
+            .ignoringDisable(true);
     }
 
     // Commands
@@ -101,27 +97,27 @@ public class Leds extends SubsystemBase {
     }
 
     public Command intakeCoral() {
-        return runCoralGoal(LedsGoal.INTAKE_CORAL);
+        return runCoralGoalUntilCancel(LedsGoal.INTAKE_CORAL);
     }
 
     public Command gotCoral() {
-        return runCoralGoal(LedsGoal.GOT_CORAL);
+        return runCoralGoalTimed(LedsGoal.GOT_CORAL, 3);
     }
 
     public Command scoreCoral() {
-        return runCoralGoal(LedsGoal.SCORE_CORAL);
+        return runCoralGoalUntilCancel(LedsGoal.SCORE_CORAL);
     }
 
     public Command intakeAlgae() {
-        return runAlgaeGoal(LedsGoal.INTAKE_ALGAE);
+        return runAlgaeGoalUntilCancel(LedsGoal.INTAKE_ALGAE);
     }
 
     public Command gotAlgae() {
-        return runAlgaeGoal(LedsGoal.GOT_ALGAE);
+        return runAlgaeGoalTimed(LedsGoal.GOT_ALGAE, 3);
     }
 
     public Command scoreAlgae() {
-        return runAlgaeGoal(LedsGoal.SCORE_ALGAE);
+        return runAlgaeGoalUntilCancel(LedsGoal.SCORE_ALGAE);
     }
 
     public Command usingGlobalPose() {
