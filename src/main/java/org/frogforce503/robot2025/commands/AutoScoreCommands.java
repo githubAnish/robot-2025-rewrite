@@ -80,7 +80,7 @@ public class AutoScoreCommands {
                         driverInputs.get(),
                         offsetManager,
                         proximityService,
-                        vision.getReefSpecializedPose(leds::usingGlobalPose),
+                        drive::getCurrentPose,
                         branchSupplier,
                         prescoreBoundaryBuilder::insideBoundary,
                         autoDrivingEnabled));
@@ -110,7 +110,7 @@ public class AutoScoreCommands {
                         superstructure,
                         driverInputs.get(),
                         proximityService,
-                        vision.getReefSpecializedPose(leds::usingGlobalPose),
+                        drive::getCurrentPose,
                         proximityService::getClosestReefSide,
                         prescoreBoundaryBuilder::insideBoundary,
                         autoDrivingEnabled));

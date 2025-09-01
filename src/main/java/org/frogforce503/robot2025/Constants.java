@@ -8,11 +8,8 @@ import edu.wpi.first.wpilibj.RobotBase;
 /** This class contains global configuration describing the current robot and runtime mode. */
 public final class Constants {
   public static final double loopPeriodSecs = 0.02;
-
   public static final boolean useAllianceFlipping = false;
-
   public static final boolean selectAllianceFromDS = true;
-  
   @Setter private static Bot robotType = Bot.CompBot;
 
   @SuppressWarnings("resource")

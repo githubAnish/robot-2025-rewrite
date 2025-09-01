@@ -4,11 +4,8 @@ import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.robot2025.Robot;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 
 public final class DriveConstants {
@@ -30,18 +27,18 @@ public final class DriveConstants {
     public static final double MAX_ACCELERATION_METERS_PER_SEC_PER_SEC = FAST_TRANSLATION_METERS_PER_SECOND * 1.2;
     public static final double MAX_ANGULAR_ACCLERATION_RAD_PER_SEC_PER_SEC = 5 * Math.PI / 2.0;
 
-    public static final Matrix<N3, N1> stdDevs = VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(30));
-
     public enum ModuleName {
-        FrontLeft(0),
-        FrontRight(1),
-        BackLeft(2),
-        BackRight(3);
+        FrontLeft(0, new Rotation2d(Robot.bot.kFrontLeftEncoderOffset)),
+        FrontRight(1, new Rotation2d(Robot.bot.kFrontRightEncoderOffset)),
+        BackLeft(2, new Rotation2d(Robot.bot.kBackLeftEncoderOffset)),
+        BackRight(3, new Rotation2d(Robot.bot.kBackRightEncoderOffset));
 
         public final int moduleIndex;
+        public final Rotation2d encoderOffset;
 
-        private ModuleName(int moduleIndex) {
+        private ModuleName(int moduleIndex, Rotation2d encoderOffset) {
             this.moduleIndex = moduleIndex;
+            this.encoderOffset = encoderOffset;
         }
 
         public static ModuleName fromIndex(int index) {

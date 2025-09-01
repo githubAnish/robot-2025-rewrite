@@ -35,9 +35,6 @@ public class FollowPlannedPath extends Command {
 
     private Supplier<Rotation2d> headingOverride = null;
 
-    /** Cuts down time of {@code seek} seconds in the {@link PlannedPath} to seek for a target. */
-    private double seek = 0;
-
     public FollowPlannedPath(Drive drive, FieldInfo field, Supplier<PlannedPath> dynamicPath) {
         this.drive = drive;
         this.field = field;
@@ -70,12 +67,7 @@ public class FollowPlannedPath extends Command {
         this(drive, field, () -> path);
     }
 
-    public FollowPlannedPath(Drive drive, FieldInfo field, PlannedPath path, double seek) {
-        this(drive, field, () -> path);
-        this.seek = seek;
-    }
-
-    public FollowPlannedPath setHeadingOverride(Supplier<Rotation2d> rotationSupplier) {
+    public FollowPlannedPath withHeadingOverride(Supplier<Rotation2d> rotationSupplier) {
         this.headingOverride = rotationSupplier;
         return this;
     }
@@ -109,7 +101,7 @@ public class FollowPlannedPath extends Command {
     public void execute() {
         // Get inputs
         this.path = dynamicPath.get();
-        double currentTime = this.timer.get() + this.seek;
+        double currentTime = this.timer.get();
         Pose2d currentPose = drive.getCurrentPose();
 
         PlannedPath.HolonomicState desiredState = this.path.sample(currentTime);

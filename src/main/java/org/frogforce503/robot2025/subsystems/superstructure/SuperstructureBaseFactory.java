@@ -8,8 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
  */
 public interface SuperstructureBaseFactory {
     // Coral
-    /** Move intake out so arm can come down, then get elevator, arm, wrist down, then move intake back in, then run claw, then wait until lower beam break hit */
-    Command intakeCoral();
+    Command intakeCoral(); // Move intake out so arm can come down, then get elevator, arm, wrist down, then move intake back in, then run claw, then wait until lower beam break hit
 
     Command preScoreL1(); // Be in L1 position
     Command preScoreL2(); // Be in L1 position

@@ -3,6 +3,7 @@ package org.frogforce503.robot2025;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.littletonrobotics.junction.Logger;
@@ -19,15 +20,19 @@ import edu.wpi.first.math.util.Units;
 /** Simulates the field, including interaction with & movement of game elements. Implement physics simulation here. */
 public class GameVisualizer {
     private final FieldInfo field;
+    private final Supplier<Pose2d> robotPoseSupplier;
 
     private List<Pose3d> algaePoses = new ArrayList<>();
     private List<Pose3d> floorCoralPoses = new ArrayList<>();
     
-    public GameVisualizer(FieldInfo field) {
+    public GameVisualizer(FieldInfo field, Supplier<Pose2d> robotPoseSupplier) {
         this.field = field;
+        this.robotPoseSupplier = robotPoseSupplier;
     }
 
-    public void update(Pose2d robotPose, double elevatorPosition, double armPosition, double wristPosition, boolean hasAlgaeInClaw) {
+    public void update(double elevatorPosition, double armPosition, double wristPosition, boolean hasAlgaeInClaw) {
+        Pose2d robotPose = robotPoseSupplier.get();
+        
         // Pluck Algae from Reef
         if (!hasAlgaeInClaw) {
             for (int index = 0; index < algaePoses.size(); index++) {

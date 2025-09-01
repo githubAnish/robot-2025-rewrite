@@ -11,8 +11,7 @@ public abstract class FFSubsystemBase extends SubsystemBase {
 
     /** Override this method to apply to your tunable subsystem. */
     public BooleanConsumer tuningExecutor() {
-        return
-            tuningEnabled -> {};
+        return tuningEnabled -> {};
     };
 
     public abstract boolean atGoal();

@@ -1,22 +1,17 @@
 package org.frogforce503.robot2025.subsystems.drive;
 
 import org.frogforce503.lib.util.LoggedTracer;
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.lib.vision.apriltag_detection.VisionMeasurement;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants.ModuleName;
 import org.frogforce503.robot2025.subsystems.drive.io.DriveIO;
-import org.frogforce503.robot2025.subsystems.drive.io.DriveIO.ModuleIOData;
 import org.frogforce503.robot2025.subsystems.drive.io.DriveIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.EstimatedRobotPose;
 
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lombok.Getter;
@@ -122,35 +117,16 @@ public class Drive extends SubsystemBase {
     }
     
     // Adding vision measurements
-    public void acceptVisionMeasurement(EstimatedRobotPose visionPose, Matrix<N3, N1> stdDevs) {
+    public void acceptVisionMeasurement(VisionMeasurement measurement) {
         io.acceptVisionMeasurement(
-            visionPose.estimatedPose.toPose2d(),
-            visionPose.timestampSeconds,
-            stdDevs);
-    }
-
-    public void acceptVisionMeasurement(EstimatedRobotPose visionPose) {
-        acceptVisionMeasurement(
-            visionPose,
-            DriveConstants.stdDevs);
+            measurement.pose(),
+            measurement.timestamp(),
+            measurement.standardDeviations());
     }
 
     // Getters
     public Rotation2d getAngle() {
         return this.currentPose.getRotation();
-    }
-
-    public ModuleIOData getModuleData(ModuleName module) {
-        return
-            io.getModuleData(
-                module.moduleIndex,
-                new Rotation2d(
-                    switch (module) {
-                        case FrontLeft -> Robot.bot.kFrontLeftEncoderOffset;
-                        case FrontRight -> Robot.bot.kFrontRightEncoderOffset;
-                        case BackLeft -> Robot.bot.kBackLeftEncoderOffset;
-                        case BackRight -> Robot.bot.kBackRightEncoderOffset;
-                }));
     }
 
     public ChassisSpeeds getFieldVelocity() {
@@ -161,7 +137,7 @@ public class Drive extends SubsystemBase {
     public double[] getWheelRadiusCharacterizationPositions() {
         double[] values = new double[4];
         for (int i = 0; i < 4; i++) {
-            values[i] = getModuleData(ModuleName.fromIndex(i)).drivePositionRad();
+            values[i] = io.getModuleData(ModuleName.fromIndex(i)).drivePositionRad();
         }
         return values;
     }
@@ -171,7 +147,7 @@ public class Drive extends SubsystemBase {
         double output = 0.0;
         for (int i = 0; i < 4; i++) {
             output +=
-                Units.radiansToRotations(getModuleData(ModuleName.fromIndex(i)).driveVelocityRadPerSec()) / 4.0;
+                Units.radiansToRotations(io.getModuleData(ModuleName.fromIndex(i)).driveVelocityRadPerSec()) / 4.0;
         }
         return output;
     }

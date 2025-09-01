@@ -1,6 +1,5 @@
 package org.frogforce503.robot2025;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -12,10 +11,10 @@ import org.frogforce503.lib.commands.RumbleCommand;
 import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.util.DoublePressTracker;
 import org.frogforce503.lib.util.ErrorUtil;
-import org.frogforce503.lib.util.Logic;
 import org.frogforce503.lib.util.ProximityService;
 import org.frogforce503.lib.util.TriConsumer;
 import org.frogforce503.lib.util.TriggerUtil;
+import org.frogforce503.lib.vision.apriltag_detection.VisionMeasurement;
 import org.frogforce503.robot2025.auto.AutoChooser;
 import org.frogforce503.robot2025.commands.AutoIntakeCommands;
 import org.frogforce503.robot2025.commands.AutoScoreCommands;
@@ -69,15 +68,20 @@ import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIO;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIOSim;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIOSpark;
-import org.frogforce503.robot2025.subsystems.vision.Camera;
 import org.frogforce503.robot2025.subsystems.vision.Vision;
+import org.frogforce503.robot2025.subsystems.vision.VisionSimulator;
+import org.frogforce503.robot2025.subsystems.vision.Vision.CameraName;
+import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIO;
+import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonSim;
+import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonVision;
+import org.frogforce503.robot2025.subsystems.vision.object_detection.ObjectDetectionIO;
 import org.frogforce503.test.UnitTest;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
-import org.photonvision.EstimatedRobotPose;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.UnaryFunction;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -103,11 +107,15 @@ public class RobotContainer implements UnitTest {
     // Offset Manager
     private final OffsetManager offsetManager;
 
+    // Visualizer
+    private final GameVisualizer gameVisualizer;
+    private final VisionSimulator visionVisualizer = new VisionSimulator();
+
     // Controllers
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController operator = new CommandXboxController(1);
-    private final Supplier<Trigger> driverLeftPaddle = driver::leftStick;
-    private final Supplier<Trigger> driverRightPaddle = driver::rightStick;
+    private final Supplier<Trigger> driverLeftPaddle = TriggerUtil.leftPaddle(driver);
+    private final Supplier<Trigger> driverRightPaddle = TriggerUtil.rightPaddle(driver);
     
     private final Supplier<JoystickInputs> driverInputs = () -> new JoystickInputs(driver);
 
@@ -123,9 +131,9 @@ public class RobotContainer implements UnitTest {
     private Map<Mode, Command> releaseScoreRunner;
   
     // Vision Estimate Acceptor
-    private final Consumer<EstimatedRobotPose> visionEstimateConsumer =
-        estimatedPose ->
-            drive.acceptVisionMeasurement(estimatedPose);
+    private final Consumer<VisionMeasurement> visionEstimateConsumer =
+        measurement ->
+            drive.acceptVisionMeasurement(measurement);
 
     // Driver-Assisted Commands
     private final LoggedNetworkBoolean autoDrivingEnabled =
@@ -153,7 +161,18 @@ public class RobotContainer implements UnitTest {
         switch (Constants.getRobot()) {
             case CompBot -> {
                 drive = new Drive(new DriveIOPhoenix(), field);
-                vision = new Vision(field, visionEstimateConsumer, drive::getCurrentPose);
+                vision =
+                    new Vision(
+                        field,
+                        visionEstimateConsumer,
+                        drive::getCurrentPose,
+                        new AprilTagIO[] {
+                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Robot.bot.FRONT_LEFT_CAMERA_TO_CENTER),
+                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Robot.bot.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER),
+                            new AprilTagIOPhotonVision(CameraName.LOWER_FRONT_RIGHT, Robot.bot.LOWER_FRONT_RIGHT_CAMERA_TO_CENTER),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Robot.bot.ELEVATOR_BACK_CAMERA_TO_CENTER)
+                        },
+                        new ObjectDetectionIO[] {});
                 elevator = new Elevator(new ElevatorIOSpark(), new DigitalIOElevator());
                 arm = new Arm(new ArmIOSpark());
                 wrist = new Wrist(new WristIOSpark());
@@ -164,7 +183,18 @@ public class RobotContainer implements UnitTest {
             }
             case PracticeBot -> {
                 drive = new Drive(new DriveIOPhoenix(), field);
-                vision = new Vision(field, visionEstimateConsumer, drive::getCurrentPose);
+                vision =
+                    new Vision(
+                        field,
+                        visionEstimateConsumer,
+                        drive::getCurrentPose,
+                        new AprilTagIO[] {
+                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Robot.bot.FRONT_LEFT_CAMERA_TO_CENTER),
+                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Robot.bot.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Robot.bot.ELEVATOR_BACK_CAMERA_TO_CENTER),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_FRONT, Robot.bot.ELEVATOR_FRONT_CAMERA_TO_CENTER)
+                        },
+                        new ObjectDetectionIO[] {});
                 elevator = new Elevator(new ElevatorIOSpark(), new DigitalIOElevator());
                 arm = new Arm(new ArmIOSpark());
                 wrist = new Wrist(new WristIOSpark());
@@ -175,7 +205,18 @@ public class RobotContainer implements UnitTest {
             }
             case SimBot -> {
                 drive = new Drive(new DriveIOSim(), field);
-                vision = new Vision(field, visionEstimateConsumer, drive::getCurrentPose);
+                vision =
+                    new Vision(
+                        field,
+                        visionEstimateConsumer,
+                        drive::getCurrentPose,
+                        new AprilTagIO[] {
+                            new AprilTagIOPhotonSim(CameraName.FRONT_LEFT, Robot.bot.FRONT_LEFT_CAMERA_TO_CENTER, visionVisualizer),
+                            new AprilTagIOPhotonSim(CameraName.UPPER_FRONT_RIGHT, Robot.bot.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER, visionVisualizer),
+                            new AprilTagIOPhotonSim(CameraName.LOWER_FRONT_RIGHT, Robot.bot.LOWER_FRONT_RIGHT_CAMERA_TO_CENTER, visionVisualizer),
+                            new AprilTagIOPhotonSim(CameraName.ELEVATOR_BACK, Robot.bot.ELEVATOR_BACK_CAMERA_TO_CENTER, visionVisualizer)
+                        },
+                        new ObjectDetectionIO[] {});
                 elevator = new Elevator(new ElevatorIOSim(), new DigitalIO() {});
                 arm = new Arm(new ArmIOSim());
                 wrist = new Wrist(new WristIOSim());
@@ -186,7 +227,13 @@ public class RobotContainer implements UnitTest {
             }
             case ProgrammingBot -> {
                 drive = new Drive(new DriveIOPhoenix(), field);
-                vision = new Vision(field, visionEstimateConsumer, drive::getCurrentPose);
+                vision =
+                    new Vision(
+                        field,
+                        visionEstimateConsumer,
+                        drive::getCurrentPose,
+                        new AprilTagIO[] {},
+                        new ObjectDetectionIO[] {});
                 elevator = new Elevator(new ElevatorIO() {}, new DigitalIO() {});
                 arm = new Arm(new ArmIO() {});
                 wrist = new Wrist(new WristIO() {});
@@ -256,6 +303,9 @@ public class RobotContainer implements UnitTest {
                 superstructure,
                 autoIntakeCommands,
                 autoScoreCommands);
+
+        // Create game visualizer
+        gameVisualizer = new GameVisualizer(field, drive::getCurrentPose);
     
         // Initialize command mappers
         this.intakeRunner = new HashMap<>() {{
@@ -310,14 +360,17 @@ public class RobotContainer implements UnitTest {
             put(Mode.L2,
                 autoScoreCommands
                     .coralAutoScore()
+                    .alongWith(Commands.runOnce(vision::reefAlignment))
                     .alongWith(leds.scoreCoral()));
             put(Mode.L3,
                 autoScoreCommands
                     .coralAutoScore()
+                    .alongWith(Commands.runOnce(vision::reefAlignment))
                     .alongWith(leds.scoreCoral()));
             put(Mode.L4,
                 autoScoreCommands
                     .coralAutoScore()
+                    .alongWith(Commands.runOnce(vision::reefAlignment))
                     .alongWith(leds.scoreCoral()));
 
             // Algae
@@ -338,25 +391,29 @@ public class RobotContainer implements UnitTest {
                     .ejectCoralForL1()
                     .andThen(new WaitAfterCoralEject())
                     .andThen(superstructure.home())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)));
+                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)))
+                    .alongWith(Commands.runOnce(vision::globalLocalization));
             put(Mode.L2,
                 superstructure
                     .ejectCoral()
                     .andThen(new WaitAfterCoralEject())
                     .andThen(superstructure.home())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)));
+                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)))
+                    .alongWith(Commands.runOnce(vision::globalLocalization));
             put(Mode.L3,
                 superstructure
                     .ejectCoral()
                     .andThen(new WaitAfterCoralEject())
                     .andThen(superstructure.home())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)));
+                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)))
+                    .alongWith(Commands.runOnce(vision::globalLocalization));
             put(Mode.L4,
                 superstructure
                     .ejectCoral()
                     .andThen(new WaitAfterCoralEject())
                     .andThen(superstructure.homeAfterL4())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)));
+                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)))
+                    .alongWith(Commands.runOnce(vision::globalLocalization));
 
             // Algae
             put(Mode.PROCESSOR,
@@ -378,14 +435,7 @@ public class RobotContainer implements UnitTest {
         algaeMode = new Trigger(() -> superstructure.getCurrentPiece() == Gamepiece.ALGAE);
         manualControlEnabled = new Trigger(superstructure::isManualControlEnabled);
         superstructureCoastEnabled = new Trigger(superstructureCoastOverride::get);
-        camerasConnected =
-            new Trigger(
-                Logic.and(
-                    () ->
-                        Arrays
-                            .stream(Camera.values())
-                            .allMatch(vision::getCameraStatus),
-                    vision::areTagsVisible)); // Cameras connected only when all cameras are connected & any tags are visible
+        camerasConnected = new Trigger(vision::checkConnections);
 
         // Set default mode whenever gamepiece changes
         coralMode.onTrue(Commands.runOnce(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)));
@@ -558,6 +608,13 @@ public class RobotContainer implements UnitTest {
 
     public void cleanupAutoChooser() {
         autoChooser.cleanup();
+    }
+
+    // Visualizer
+    public void updateVisualizers() {
+        if (RobotBase.isSimulation()) {
+            visionVisualizer.update(drive.getCurrentPose());
+        }
     }
 
     // Other

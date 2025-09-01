@@ -15,7 +15,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** Follows a runtime-generated {@link PlannedPath}. */
-public class DrivePathOTF extends Command {
+public class DrivePlannedPathOTF extends Command {
     private final Drive drive;
     private final FieldInfo field;
     private final PlannedPathBuilder pathBuilder;
@@ -26,7 +26,7 @@ public class DrivePathOTF extends Command {
 
     private FollowPlannedPath pathFollowingCommand;
 
-    public DrivePathOTF(
+    public DrivePlannedPathOTF(
         Drive drive,
         FieldInfo field,
         Constraints constraints,
@@ -45,7 +45,7 @@ public class DrivePathOTF extends Command {
         addRequirements(drive);
     }
 
-    public DrivePathOTF(
+    public DrivePlannedPathOTF(
         Drive drive,
         FieldInfo field,
         Supplier<Pose2d> robotPose,
