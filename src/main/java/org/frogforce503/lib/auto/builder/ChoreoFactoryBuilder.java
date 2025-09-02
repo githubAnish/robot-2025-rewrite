@@ -47,8 +47,8 @@ public class ChoreoFactoryBuilder {
 
         // Apply the generated speeds
         drive.runVelocity(
-            ChassisSpeeds.fromFieldRelativeSpeeds(
-                speeds,
-                pose.getRotation()));
+            ChassisSpeeds.fromFieldRelativeSpeeds(speeds, pose.getRotation()),
+            sample.moduleForcesX(),
+            sample.moduleForcesY());
     }
 }

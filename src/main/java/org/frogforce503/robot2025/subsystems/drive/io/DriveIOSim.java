@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.Timer;
 import lombok.Setter;
 
 public class DriveIOSim implements DriveIO {
-    private final SwerveDriveKinematics kinematics;
+    private final SwerveDriveKinematics kinematics = Robot.bot.kinematics;
 
     private SwerveModuleState[] states =
         new SwerveModuleState[] {
@@ -29,9 +29,7 @@ public class DriveIOSim implements DriveIO {
     private double lastUpdate = -1.0;
     private double dt = 0;
 
-    public DriveIOSim() {
-        kinematics = Robot.bot.kinematics;
-    }
+    public DriveIOSim() {}
 
     @Override
     public void updateInputs(DriveIOInputs inputs) {
@@ -62,9 +60,14 @@ public class DriveIOSim implements DriveIO {
     }
 
     @Override
-    public void runVelocity(ChassisSpeeds velocity) {
-        this.currentVelocity = velocity;
+    public void runVelocity(ChassisSpeeds speeds) {
+        this.currentVelocity = speeds;
         this.states = kinematics.toSwerveModuleStates(this.currentVelocity);
+    }
+
+    @Override
+    public void runVelocity(ChassisSpeeds speeds, double[] moduleForcesX, double[] moduleForcesY) {
+        runVelocity(speeds); // Ignore module force feedforwards in simulation
     }
 
     public void update() {

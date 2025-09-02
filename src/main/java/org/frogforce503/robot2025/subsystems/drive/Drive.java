@@ -195,6 +195,12 @@ public class Drive extends SubsystemBase {
         this.requestedSpeeds = speeds;
     }
 
+    /** Runs a robot-relative ChassisSpeeds to the drivetrain with wheel force feedforwards in the X & Y direction. */
+    public void runVelocity(ChassisSpeeds speeds, double[] moduleForcesX, double[] moduleForcesY) {
+        io.runVelocity(speeds, moduleForcesX, moduleForcesY);
+        this.requestedSpeeds = speeds;
+    }
+
     /** Runs the drive in a straight line with the specified drive output. */
     public void runCharacterization(double output) {
         io.runCharacterization(output);

@@ -36,7 +36,8 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         new ApplyRobotSpeeds()
             .withCenterOfRotation(DriveConstants.CENTER_OF_ROTATION)
             .withDriveRequestType(DriveRequestType.Velocity)
-            .withSteerRequestType(SteerRequestType.MotionMagicExpo);
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+            .withDesaturateWheelSpeeds(true);
 
     private final SysIdSwerveTranslation RUN_CHARACTERIZATION = new SysIdSwerveTranslation();
 
@@ -162,6 +163,16 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     public void runVelocity(ChassisSpeeds speeds) {
         super.setControl(RUN_CHASSIS_SPEEDS.withSpeeds(speeds));
     }
+
+    @Override
+    public void runVelocity(ChassisSpeeds speeds, double[] moduleForcesX, double[] moduleForcesY) {
+        super.setControl(
+            RUN_CHASSIS_SPEEDS
+                .withSpeeds(speeds)
+                .withWheelForceFeedforwardsX(moduleForcesX)
+                .withWheelForceFeedforwardsY(moduleForcesY));
+    }
+    
 
     @Override
     public void runCharacterization(double output) {

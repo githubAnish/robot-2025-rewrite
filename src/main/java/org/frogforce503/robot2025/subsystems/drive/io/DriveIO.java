@@ -83,7 +83,9 @@ public interface DriveIO {
 
     default void coast() {}
 
-    default void runVelocity(ChassisSpeeds velocity) {}
+    default void runVelocity(ChassisSpeeds speeds) {}
+
+    default void runVelocity(ChassisSpeeds speeds, double[] moduleForcesX, double[] moduleForcesY) {}
 
     default void runCharacterization(double output) {}
 }
