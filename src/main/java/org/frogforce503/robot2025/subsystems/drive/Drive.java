@@ -48,7 +48,7 @@ public class Drive extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Drive", inputs);
-        
+
         currentPose = inputs.data.poseMeters();
         currentVelocity = inputs.data.velocityMeters();
 

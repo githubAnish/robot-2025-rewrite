@@ -4,6 +4,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -43,7 +44,7 @@ public class Wrist extends FFSubsystemBase {
 
     // Alerts
     private final Alert coastModeWhileRunning =
-        new Alert("Wrist/Warnings", "Wrist is in coast mode while running!", Alert.AlertType.kWarning);
+        new Alert("Wrist is in coast mode while running!", AlertType.kError);
 
     @Getter private WristGoal currentGoal = WristGoal.INTAKE_CORAL;
 

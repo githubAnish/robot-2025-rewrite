@@ -12,6 +12,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -56,7 +57,7 @@ public class Arm extends FFSubsystemBase {
 
     // Alerts
     private final Alert coastModeWhileRunning =
-        new Alert("Arm/Warnings", "Arm is in coast mode while running!", Alert.AlertType.kWarning);
+        new Alert("Arm is in coast mode while running!", AlertType.kError);
 
     @Getter private ArmGoal currentGoal = ArmGoal.DOWN;
 

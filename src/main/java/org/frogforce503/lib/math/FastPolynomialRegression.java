@@ -42,8 +42,8 @@ public class FastPolynomialRegression {
 
     InterpolatingDoubleTreeMap res = new InterpolatingDoubleTreeMap();
 
-    Double lower = sortedKeys.lower(key);
-    Double upper = sortedKeys.higher(key);
+    double lower = sortedKeys.lower(key);
+    double upper = sortedKeys.higher(key);
 
     try {
       res.put(lower, m_map.get(lower));

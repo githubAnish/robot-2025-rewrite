@@ -163,7 +163,7 @@ public class RobotHardwareCompBot extends RobotHardware {
         this.kVehicleToBackRight = new Translation2d(this.backRightConstants.LocationX, this.backRightConstants.LocationY);
         this.kVehicleToBackLeft = new Translation2d(this.backLeftConstants.LocationX, this.backLeftConstants.LocationY);
 
-        this.kWheelbaseLength = kVehicleToFrontLeft.getDistance(kVehicleToBackLeft); 
+        this.kWheelbaseLength = kVehicleToFrontLeft.getDistance(kVehicleToBackLeft);
         this.kWheelbaseWidth = kVehicleToFrontLeft.getDistance(kVehicleToFrontRight);
         this.kWheelRadius = TunerConstantsCompBot.kWheelRadius;
 

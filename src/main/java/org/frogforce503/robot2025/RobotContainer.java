@@ -114,8 +114,8 @@ public class RobotContainer implements UnitTest {
     // Controllers
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController operator = new CommandXboxController(1);
-    private final Supplier<Trigger> driverLeftPaddle = TriggerUtil.leftPaddle(driver);
-    private final Supplier<Trigger> driverRightPaddle = TriggerUtil.rightPaddle(driver);
+    private final Supplier<Trigger> driverLeftPaddle = driver.leftPaddle();
+    private final Supplier<Trigger> driverRightPaddle = driver.rightPaddle();
     
     private final Supplier<JoystickInputs> driverInputs = () -> new JoystickInputs(driver);
 
@@ -391,29 +391,29 @@ public class RobotContainer implements UnitTest {
                     .ejectCoralForL1()
                     .andThen(new WaitAfterCoralEject())
                     .andThen(superstructure.home())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)))
-                    .alongWith(Commands.runOnce(vision::globalLocalization));
+                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE))
+                    .alongWith(Commands.runOnce(vision::globalLocalization)));
             put(Mode.L2,
                 superstructure
                     .ejectCoral()
                     .andThen(new WaitAfterCoralEject())
                     .andThen(superstructure.home())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)))
-                    .alongWith(Commands.runOnce(vision::globalLocalization));
+                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE))
+                    .alongWith(Commands.runOnce(vision::globalLocalization)));
             put(Mode.L3,
                 superstructure
                     .ejectCoral()
                     .andThen(new WaitAfterCoralEject())
                     .andThen(superstructure.home())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)))
-                    .alongWith(Commands.runOnce(vision::globalLocalization));
+                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE))
+                    .alongWith(Commands.runOnce(vision::globalLocalization)));
             put(Mode.L4,
                 superstructure
                     .ejectCoral()
                     .andThen(new WaitAfterCoralEject())
                     .andThen(superstructure.homeAfterL4())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)))
-                    .alongWith(Commands.runOnce(vision::globalLocalization));
+                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE))
+                    .alongWith(Commands.runOnce(vision::globalLocalization)));
 
             // Algae
             put(Mode.PROCESSOR,

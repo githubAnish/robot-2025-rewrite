@@ -121,7 +121,7 @@ public class Robot extends LoggedRobot {
     robotContainer.test(); // Unit tester
 
     // Switch thread to high priority to improve loop timing
-    // Threads.setCurrentThreadPriority(true, 10);
+    // Threads.setCurrentThreadPriority(true, 5);
 
     // Warmup auto chooser
     robotContainer.warmupAutoChooser();
