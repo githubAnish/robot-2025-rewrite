@@ -20,9 +20,9 @@ public final class SparkUtil {
     private SparkUtil() {}
 
     @SuppressWarnings("unchecked")
-    public static <T extends SparkBase> T getSpark(int deviceId, boolean isFlex) {
+    public static <T extends SparkBase> T getSpark(int deviceId, boolean isSparkFlex) {
         return
-            isFlex
+            isSparkFlex
                 ? (T) new SparkFlex(deviceId, MotorType.kBrushless)
                 : (T) new SparkMax(deviceId, MotorType.kBrushless);
     }

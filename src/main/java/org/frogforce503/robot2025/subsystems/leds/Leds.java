@@ -3,6 +3,7 @@ package org.frogforce503.robot2025.subsystems.leds;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -25,7 +26,7 @@ public class Leds extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Leds", inputs);
 
-        if (cameraDisconnected) {
+        if (cameraDisconnected && RobotState.isDisabled()) {
             currentGoal = LedsGoal.CAMERA_DISCONNECTED;
         }
 

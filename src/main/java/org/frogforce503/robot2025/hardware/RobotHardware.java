@@ -1,9 +1,5 @@
 package org.frogforce503.robot2025.hardware;
 
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
-
 import org.frogforce503.lib.auto.follower.AutoPIDController;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
@@ -24,9 +20,11 @@ public abstract class RobotHardware {
 
     // Camera positions relative to center of robot (insert below) as Transform3d
     public Transform3d FRONT_LEFT_CAMERA_TO_CENTER;
-    public Transform3d FRONT_RIGHT_CAMERA_TO_CENTER;
-    public Transform3d ELEVATOR_BACK_CAMERA_TO_CENTER;
+    public Transform3d UPPER_FRONT_RIGHT_CAMERA_TO_CENTER;
     public Transform3d LOWER_FRONT_RIGHT_CAMERA_TO_CENTER;
+    public Transform3d ELEVATOR_BACK_CAMERA_TO_CENTER;
+    public Transform3d ELEVATOR_FRONT_CAMERA_TO_CENTER;
+
     public Transform3d OBJECT_DETECTION_CAMERA_TO_CENTER;
 
     // Sensor Constants
@@ -145,35 +143,4 @@ public abstract class RobotHardware {
 
     // Auto Following PID
     public AutoPIDController autoPIDController;
-
-    /**
-     * @return the MAC address of the robot
-     */
-    public static String getMACAddress() {
-        try {
-            Enumeration<NetworkInterface> nwInterface = NetworkInterface.getNetworkInterfaces();
-            StringBuilder ret = new StringBuilder();
-            while (nwInterface.hasMoreElements()) {
-                NetworkInterface nis = nwInterface.nextElement();
-                if (nis != null) {
-                    byte[] mac = nis.getHardwareAddress();
-                    if (mac != null) {
-                        for (int i = 0; i < mac.length; i++) {
-                            ret.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
-                        }
-                        return ret.toString();
-                    } else {
-                        System.out.println("Address doesn't exist or is not accessible");
-                    }
-                } else {
-                    System.out.println("Network Interface for the specified address is not found.");
-                }
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
 }

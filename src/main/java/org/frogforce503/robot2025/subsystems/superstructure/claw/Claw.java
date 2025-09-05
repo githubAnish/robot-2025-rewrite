@@ -9,6 +9,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,7 +31,7 @@ public class Claw extends FFSubsystemBase {
 
     // Alerts
     private final Alert coastModeWhileRunning =
-        new Alert("Claw/Warnings", "Claw is in coast mode while running!", Alert.AlertType.kWarning);
+        new Alert("Claw is in coast mode while running!", AlertType.kError);
 
     @Getter private ClawGoal currentGoal = ClawGoal.OFF;
 

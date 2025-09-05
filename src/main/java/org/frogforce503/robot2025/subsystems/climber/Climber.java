@@ -16,6 +16,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -46,7 +47,7 @@ public class Climber extends FFSubsystemBase {
 
     // Alerts
     private final Alert coastModeWhileRunning =
-        new Alert("Climber/Warnings", "Climber is in coast mode while running!", Alert.AlertType.kWarning);
+        new Alert("Climber is in coast mode while running!", AlertType.kError);
 
     public enum ClimberGoal {
         IDLE(0.0),

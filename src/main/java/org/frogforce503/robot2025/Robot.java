@@ -29,6 +29,8 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import com.ctre.phoenix6.SignalLogger;
+
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -92,6 +94,9 @@ public class Robot extends LoggedRobot {
         break;
     }
 
+    // Disable Unnecessary logging
+    SignalLogger.enableAutoLogging(false);
+
     // Start AdvantageKit logger
     Logger.start();
 
@@ -116,7 +121,7 @@ public class Robot extends LoggedRobot {
     robotContainer.test(); // Unit tester
 
     // Switch thread to high priority to improve loop timing
-    // Threads.setCurrentThreadPriority(true, 10);
+    // Threads.setCurrentThreadPriority(true, 5);
 
     // Warmup auto chooser
     robotContainer.warmupAutoChooser();
@@ -137,6 +142,9 @@ public class Robot extends LoggedRobot {
 
     // Log NT client list
     NTClientLogger.log();
+
+    // Update visualizers
+    robotContainer.updateVisualizers();
 
     // Record cycle time
     LoggedTracer.record("RobotPeriodic");

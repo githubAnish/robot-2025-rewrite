@@ -47,7 +47,7 @@ public class SwitchableChooser<E> extends LoggedNetworkInput {
 
   /** Updates the set of available options. */
   public void setOptions(E[] options) {
-    if (Arrays.equals(options, this.optionMap.keySet().toArray())) {
+    if (Arrays.equals(options, optionMap.keySet().toArray())) {
       return;
     }
 

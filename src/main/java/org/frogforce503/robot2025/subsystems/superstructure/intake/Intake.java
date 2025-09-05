@@ -18,6 +18,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -68,7 +69,7 @@ public class Intake extends FFSubsystemBase {
 
     // Alerts
     private final Alert coastModeWhileRunning =
-        new Alert("Intake/Warnings", "Intake is in coast mode while running!", Alert.AlertType.kWarning);
+        new Alert("Intake is in coast mode while running!", AlertType.kError);
 
     @Getter private IntakeGoal currentGoal = IntakeGoal.IDLE;
 

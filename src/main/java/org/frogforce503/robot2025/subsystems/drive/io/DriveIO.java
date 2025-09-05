@@ -1,5 +1,7 @@
 package org.frogforce503.robot2025.subsystems.drive.io;
 
+import org.frogforce503.robot2025.subsystems.drive.DriveConstants.ModuleName;
+
 import org.littletonrobotics.junction.AutoLog;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
@@ -64,7 +66,7 @@ public interface DriveIO {
     default void updateInputs(DriveIOInputs inputs) {}
 
     // Required in only some cases, doesn't need to be retrieved during normal operation.
-    default ModuleIOData getModuleData(int moduleIndex, Rotation2d encoderOffsetForModule) {
+    default ModuleIOData getModuleData(ModuleName moduleName) {
         return new ModuleIOData();
     }
 

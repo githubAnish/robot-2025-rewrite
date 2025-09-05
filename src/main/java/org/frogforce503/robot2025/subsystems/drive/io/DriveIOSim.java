@@ -72,25 +72,27 @@ public class DriveIOSim implements DriveIO {
 
     public void update() {
         double t = Timer.getFPGATimestamp();
+
         if (lastUpdate > 0) {
             dt = t - lastUpdate;
-            currentPose = currentPose.exp(
-                new Twist2d(
-                    currentVelocity.vxMetersPerSecond * dt, 
-                    currentVelocity.vyMetersPerSecond * dt, 
-                    currentVelocity.omegaRadiansPerSecond * dt
-                )
-            );
+
+            currentPose =
+                currentPose.exp(
+                    new Twist2d(
+                        currentVelocity.vxMetersPerSecond * dt, 
+                        currentVelocity.vyMetersPerSecond * dt, 
+                        currentVelocity.omegaRadiansPerSecond * dt));
         }
+        
         lastUpdate = t;
     }
 
-    public SwerveDriveState getCurrentState(Pose2d nowPose) {
+    public SwerveDriveState getCurrentState(Pose2d currentPose) {
         SwerveDriveState currentState = new SwerveDriveState();
         
         currentState.SuccessfulDaqs = 0;
         currentState.FailedDaqs = 0;
-        currentState.Pose = nowPose;
+        currentState.Pose = currentPose;
         currentState.ModuleStates = this.states;
         currentState.OdometryPeriod = 0.02;
 

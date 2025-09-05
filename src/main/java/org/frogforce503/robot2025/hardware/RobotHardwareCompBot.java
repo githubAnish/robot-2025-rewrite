@@ -126,7 +126,7 @@ public class RobotHardwareCompBot extends RobotHardware {
             new Translation3d(Units.inchesToMeters(1.635), Units.inchesToMeters(11.241), Units.inchesToMeters(20.003)),
             new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(15), Units.degreesToRadians(-15)));
 
-        FRONT_RIGHT_CAMERA_TO_CENTER = new Transform3d(
+        UPPER_FRONT_RIGHT_CAMERA_TO_CENTER = new Transform3d(
             new Translation3d(Units.inchesToMeters(1.8026), Units.inchesToMeters(-11.305), Units.inchesToMeters(31.721)),
             new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(30), Units.degreesToRadians(10)));
  
@@ -163,7 +163,7 @@ public class RobotHardwareCompBot extends RobotHardware {
         this.kVehicleToBackRight = new Translation2d(this.backRightConstants.LocationX, this.backRightConstants.LocationY);
         this.kVehicleToBackLeft = new Translation2d(this.backLeftConstants.LocationX, this.backLeftConstants.LocationY);
 
-        this.kWheelbaseLength = kVehicleToFrontLeft.getDistance(kVehicleToBackLeft); 
+        this.kWheelbaseLength = kVehicleToFrontLeft.getDistance(kVehicleToBackLeft);
         this.kWheelbaseWidth = kVehicleToFrontLeft.getDistance(kVehicleToFrontRight);
         this.kWheelRadius = TunerConstantsCompBot.kWheelRadius;
 

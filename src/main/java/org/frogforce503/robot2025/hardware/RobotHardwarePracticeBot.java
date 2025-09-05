@@ -124,7 +124,7 @@ public class RobotHardwarePracticeBot extends RobotHardware {
             new Translation3d(Units.inchesToMeters(1.288), Units.inchesToMeters(11.525), Units.inchesToMeters(19.956)),
             new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(15), Units.degreesToRadians(-15)));
 
-        FRONT_RIGHT_CAMERA_TO_CENTER = new Transform3d(
+        UPPER_FRONT_RIGHT_CAMERA_TO_CENTER = new Transform3d(
             new Translation3d(Units.inchesToMeters(1.288), Units.inchesToMeters(-11.525), Units.inchesToMeters(31.721)),
             new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(30), Units.degreesToRadians(10)));
  
