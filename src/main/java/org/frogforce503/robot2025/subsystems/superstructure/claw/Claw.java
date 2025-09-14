@@ -110,10 +110,16 @@ public class Claw extends FFSubsystemBase {
         );
     }
 
-    public Command runGoal(ClawGoal goal) {
+    public Command setGoal(ClawGoal goal) {
         return Commands.sequence(
             runOnce(() -> requestVelocityControl = true),
-            runOnce(() -> currentGoal = goal),
+            runOnce(() -> currentGoal = goal)
+        );
+    }
+
+    public Command runGoal(ClawGoal goal) {
+        return Commands.sequence(
+            setGoal(goal),
             Commands.waitUntil(this::atGoal)
         );
     }

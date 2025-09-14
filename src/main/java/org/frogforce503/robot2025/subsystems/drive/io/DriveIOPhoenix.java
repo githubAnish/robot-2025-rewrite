@@ -31,8 +31,14 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
 public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> implements DriveIO {
+    // Signals
+    private final ModuleSignals[] moduleSignals = new ModuleSignals[4];
+    private final StatusSignal<Angle> rawGyroYaw;
+
+    // State
     private ChassisSpeeds currentVelocity;
 
+    // Requests
     private final ApplyRobotSpeeds RUN_CHASSIS_SPEEDS =
         new ApplyRobotSpeeds()
             .withCenterOfRotation(DriveConstants.CENTER_OF_ROTATION)
@@ -42,10 +48,6 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
 
     private final SysIdSwerveTranslation RUN_CHARACTERIZATION = new SysIdSwerveTranslation();
 
-    private final ModuleIOData[] moduleData = new ModuleIOData[4];
-
-    private final StatusSignal<Angle> rawGyroYaw;
-
     public DriveIOPhoenix() {
         super(
             TalonFX::new, TalonFX::new, CANcoder::new,
@@ -53,75 +55,58 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
             Robot.bot.frontLeftConstants, Robot.bot.frontRightConstants, Robot.bot.backLeftConstants, Robot.bot.backRightConstants);
 
         rawGyroYaw = super.getPigeon2().getYaw();
-        rawGyroYaw.setUpdateFrequency(DriveConstants.odometryFrequency);
 
-        for (int i = 0; i < moduleData.length; i++) {
+        for (int i = 0; i < moduleSignals.length; i++) {
             SwerveModule<TalonFX, TalonFX, CANcoder> module = super.getModule(i);
         
-            TalonFX driveMotor = module.getDriveMotor();
-            TalonFX steerMotor = module.getSteerMotor();
-            CANcoder steerEncoder = module.getEncoder();
+            final TalonFX driveMotor = module.getDriveMotor();
+            final TalonFX steerMotor = module.getSteerMotor();
+            final CANcoder steerEncoder = module.getEncoder();
 
-            // Inputs from drive motor
-            final StatusSignal<Angle> drivePosition = driveMotor.getPosition();
-            final StatusSignal<AngularVelocity> driveVelocity = driveMotor.getVelocity();
-            final StatusSignal<Voltage> driveAppliedVolts = driveMotor.getMotorVoltage();
-            final StatusSignal<Current> driveSupplyCurrentAmps = driveMotor.getSupplyCurrent();
-            final StatusSignal<Current> driveTorqueCurrentAmps = driveMotor.getTorqueCurrent();
+            moduleSignals[i] =
+                new ModuleSignals(
+                    // Inputs from drive motor
+                    driveMotor.getPosition(),
+                    driveMotor.getVelocity(),
+                    driveMotor.getMotorVoltage(),
+                    driveMotor.getSupplyCurrent(),
+                    driveMotor.getTorqueCurrent(),
 
-            // Inputs from turn motor
-            final StatusSignal<Angle> turnAbsolutePosition = steerEncoder.getAbsolutePosition();
-            final StatusSignal<Angle> turnPosition = steerMotor.getPosition();
-            final StatusSignal<AngularVelocity> turnVelocity = steerMotor.getVelocity();
-            final StatusSignal<Voltage> turnAppliedVolts = steerMotor.getMotorVoltage();
-            final StatusSignal<Current> turnSupplyCurrentAmps = steerMotor.getSupplyCurrent();
-            final StatusSignal<Current> turnTorqueCurrentAmps = steerMotor.getTorqueCurrent();
-
-            BaseStatusSignal.setUpdateFrequencyForAll(
-                DriveConstants.odometryFrequency, drivePosition, turnPosition, turnAbsolutePosition);
-
-            BaseStatusSignal.setUpdateFrequencyForAll(
-                50.0,
-                driveVelocity,
-                driveAppliedVolts,
-                driveSupplyCurrentAmps,
-                driveTorqueCurrentAmps,
-                turnVelocity,
-                turnAppliedVolts,
-                turnSupplyCurrentAmps,
-                turnTorqueCurrentAmps);
-
-            moduleData[i] =
-                new ModuleIOData(
-                    BaseStatusSignal.isAllGood(
-                        drivePosition,
-                        driveVelocity,
-                        driveAppliedVolts,
-                        driveSupplyCurrentAmps,
-                        driveTorqueCurrentAmps),
-                    Units.rotationsToRadians(drivePosition.getValueAsDouble()),
-                    Units.rotationsToRadians(driveVelocity.getValueAsDouble()),
-                    driveAppliedVolts.getValueAsDouble(),
-                    driveSupplyCurrentAmps.getValueAsDouble(),
-                    driveTorqueCurrentAmps.getValueAsDouble(),
-                    BaseStatusSignal.isAllGood(
-                        turnPosition,
-                        turnVelocity,
-                        turnAppliedVolts,
-                        turnSupplyCurrentAmps,
-                        turnTorqueCurrentAmps),
-                    BaseStatusSignal.isAllGood(turnAbsolutePosition),
-                    Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble()).minus(ModuleName.fromIndex(i).encoderOffset),
-                    Rotation2d.fromRotations(turnPosition.getValueAsDouble()),
-                    Units.rotationsToRadians(turnVelocity.getValueAsDouble()),
-                    turnAppliedVolts.getValueAsDouble(),
-                    turnSupplyCurrentAmps.getValueAsDouble(),
-                    turnTorqueCurrentAmps.getValueAsDouble());
+                    // Inputs from turn motor
+                    steerEncoder.getAbsolutePosition(),
+                    steerMotor.getPosition(),
+                    steerMotor.getVelocity(),
+                    steerMotor.getMotorVoltage(),
+                    steerMotor.getSupplyCurrent(),
+                    steerMotor.getTorqueCurrent());
         }
     }
 
     @Override
     public void updateInputs(DriveIOInputs inputs) {
+        // Refresh all signals
+        BaseStatusSignal.refreshAll(rawGyroYaw);
+
+        for (ModuleSignals data : moduleSignals) {
+            BaseStatusSignal.refreshAll(
+                // Inputs from drive motor
+                data.drivePosition,
+                data.driveVelocity,
+                data.driveAppliedVolts,
+                data.driveSupplyCurrentAmps,
+                data.driveTorqueCurrentAmps,
+
+                // Inputs from turn motor
+                data.turnPosition,
+                data.turnAbsolutePosition,
+                data.turnVelocity,
+                data.turnAppliedVolts,
+                data.turnSupplyCurrentAmps,
+                data.turnTorqueCurrentAmps
+            );
+        }
+
+        // Get chassis state & update drive inputs
         SwerveDriveState currentState = super.getState();
         Pose2d currentPose = currentState.Pose;
 
@@ -139,7 +124,37 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
 
     @Override
     public ModuleIOData getModuleData(ModuleName moduleName) {
-        return moduleData[moduleName.moduleIndex];
+        ModuleSignals signals = moduleSignals[moduleName.moduleIndex];
+
+        return
+            new ModuleIOData(
+                // Inputs from drive motor
+                BaseStatusSignal.isAllGood(
+                    signals.drivePosition,
+                    signals.driveVelocity,
+                    signals.driveAppliedVolts,
+                    signals.driveSupplyCurrentAmps,
+                    signals.driveTorqueCurrentAmps),
+                Units.rotationsToRadians(signals.drivePosition.getValueAsDouble()),
+                Units.rotationsToRadians(signals.driveVelocity.getValueAsDouble()),
+                signals.driveAppliedVolts.getValueAsDouble(),
+                signals.driveSupplyCurrentAmps.getValueAsDouble(),
+                signals.driveTorqueCurrentAmps.getValueAsDouble(),
+
+                // Inputs from turn motor
+                BaseStatusSignal.isAllGood(
+                    signals.turnPosition,
+                    signals.turnVelocity,
+                    signals.turnAppliedVolts,
+                    signals.turnSupplyCurrentAmps,
+                    signals.turnTorqueCurrentAmps),
+                BaseStatusSignal.isAllGood(signals.turnAbsolutePosition),
+                Rotation2d.fromRotations(signals.turnAbsolutePosition.getValueAsDouble()).minus(moduleName.encoderOffset),
+                Rotation2d.fromRotations(signals.turnPosition.getValueAsDouble()),
+                Units.rotationsToRadians(signals.turnVelocity.getValueAsDouble()),
+                signals.turnAppliedVolts.getValueAsDouble(),
+                signals.turnSupplyCurrentAmps.getValueAsDouble(),
+                signals.turnTorqueCurrentAmps.getValueAsDouble());
     }
 
     @Override
@@ -199,4 +214,20 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     public void runCharacterization(double output) {
         super.setControl(RUN_CHARACTERIZATION.withVolts(output));
     }
+
+    private record ModuleSignals(
+        // Inputs from drive motor
+        StatusSignal<Angle> drivePosition,
+        StatusSignal<AngularVelocity> driveVelocity,
+        StatusSignal<Voltage> driveAppliedVolts,
+        StatusSignal<Current> driveSupplyCurrentAmps,
+        StatusSignal<Current> driveTorqueCurrentAmps,
+
+        // Inputs from turn motor
+        StatusSignal<Angle> turnAbsolutePosition,
+        StatusSignal<Angle> turnPosition,
+        StatusSignal<AngularVelocity> turnVelocity,
+        StatusSignal<Voltage> turnAppliedVolts,
+        StatusSignal<Current> turnSupplyCurrentAmps,
+        StatusSignal<Current> turnTorqueCurrentAmps) {}
 }

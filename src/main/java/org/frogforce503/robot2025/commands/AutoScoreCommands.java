@@ -92,10 +92,10 @@ public class AutoScoreCommands {
                 superstructure::getCurrentBranch);
     }
 
-    public Command coralAutoScore(Supplier<Branch> branchSupplier, Supplier<Mode> superstructureModeSupplier) {
+    public Command coralAutoScore(Supplier<Branch> branchSupplier, Mode superstructureMode) {
         return
             Commands.sequence(
-                Commands.runOnce(() -> superstructure.setCurrentMode(superstructureModeSupplier.get()))
+                Commands.runOnce(() -> superstructure.setCurrentMode(superstructureMode))
                     .ignoringDisable(true),
                 coralAutoScore(branchSupplier));
     }

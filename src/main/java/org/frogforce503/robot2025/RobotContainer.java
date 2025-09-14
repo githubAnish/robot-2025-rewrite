@@ -132,8 +132,8 @@ public class RobotContainer implements UnitTest {
   
     // Vision Estimate Acceptor
     private final Consumer<VisionMeasurement> visionEstimateConsumer =
-        measurement ->
-            drive.acceptVisionMeasurement(measurement);
+        visionMeasurement ->    
+            drive.acceptVisionMeasurement(visionMeasurement);
 
     // Driver-Assisted Commands
     private final LoggedNetworkBoolean autoDrivingEnabled =

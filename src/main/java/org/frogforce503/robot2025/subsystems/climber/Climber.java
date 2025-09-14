@@ -155,10 +155,16 @@ public class Climber extends FFSubsystemBase {
         );
     }
 
-    public Command runGoal(ClimberGoal goal) {
+    public Command setGoal(ClimberGoal goal) {
         return Commands.sequence(
             runOnce(() -> requestCurrentControl = true),
-            runOnce(() -> currentGoal = goal),
+            runOnce(() -> currentGoal = goal)
+        );
+    }
+
+    public Command runGoal(ClimberGoal goal) {
+        return Commands.sequence(
+            setGoal(goal),
             Commands.waitUntil(this::atGoal)
         );
     }

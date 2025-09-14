@@ -4,7 +4,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.ParentDevice;
@@ -30,7 +30,7 @@ public class DummyElevatorIOTalonFX implements DummyElevatorIO {
     private final StatusSignal<Temperature> temp;
 
     private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
-    private final PositionTorqueCurrentFOC positionTorqueCurrentRequest = new PositionTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
+    private final MotionMagicTorqueCurrentFOC motionMagicTorqueCurrentRequest = new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
     private final VoltageOut voltageRequest = new VoltageOut(0.0).withUpdateFreqHz(0.0);
 
     public DummyElevatorIOTalonFX(int motorId, String canBus) {
@@ -44,6 +44,9 @@ public class DummyElevatorIOTalonFX implements DummyElevatorIO {
         config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
         config.CurrentLimits.SupplyCurrentLowerTime = 1.5;
         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+
+        config.MotionMagic.MotionMagicCruiseVelocity = 10.0; //rotations/sec
+        config.MotionMagic.MotionMagicAcceleration = 10.0; //rotations/sec^2
 
         talon.getConfigurator().apply(config, 0.25);
 
@@ -102,9 +105,9 @@ public class DummyElevatorIOTalonFX implements DummyElevatorIO {
     @Override
     public void runPosition(double positionRad, double feedforward) {
       talon.setControl(
-          positionTorqueCurrentRequest
+          motionMagicTorqueCurrentRequest
               .withPosition(Units.radiansToRotations(positionRad))
-              .withFeedForward(feedforward));
+              .withFeedForward(feedforward)); // Even though it says FF in Amperes, can still use FF models (ArmFF, ElevatorFF, SimpleMotorFF, etc)
     }
 
     @Override

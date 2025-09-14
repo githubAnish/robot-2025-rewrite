@@ -28,13 +28,8 @@ public final class SparkUtil {
     }
 
     public static ClosedLoopSlot getClosedLoopSlot(int slot) {
-        return switch (slot) {
-            case 0 -> ClosedLoopSlot.kSlot0;
-            case 1 -> ClosedLoopSlot.kSlot1;
-            case 2 -> ClosedLoopSlot.kSlot2;
-            case 3 -> ClosedLoopSlot.kSlot3;
-            default -> throw new IllegalArgumentException("Invalid slot ID: " + slot + ErrorUtil.attachJavaClassName(SparkUtil.class));
-        };
+        assert (0 <= slot && slot <= 3) : "Invalid slot ID: " + slot + ErrorUtil.attachJavaClassName(SparkUtil.class);
+        return ClosedLoopSlot.values()[slot];
     }
 
     public static void configure(SparkBase motor, SparkBaseConfig config, boolean burnFlash) {

@@ -85,8 +85,8 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
             wrist.getCurrentGoal().position,
             intake.getSetpoint().position);
 
-        Logger.recordOutput("Superstructure/Brake Mode Enabled", brakeModeEnabled);
-        Logger.recordOutput("Superstructure/Manual Control Enabled", manualControlEnabled);
+        Logger.recordOutput("Superstructure/Overrides/Brake Mode Enabled", brakeModeEnabled);
+        Logger.recordOutput("Superstructure/Overrides/Manual Control Enabled", manualControlEnabled);
 
         Logger.recordOutput("Superstructure/Inputs/Has Coral", hasCoral);
         Logger.recordOutput("Superstructure/Inputs/Algae In Claw", hasAlgaeInClaw);
@@ -525,22 +525,22 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
     public Command intakeCoralDuringAuton() {
         return
             Commands.sequence(
-            intake.runGoal(IntakeGoal.SCORE_CLEARANCE),
-            Commands.parallel(
-                elevator.runGoal(ElevatorGoal.DOWN),
-                arm.runGoal(ArmGoal.DOWN),
-                wrist.runGoal(WristGoal.INTAKE_CORAL),
-                claw.runGoal(ClawGoal.INTAKE_CORAL)
-            ),
-            intake.runGoal(IntakeGoal.INTAKE_CLEARANCE),
-            Commands.waitUntil(this::lowerSensorGot),
-            Commands.waitUntil(
-                Logic.and(
-                    Logic.not(this::lowerSensorGot),
-                    claw::coralCurrentThresholdForIntookMet)),
-            claw.stop(),
-            Commands.runOnce(() -> hasCoral = true)
-        );
+                intake.runGoal(IntakeGoal.SCORE_CLEARANCE),
+                Commands.parallel(
+                    elevator.runGoal(ElevatorGoal.DOWN),
+                    arm.runGoal(ArmGoal.DOWN),
+                    wrist.runGoal(WristGoal.INTAKE_CORAL),
+                    claw.runGoal(ClawGoal.INTAKE_CORAL)
+                ),
+                intake.runGoal(IntakeGoal.INTAKE_CLEARANCE),
+                Commands.waitUntil(this::lowerSensorGot),
+                Commands.waitUntil(
+                    Logic.and(
+                        Logic.not(this::lowerSensorGot),
+                        claw::coralCurrentThresholdForIntookMet)),
+                claw.stop(),
+                Commands.runOnce(() -> hasCoral = true)
+            );
     }
 
     // Miscellaneous commands here

@@ -154,6 +154,8 @@ public class AutoChooser {
             .getObject("Trajectory")
             .setPoses(new Pose2d[] {});
 
+        Logger.recordOutput("Swerve/Trajectory", new Pose2d[] {});
+
         routineChooser.setOptions(
             AUTO_MAP
                 .get(colorSelector.get())
@@ -189,6 +191,7 @@ public class AutoChooser {
                 .getObject("Trajectory")
                 .setPoses(poses.toArray(Pose2d[]::new));
     
+            Logger.recordOutput("Swerve/Trajectory", poses.toArray(Pose2d[]::new));
             Logger.recordOutput("Swerve/SelectedAuto", DrawOnField.path(poses));
 
             // Initialize superstructure starting state

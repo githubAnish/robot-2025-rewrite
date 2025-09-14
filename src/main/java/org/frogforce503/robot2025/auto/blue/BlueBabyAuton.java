@@ -41,7 +41,7 @@ public class BlueBabyAuton extends AutoMode {
                 Commands.sequence(
                     scoreH.cmd(),
                     autoScoreCommands
-                        .coralAutoScore(() -> Branch.RIGHT, () -> Mode.L4)
+                        .coralAutoScore(() -> Branch.RIGHT, Mode.L4)
                         .withTimeout(4.5),
                     superstructure.ejectCoral(),
                     Commands.waitSeconds(0.5),
@@ -52,7 +52,7 @@ public class BlueBabyAuton extends AutoMode {
                                 .home()
                                 .withTimeout(0.5)),
                     Commands.runOnce(drive::stop),
-                    setSuperstructureMode(() -> Mode.CORAL_INTAKE)
+                    setSuperstructureMode(Mode.CORAL_INTAKE)
             ));
     }
     

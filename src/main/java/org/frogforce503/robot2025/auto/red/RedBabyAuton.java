@@ -44,7 +44,7 @@ public class RedBabyAuton extends AutoMode {
                         .scoreL4()
                         .withTimeout(1.5),
                     autoScoreCommands
-                        .coralAutoScore(() -> Branch.RIGHT, () -> Mode.L4)
+                        .coralAutoScore(() -> Branch.RIGHT, Mode.L4)
                         .withTimeout(3),
                     superstructure.ejectCoral(),
                     Commands.waitSeconds(0.5),
@@ -55,7 +55,7 @@ public class RedBabyAuton extends AutoMode {
                                 .home()
                                 .withTimeout(0.5)),
                     Commands.runOnce(drive::stop),
-                    setSuperstructureMode(() -> Mode.CORAL_INTAKE)
+                    setSuperstructureMode(Mode.CORAL_INTAKE)
             ));
     }
 

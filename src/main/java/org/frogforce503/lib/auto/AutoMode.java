@@ -57,9 +57,9 @@ public abstract class AutoMode {
         return new FollowPlannedPath(drive, field, path);
     }
 
-    public Command setSuperstructureMode(Supplier<Mode> superstructureModeSupplier) {
+    public Command setSuperstructureMode(Mode superstructureMode) {
         return
-            Commands.runOnce(() -> superstructure.setCurrentMode(superstructureModeSupplier.get()))
+            Commands.runOnce(() -> superstructure.setCurrentMode(superstructureMode))
                 .ignoringDisable(true);
     }
 }

@@ -177,10 +177,16 @@ public class Arm extends FFSubsystemBase {
         );
     }
 
-    public Command runGoal(ArmGoal goal) {
+    public Command setGoal(ArmGoal goal) {
         return Commands.sequence(
             runOnce(() -> requestPositionControl = true),
-            runOnce(() -> currentGoal = goal),
+            runOnce(() -> currentGoal = goal)
+        );
+    }
+
+    public Command runGoal(ArmGoal goal) {
+        return Commands.sequence(
+            setGoal(goal),
             Commands.waitUntil(this::atGoal)
         );
     }

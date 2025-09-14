@@ -25,7 +25,7 @@ public class DriveCommands {
     private static final PIDFConfig thetaPID = new PIDFConfig(5.0, 0.0, 0.4);
     private static final Constraints thetaConstraints = new Constraints(8.0, 20.0);
 
-    private static final double snapToAngleTolerance = 3.0; // Degrees
+    private static final double snapToAngleToleranceDeg = 3.0; // Degrees
 
     private DriveCommands() {}
 
@@ -120,8 +120,10 @@ public class DriveCommands {
                 // Calculate angular speed
                 Rotation2d rotation = drive.getAngle();
                 double omega =
+                    angleController.getSetpoint().velocity +
                     angleController.calculate(
-                        rotation.getRadians(), rotationSupplier.get().getRadians());
+                        rotation.getRadians(),
+                        rotationSupplier.get().getRadians());
 
                 // Convert to field relative speeds & send command
                 ChassisSpeeds speeds =
@@ -147,6 +149,6 @@ public class DriveCommands {
             joystickDriveAtAngle(drive, field, JoystickInputs.kZero, rotationSupplier)
             .until(
                 () ->
-                    Math.abs(drive.getAngle().minus(rotationSupplier.get()).getDegrees()) < snapToAngleTolerance);
+                    Math.abs(drive.getAngle().minus(rotationSupplier.get()).getDegrees()) < snapToAngleToleranceDeg);
     }
 }

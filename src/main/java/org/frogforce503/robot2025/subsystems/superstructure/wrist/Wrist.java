@@ -141,10 +141,16 @@ public class Wrist extends FFSubsystemBase {
         );
     }
 
-    public Command runGoal(WristGoal goal) {
+    public Command setGoal(WristGoal goal) {
         return Commands.sequence(
             runOnce(() -> requestPositionControl = true),
-            runOnce(() -> currentGoal = goal),
+            runOnce(() -> currentGoal = goal)
+        );
+    }
+
+    public Command runGoal(WristGoal goal) {
+        return Commands.sequence(
+            setGoal(goal),
             Commands.waitUntil(this::atGoal)
         );
     }
