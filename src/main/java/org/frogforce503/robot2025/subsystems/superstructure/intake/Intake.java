@@ -167,7 +167,7 @@ public class Intake extends FFSubsystemBase {
                     newPIDFConfig.kI(),
                     newPIDFConfig.kD());
 
-                feedforward = new ArmFeedforward(newPIDFConfig.kS(), newPIDFConfig.kG(), newPIDFConfig.kV(), newPIDFConfig.kA());
+                feedforward = newPIDFConfig.toArmFeedforward();
 
                 profile =
                     new TrapezoidProfile(

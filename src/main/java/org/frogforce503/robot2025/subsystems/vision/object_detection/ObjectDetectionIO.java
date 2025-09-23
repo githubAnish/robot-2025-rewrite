@@ -20,6 +20,7 @@ public interface ObjectDetectionIO extends VisionIO {
      */
     @AutoLog
     class ObjectDetectionInputs {
+        public boolean persistingOldResults = false;
         public boolean connected = false;
         public boolean hasTargets = false;
 

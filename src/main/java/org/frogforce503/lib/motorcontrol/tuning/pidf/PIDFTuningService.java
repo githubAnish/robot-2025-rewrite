@@ -48,22 +48,23 @@ public class PIDFTuningService implements TuningService<PIDFConfig> {
 
     @Override
     public PIDFConfig getUpdatedConfig() {
-        if (config.kP().hasChanged(hashCode()) ||
-            config.kI().hasChanged(hashCode()) ||
-            config.kD().hasChanged(hashCode()) ||
-            config.kS().hasChanged(hashCode()) ||
-            config.kG().hasChanged(hashCode()) ||
-            config.kV().hasChanged(hashCode()) ||
-            config.kA().hasChanged(hashCode())
+        if (!config.kP().hasChanged(hashCode()) &&
+            !config.kI().hasChanged(hashCode()) &&
+            !config.kD().hasChanged(hashCode()) &&
+            !config.kS().hasChanged(hashCode()) &&
+            !config.kG().hasChanged(hashCode()) &&
+            !config.kV().hasChanged(hashCode()) &&
+            !config.kA().hasChanged(hashCode())
         ) {
-            return new PIDFConfig(
-                config.kP().get(),
-                config.kI().get(),
-                config.kD().get(),
-                config.kS().get(),
-                config.kG().get(),
-                config.kV().get(),
-                config.kA().get());
+            return
+                new PIDFConfig(
+                    config.kP().get(),
+                    config.kI().get(),
+                    config.kD().get(),
+                    config.kS().get(),
+                    config.kG().get(),
+                    config.kV().get(),
+                    config.kA().get());
         }
         
         return oldConfig;

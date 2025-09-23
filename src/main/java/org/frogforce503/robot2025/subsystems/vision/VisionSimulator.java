@@ -8,6 +8,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import lombok.Getter;
 
 /**
  * Wrapper class for multiple PhotonVision VisionSystemSims. 
@@ -17,7 +18,7 @@ public class VisionSimulator {
     //AprilTag Detection
     private VisionSystemSim aprilTagDetectionSimulator;
 
-    private AprilTagFieldLayout aprilTagFieldLayout;
+    @Getter private AprilTagFieldLayout aprilTagFieldLayout;
 
 
     //Object Detection

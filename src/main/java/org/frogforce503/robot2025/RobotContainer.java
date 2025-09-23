@@ -163,7 +163,6 @@ public class RobotContainer implements UnitTest {
                 drive = new Drive(new DriveIOPhoenix(), field);
                 vision =
                     new Vision(
-                        field,
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
@@ -185,7 +184,6 @@ public class RobotContainer implements UnitTest {
                 drive = new Drive(new DriveIOPhoenix(), field);
                 vision =
                     new Vision(
-                        field,
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
@@ -207,7 +205,6 @@ public class RobotContainer implements UnitTest {
                 drive = new Drive(new DriveIOSim(), field);
                 vision =
                     new Vision(
-                        field,
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
@@ -229,7 +226,6 @@ public class RobotContainer implements UnitTest {
                 drive = new Drive(new DriveIOPhoenix(), field);
                 vision =
                     new Vision(
-                        field,
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {},
@@ -435,7 +431,7 @@ public class RobotContainer implements UnitTest {
         algaeMode = new Trigger(() -> superstructure.getCurrentPiece() == Gamepiece.ALGAE);
         manualControlEnabled = new Trigger(superstructure::isManualControlEnabled);
         superstructureCoastEnabled = new Trigger(superstructureCoastOverride::get);
-        camerasConnected = new Trigger(vision::checkConnections);
+        camerasConnected = new Trigger(() -> true); // TODO: Make a method for this in Vision.java
 
         // Set default mode whenever gamepiece changes
         coralMode.onTrue(Commands.runOnce(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)));

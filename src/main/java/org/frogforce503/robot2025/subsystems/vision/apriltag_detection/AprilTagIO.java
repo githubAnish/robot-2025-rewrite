@@ -24,6 +24,7 @@ public interface AprilTagIO extends VisionIO {
      */
     @AutoLog
     class AprilTagInputs {
+        public boolean persistingOldResults = false;
         public boolean connected = false;
         public boolean hasTargets = false;
 

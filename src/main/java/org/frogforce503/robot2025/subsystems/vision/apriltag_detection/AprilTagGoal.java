@@ -6,16 +6,15 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.frogforce503.lib.vision.VisionUtils;
 import org.frogforce503.lib.vision.apriltag_detection.PoseObservation;
 import org.frogforce503.lib.vision.apriltag_detection.PoseObservationType;
 import org.frogforce503.lib.vision.apriltag_detection.TrackedAprilTag;
 import org.frogforce503.robot2025.subsystems.vision.Vision.CameraName;
-import org.frogforce503.robot2025.subsystems.vision.VisionConstants;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -31,7 +30,7 @@ public enum AprilTagGoal {
      * Should not be used for precise tasks such as automated alignment.
      */
     GLOBAL_LOCALIZATION(
-        () -> EnumSet.of(CameraName.FRONT_LEFT, CameraName.UPPER_FRONT_RIGHT, CameraName.LOWER_FRONT_RIGHT, CameraName.ELEVATOR_BACK, CameraName.ELEVATOR_FRONT),
+        EnumSet.of(CameraName.FRONT_LEFT, CameraName.UPPER_FRONT_RIGHT, CameraName.LOWER_FRONT_RIGHT, CameraName.ELEVATOR_BACK, CameraName.ELEVATOR_FRONT),
 
         poseObservation -> {
             TrackedAprilTag[] tags = poseObservation.usedAprilTags();
@@ -52,7 +51,7 @@ public enum AprilTagGoal {
             aprilTagIO.setIgnoredAprilTags(Set.of(4, 5, 14, 15)); //Barge Tags
         },
 
-        (poseObservation) -> VisionConstants.fixedStdDevs, // Standard deviations for the pose observation
+        (poseObservation) -> VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(30)), // Standard deviations for the pose observation
 
         Optional.empty()
     ),
@@ -63,7 +62,7 @@ public enum AprilTagGoal {
      * Backup goal for reef alignment is global localization.
      */
     REEF_ALIGNMENT(
-        () -> EnumSet.of(CameraName.FRONT_LEFT, CameraName.UPPER_FRONT_RIGHT, CameraName.LOWER_FRONT_RIGHT),
+        EnumSet.of(CameraName.FRONT_LEFT, CameraName.UPPER_FRONT_RIGHT, CameraName.LOWER_FRONT_RIGHT),
 
         poseObservation -> {
             TrackedAprilTag[] tags = poseObservation.usedAprilTags();
@@ -82,12 +81,12 @@ public enum AprilTagGoal {
             aprilTagIO.setIgnoredAprilTags(Set.of(4, 5, 14, 15)); // Barge Tags
         },
 
-        (poseObservation) -> VisionConstants.fixedStdDevs, // Standard deviations for the pose observation
+        (poseObservation) -> VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(30)), // Standard deviations for the pose observation
 
         Optional.of(GLOBAL_LOCALIZATION)
     );
     
-    @Getter private Supplier<EnumSet<CameraName>> camerasToUse;
+    @Getter private EnumSet<CameraName> camerasToUse;
     @Getter private Predicate<PoseObservation> cameraFilter;
     @Getter private Consumer<AprilTagIO> cameraConfiguration;
     @Getter private Function<PoseObservation, Matrix<N3, N1>> standardDeviationCalculator;
@@ -98,10 +97,9 @@ public enum AprilTagGoal {
      * @param cameraFilter Predicate that takes the pose observation of a camera to determine if it should be used for localization
      * @param cameraConfiguration Consumer that configures the AprilTagIO for this goal
      * @param standardDeviationCalculator Function that provides the standard deviations for the pose observation
-     * @param backupGoal Optional backup goal to use if this goal fails
      */
     private AprilTagGoal(
-        Supplier<EnumSet<CameraName>> camerasToUse, 
+        EnumSet<CameraName> camerasToUse, 
         Predicate<PoseObservation> cameraFilter, 
         Consumer<AprilTagIO> cameraConfiguration, 
         Function<PoseObservation, Matrix<N3, N1>> standardDeviationCalculator,

@@ -160,7 +160,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
-    robotContainer.stopClaw(); // Make sure coral doesn't eject incase state goes to EJECT_CORAL
+    robotContainer.stopClaw(); // Make sure coral doesn't eject in case state goes to EJECT_CORAL
     robotContainer.cleanupAutoChooser();
   }
 

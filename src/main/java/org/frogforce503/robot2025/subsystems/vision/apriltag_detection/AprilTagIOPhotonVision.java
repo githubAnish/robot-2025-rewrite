@@ -112,12 +112,16 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
     public void updateInputs(AprilTagInputs inputs) {
         inputs.connected = camera.isConnected();
 
-        //Default values for inputs
-        inputs.hasTargets = false;
-        inputs.trackedAprilTags = new TrackedAprilTag[0];
-
-        latestResult = null;
-        allTrackedAprilTags = null;
+        if (latestResult != null && Timer.getFPGATimestamp() - latestResult.getTimestampSeconds() > 0.03333) { //Persist results for 1 second/30 frames per second
+            //Default values for inputs
+            inputs.persistingOldResults = false;
+            latestResult = null;
+            allTrackedAprilTags = null;
+            inputs.hasTargets = false;
+            inputs.trackedAprilTags = new TrackedAprilTag[0];
+        } else {
+            inputs.persistingOldResults = true;
+        }
 
         if (inputs.connected) {
             List<PhotonPipelineResult> results = camera.getAllUnreadResults();
@@ -125,6 +129,7 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
             if (!results.isEmpty()) {
                 int i = results.size() - 1;
                 latestResult = results.get(i); // Get the most recent result
+                inputs.persistingOldResults = true;
 
                 while (!latestResult.hasTargets() && i > 0) {
                     i--;
@@ -139,6 +144,7 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
                             tag.getFiducialId(),
                             tag.getPitch(),
                             tag.getYaw(),
+                            tag.getArea(),
                             tag.getBestCameraToTarget().getTranslation().getNorm(),
                             tag.getPoseAmbiguity()
                             )
@@ -197,6 +203,7 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
                                 tag.getFiducialId(),
                                 tag.getPitch(),
                                 tag.getYaw(),
+                                tag.getArea(),
                                 tag.getBestCameraToTarget().getTranslation().getNorm(),
                                 tag.getPoseAmbiguity()
                                 )

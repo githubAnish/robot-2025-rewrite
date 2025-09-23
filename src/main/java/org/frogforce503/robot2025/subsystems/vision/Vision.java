@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagGoal;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIO;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagInputsAutoLogged;
@@ -22,16 +21,13 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 
 /**
  * The subsystem that handles vision processing for AprilTag detection and object detection.
  */
 public class Vision extends SubsystemBase {
-    private final FieldInfo field;
-    private final Consumer<VisionMeasurement> visionConsumer;
-    private final Supplier<Pose2d> robotPoseSupplier;
+    private Consumer<VisionMeasurement> visionConsumer;
+    private Supplier<Pose2d> robotPoseSupplier;
 
     // Maps camera names to their corresponding AprilTagIO instances.
     private EnumMap<CameraName, AprilTagIO> aprilTagIOMap = new EnumMap<>(CameraName.class);
@@ -46,10 +42,6 @@ public class Vision extends SubsystemBase {
     private EnumMap<CameraName, ObjectDetectionIO> objectDetectionIOMap = new EnumMap<>(CameraName.class);
     // Maps camera names to their corresponding ObjectDetectionInputs instances.
     private EnumMap<CameraName, ObjectDetectionInputsAutoLogged> objectDetectionInputsMap = new EnumMap<>(CameraName.class);
-
-    // Alerts
-    private final Alert cameraDisconnect = new Alert("Camera " + "______" + " from inputs disconnected", AlertType.kError);
-    private final Alert noTagsDetected = new Alert("No tags detected from any camera", AlertType.kWarning);
 
     /**
      * Cameras on robots are configured with a name.
@@ -71,13 +63,11 @@ public class Vision extends SubsystemBase {
      * @param objectDetectionIOs Array of ObjectDetectionIO for object detection
      */
     public Vision(
-        FieldInfo field,
         Consumer<VisionMeasurement> visionConsumer, 
         Supplier<Pose2d> robotPoseSupplier, 
         AprilTagIO[] aprilTagIOs, 
         ObjectDetectionIO[] objectDetectionIOs
     ) {
-        this.field = field;
         this.visionConsumer = visionConsumer;
         this.robotPoseSupplier = robotPoseSupplier;
 
@@ -86,7 +76,6 @@ public class Vision extends SubsystemBase {
             aprilTagIOMap.put(aprilTagIOs[i].getCameraName(), aprilTagIOs[i]);
             aprilTagInputsMap.put(aprilTagIOs[i].getCameraName(), new AprilTagInputsAutoLogged());
 
-            // Warm up resource-intensive logging
             Logger.recordOutput(
                 "Vision/AprilTag Detection/" + aprilTagIOs[i].getCameraName().name() + "/Pose Observation",
                 new PoseObservation()
@@ -122,7 +111,7 @@ public class Vision extends SubsystemBase {
             boolean visionMeasurementUsed = false;
 
             // Check if the camera is a potential camera to use for our current goal.
-            if (currentAprilTagGoal.getCamerasToUse().get().contains(cameraName)) {
+            if (currentAprilTagGoal.getCamerasToUse().contains(cameraName)) {
                 Optional<VisionMeasurement> measurement = getVisionMeasurement(desiredAprilTagGoal, aprilTagIO);
                 
                 // If there is a vision measurement, it means the camera is outputting a pose observation reliable enough for the AprilTag goal.
@@ -133,7 +122,7 @@ public class Vision extends SubsystemBase {
                     visionMeasurementUsed = true; // Set the boolean to true since we used a vision measurement.
                 }
             } else {
-                // If the camera is not being used for the current goal, log default value for the Pose Observation
+                // If the camera is not being used for the current goal, log default values for the Pose Observation
                 Logger.recordOutput(
                     "Vision/AprilTag Detection/" + cameraName.name() + "/Pose Observation", 
                     new PoseObservation()
@@ -156,7 +145,7 @@ public class Vision extends SubsystemBase {
         while (anyAprilTagCamerasUsed && currentAprilTagGoal.getBackupGoal().isPresent() && !aprilTagGoalsRan.contains(currentAprilTagGoal.getBackupGoal().get())) {
             currentAprilTagGoal = currentAprilTagGoal.getBackupGoal().get();
 
-            for (CameraName cameraName : currentAprilTagGoal.getCamerasToUse().get()) {
+            for (CameraName cameraName : currentAprilTagGoal.getCamerasToUse()) {
                 AprilTagIO aprilTagIO = aprilTagIOMap.get(cameraName);
                 AprilTagInputsAutoLogged aprilTagInputs = aprilTagInputsMap.get(cameraName);
 
@@ -181,7 +170,7 @@ public class Vision extends SubsystemBase {
 
         // Log desired goal and current goal
         Logger.recordOutput("Vision/AprilTag Detection/DesiredGoal", desiredAprilTagGoal);
-        Logger.recordOutput("Vision/AprilTag Detection/CurrentGoal", desiredAprilTagGoal);
+        Logger.recordOutput("Vision/AprilTag Detection/CurrentGoal", currentAprilTagGoal);
 
         
         /************************************ OBJECT DETECTION LOGIC ************************************/
@@ -192,53 +181,6 @@ public class Vision extends SubsystemBase {
             objectDetectionIO.updateInputs(objectDetectionInputs);
             Logger.processInputs("Vision/Object Detection/" + cameraName.name() + "/Inputs", objectDetectionInputs);
         }
-    }
-
-    /** Cameras connected only when all cameras are connected & any tags are visible */
-    public boolean checkConnections() {
-        if (aprilTagInputsMap != null) {
-            boolean anyHasTargets = false;
-
-            for (var inputEntry : aprilTagInputsMap.entrySet()) {
-                var inputs = inputEntry.getValue();
-
-		        if (!inputs.connected) {
-                    cameraDisconnect.setText("Camera " + inputEntry.getKey() + " from inputs disconnected");
-                    cameraDisconnect.set(true);
-		            return false;
-		        }
-
-                anyHasTargets |= inputs.hasTargets;
-            }
-
-            if (!anyHasTargets) {
-		        noTagsDetected.set(true);
-		        return false;
-	        }
-        }
-
-        if (objectDetectionInputsMap != null) {
-            boolean anyHasTargets = false;
-
-            for (var inputEntry : objectDetectionInputsMap.entrySet()) {
-                var inputs = inputEntry.getValue();
-
-		        if (!inputs.connected) {
-                    cameraDisconnect.setText("Camera " + inputEntry.getKey() + " from inputs disconnected");
-                    cameraDisconnect.set(true);
-		            return false;
-		        }
-
-                anyHasTargets |= inputs.hasTargets;
-            }
-
-            if (!anyHasTargets) {
-		        noTagsDetected.set(true);
-		        return false;
-	        }
-        }
-
-        return true;
     }
 
     /**
@@ -256,7 +198,6 @@ public class Vision extends SubsystemBase {
         goal.getCameraConfiguration().accept(aprilTagIO); // Configure pose estimation parameters of the AprilTagIO for the AprilTagGoal
         PoseObservation poseObservation = aprilTagIO.estimateRobotPose(); // Estimate the robot's pose using the AprilTagIO.
         Logger.recordOutput("Vision/AprilTag Detection/" + aprilTagIO.getCameraName().name() + "/Pose Observation", poseObservation);
-        field.getObject(aprilTagIO.getCameraName().name() + " Camera").setPose(poseObservation.robotPose().toPose2d());
 
         if (poseObservation.isReal()) { // Check if the pose observation is actually real
             // Check if the camera should be used for localization.

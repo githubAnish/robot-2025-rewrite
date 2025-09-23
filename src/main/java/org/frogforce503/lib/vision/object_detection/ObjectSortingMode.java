@@ -14,7 +14,8 @@ public enum ObjectSortingMode {
     Leftmost(Rightmost.comparator.reversed()), // Descending order by yaw
     Centermost(
             Comparator.comparingDouble(
-                    target -> (Math.pow(target.pitch(), 2) + Math.pow(target.yaw(), 2)))); // Sorting by proximity to the center
+                    target -> (Math.pow(target.pitch(), 2) + Math.pow(target.yaw(), 2)))), // Ascending order by distance from the center
+    OuterMost(Centermost.comparator.reversed()); // Descending by distance from the center
 
     private final Comparator<TrackedObject> comparator;
 

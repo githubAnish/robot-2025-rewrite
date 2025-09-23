@@ -12,6 +12,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.ClosedLoopConfigAccessor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.filter.Debouncer;
@@ -106,7 +107,11 @@ public class WristIOSpark implements WristIO {
 
     @Override
     public void setPID(double kP, double kI, double kD) {
-        config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
+        ClosedLoopConfigAccessor accessor = motor.configAccessor.closedLoop;
+
+        if (accessor.getP() != kP || accessor.getI() != kI || accessor.getD() != kD) {
+            config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
+        }
 
         SparkUtil.configure(motor, config, false);
     }

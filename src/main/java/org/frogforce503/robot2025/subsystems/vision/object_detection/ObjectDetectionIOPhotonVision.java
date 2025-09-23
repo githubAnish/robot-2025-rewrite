@@ -12,7 +12,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Transform3d;
-
+import edu.wpi.first.wpilibj.Timer;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -78,10 +78,15 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
     public void updateInputs(ObjectDetectionInputs inputs) {
         inputs.connected = camera.isConnected();
 
-        //Default values
-        latestResult = null;
-        inputs.hasTargets = false;
-        inputs.trackedObjects = new TrackedObject[0];
+        if (latestResult != null && Timer.getFPGATimestamp() - latestResult.getTimestampSeconds() > 0.05) { //Persist results for 1 second/20 frames per second
+            //Default values for inputs
+            inputs.persistingOldResults = false;
+            latestResult = null;
+            inputs.hasTargets = false;
+            inputs.trackedObjects = new TrackedObject[0];
+        } else {
+            inputs.persistingOldResults = true;
+        }
         
         if (inputs.connected) {
             List<PhotonPipelineResult> results = camera.getAllUnreadResults();
@@ -89,6 +94,7 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
             if (!results.isEmpty()) {
                 int i = results.size() - 1;
                 latestResult = results.get(i); // Get the most recent result
+                inputs.persistingOldResults = false;
 
                 while (!latestResult.hasTargets() && i > 0) {
                     i--;

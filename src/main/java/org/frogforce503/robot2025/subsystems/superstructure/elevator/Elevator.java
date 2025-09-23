@@ -153,7 +153,7 @@ public class Elevator extends FFSubsystemBase {
                     newPIDFConfig.kI(),
                     newPIDFConfig.kD());
 
-                feedforward = new ElevatorFeedforward(newPIDFConfig.kS(), newPIDFConfig.kG(), newPIDFConfig.kV(), newPIDFConfig.kA());
+                feedforward = newPIDFConfig.toElevatorFeedforward();
 
                 profile =
                     new TrapezoidProfile(

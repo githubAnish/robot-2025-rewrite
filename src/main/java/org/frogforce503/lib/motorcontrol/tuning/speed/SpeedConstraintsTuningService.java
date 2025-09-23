@@ -35,8 +35,8 @@ public class SpeedConstraintsTuningService implements TuningService<Constraints>
 
     @Override
     public Constraints getUpdatedConfig() {
-        if (config.maxVelocityMetersPerSec().hasChanged(hashCode()) ||
-            config.maxAccelerationMetersPerSec2().hasChanged(hashCode())
+        if (!config.maxVelocityMetersPerSec().hasChanged(hashCode()) &&
+            !config.maxAccelerationMetersPerSec2().hasChanged(hashCode())
         ) {
             return new Constraints(
                 config.maxVelocityMetersPerSec().get(),
