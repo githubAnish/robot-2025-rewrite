@@ -2,12 +2,11 @@ package org.frogforce503.robot2025.commands.superstructure_selection;
 
 import java.util.HashMap;
 
+import org.frogforce503.lib.util.FFSelectCommand;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
 
-import edu.wpi.first.wpilibj2.command.SelectCommand;
-
-public class SuperstructureScore extends SelectCommand<Mode> {
+public class SuperstructureScore extends FFSelectCommand<Mode> {
     public SuperstructureScore(Superstructure superstructure) {
         super(
             new HashMap<>() {{

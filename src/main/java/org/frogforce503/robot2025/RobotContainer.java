@@ -12,6 +12,7 @@ import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.util.DoublePressTracker;
 import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.lib.util.ProximityService;
+import org.frogforce503.lib.util.FFSelectCommand;
 import org.frogforce503.lib.util.TriConsumer;
 import org.frogforce503.lib.util.TriggerUtil;
 import org.frogforce503.lib.vision.apriltag_detection.VisionMeasurement;
@@ -86,6 +87,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.ExtensionMethod;
 
@@ -574,19 +576,19 @@ public class RobotContainer implements UnitTest {
 
     // Main Driver Commands
     public Command intake() {
-        return Commands.select(intakeRunner, superstructure::getCurrentMode);
+        return new FFSelectCommand<>(intakeRunner, superstructure::getCurrentMode);
     }
 
     public Command releaseIntake() {
-        return Commands.select(releaseIntakeRunner, superstructure::getCurrentMode);
+        return new FFSelectCommand<>(releaseIntakeRunner, superstructure::getCurrentMode);
     }
     
     public Command score() {
-        return Commands.select(scoreRunner, superstructure::getCurrentMode);
+        return new FFSelectCommand<>(scoreRunner, superstructure::getCurrentMode);
     }
 
     public Command releaseScore() {
-        return Commands.select(releaseScoreRunner, superstructure::getCurrentMode);
+        return new FFSelectCommand<>(releaseScoreRunner, superstructure::getCurrentMode);
     }
 
     // Auto Chooser
@@ -631,6 +633,23 @@ public class RobotContainer implements UnitTest {
 
     @Override
     public void test() {
-        
+        // // Uncomment to test (Waits 5 sec, auto aligns to nearest branch & does reef alignment, waits 1 sec after finished, and then homes & goes to global localization)
+
+        // RobotModeTriggers.teleop().onTrue(
+        //     Commands.sequence(
+        //         Commands.waitSeconds(5),
+        //         autoScoreCommands
+        //             .coralAutoScore()
+        //             .alongWith(Commands.runOnce(vision::reefAlignment))
+        //             .alongWith(leds.scoreCoral()),
+        //         Commands.waitSeconds(1),
+        //         superstructure
+        //             .ejectCoral()
+        //             .andThen(new WaitAfterCoralEject())
+        //             .andThen(superstructure.homeAfterL4())
+        //             .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE))
+        //             .alongWith(Commands.runOnce(vision::globalLocalization))
+        //     )
+        // );
     }
 }
