@@ -112,7 +112,7 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
     public void updateInputs(AprilTagInputs inputs) {
         inputs.connected = camera.isConnected();
 
-        if (latestResult != null && Timer.getFPGATimestamp() - latestResult.getTimestampSeconds() > 0.03333) { //Persist results for 1 second/30 frames per second
+        if (latestResult != null && Timer.getFPGATimestamp() - latestResult.getTimestampSeconds() > 0.1) { // Persist previous results for up to 100 ms
             //Default values for inputs
             inputs.persistingOldResults = false;
             latestResult = null;
@@ -128,14 +128,20 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
 
             if (!results.isEmpty()) {
                 int i = results.size() - 1;
-                latestResult = results.get(i); // Get the most recent result
-                inputs.persistingOldResults = true;
+                PhotonPipelineResult result = results.get(i); // Get the most recent result
 
-                while (!latestResult.hasTargets() && i > 0) {
+                while (!result.hasTargets() && i > 0) {
                     i--;
-                    latestResult = results.get(i); // Get the most recent result with targets
+                    result = results.get(i); // Get the most recent result with targets
                 }
 
+                // Don't persist an old result if it doesn't have any targets or if the new result has targets
+                if (latestResult == null || !latestResult.hasTargets() || (latestResult.hasTargets() && result.hasTargets())) {
+                    latestResult = result;
+                    inputs.persistingOldResults = false;
+                }
+
+                // Save original list of targets
                 allTrackedAprilTags = latestResult.getTargets();
 
                 inputs.hasTargets = latestResult.hasTargets();
@@ -184,7 +190,7 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
     public PoseObservation estimateRobotPose() {
         PoseObservation poseObservation = new PoseObservation();
 
-        if (latestResult != null && allTrackedAprilTags != null && !allTrackedAprilTags.isEmpty()) { // Only use pose estimator if there are tracked AprilTags
+        if (latestResult != null && allTrackedAprilTags != null) { // Only use pose estimator if there are tracked AprilTags
             latestResult.targets = allTrackedAprilTags.stream()
                 .filter(tag -> !ignoredAprilTagIDs.contains(tag.getFiducialId())) // Filter out ignored tags
                 .toList();
@@ -211,6 +217,8 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
                         .toArray(TrackedAprilTag[]::new)
                 );
             }
+
+            latestResult.targets = allTrackedAprilTags.stream().toList(); // Restore the original list of targets
         }
 
         return poseObservation;

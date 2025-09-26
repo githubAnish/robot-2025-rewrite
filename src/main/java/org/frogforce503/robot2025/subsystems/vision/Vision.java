@@ -76,10 +76,7 @@ public class Vision extends SubsystemBase {
             aprilTagIOMap.put(aprilTagIOs[i].getCameraName(), aprilTagIOs[i]);
             aprilTagInputsMap.put(aprilTagIOs[i].getCameraName(), new AprilTagInputsAutoLogged());
 
-            Logger.recordOutput(
-                "Vision/AprilTag Detection/" + aprilTagIOs[i].getCameraName().name() + "/Pose Observation",
-                new PoseObservation()
-            );
+            logPoseObservation(aprilTagIOs[i], new PoseObservation());
         }
 
         for (int i = 0; i < objectDetectionIOs.length; i++) {
@@ -123,10 +120,7 @@ public class Vision extends SubsystemBase {
                 }
             } else {
                 // If the camera is not being used for the current goal, log default values for the Pose Observation
-                Logger.recordOutput(
-                    "Vision/AprilTag Detection/" + cameraName.name() + "/Pose Observation", 
-                    new PoseObservation()
-                );
+                logPoseObservation(aprilTagIO, new PoseObservation());
             }
 
             Logger.recordOutput(
@@ -142,7 +136,7 @@ public class Vision extends SubsystemBase {
         Loop in case backup goals have backup goals – effort to ensure we are always using vision measurements.
         Checks if the backup goal has been run before to avoid infinite loops in case of a cycle in the backup goals.
         */
-        while (anyAprilTagCamerasUsed && currentAprilTagGoal.getBackupGoal().isPresent() && !aprilTagGoalsRan.contains(currentAprilTagGoal.getBackupGoal().get())) {
+        while (!anyAprilTagCamerasUsed && currentAprilTagGoal.getBackupGoal().isPresent() && !aprilTagGoalsRan.contains(currentAprilTagGoal.getBackupGoal().get())) {
             currentAprilTagGoal = currentAprilTagGoal.getBackupGoal().get();
 
             for (CameraName cameraName : currentAprilTagGoal.getCamerasToUse()) {
@@ -197,7 +191,7 @@ public class Vision extends SubsystemBase {
 
         goal.getCameraConfiguration().accept(aprilTagIO); // Configure pose estimation parameters of the AprilTagIO for the AprilTagGoal
         PoseObservation poseObservation = aprilTagIO.estimateRobotPose(); // Estimate the robot's pose using the AprilTagIO.
-        Logger.recordOutput("Vision/AprilTag Detection/" + aprilTagIO.getCameraName().name() + "/Pose Observation", poseObservation);
+        logPoseObservation(aprilTagIO, poseObservation);
 
         if (poseObservation.isReal()) { // Check if the pose observation is actually real
             // Check if the camera should be used for localization.
@@ -216,6 +210,11 @@ public class Vision extends SubsystemBase {
         }
 
         return measurement;
+    }
+
+    private void logPoseObservation(AprilTagIO aprilTagIO, PoseObservation poseObservation) {
+        Logger.recordOutput("Vision/AprilTag Detection/" + aprilTagIO.getCameraName().name() + "/Pose Observation", poseObservation);
+        Logger.recordOutput("Vision/AprilTag Detection/" + aprilTagIO.getCameraName().name() + "/Pose Observation/Used April Tags", poseObservation.usedAprilTags());
     }
 
     /**

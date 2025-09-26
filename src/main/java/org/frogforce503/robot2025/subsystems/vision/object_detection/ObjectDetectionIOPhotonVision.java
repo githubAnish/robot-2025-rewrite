@@ -78,7 +78,7 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
     public void updateInputs(ObjectDetectionInputs inputs) {
         inputs.connected = camera.isConnected();
 
-        if (latestResult != null && Timer.getFPGATimestamp() - latestResult.getTimestampSeconds() > 0.05) { //Persist results for 1 second/20 frames per second
+        if (latestResult != null && Timer.getFPGATimestamp() - latestResult.getTimestampSeconds() > 0.1) { //Persist results for 1 second/20 frames per second
             //Default values for inputs
             inputs.persistingOldResults = false;
             latestResult = null;
@@ -93,34 +93,41 @@ public class ObjectDetectionIOPhotonVision implements ObjectDetectionIO {
 
             if (!results.isEmpty()) {
                 int i = results.size() - 1;
-                latestResult = results.get(i); // Get the most recent result
+                PhotonPipelineResult result = results.get(i); // Get the most recent result
                 inputs.persistingOldResults = false;
 
-                while (!latestResult.hasTargets() && i > 0) {
+                while (!result.hasTargets() && i > 0) {
                     i--;
-                    latestResult = results.get(i); // Get the most recent result with targets
+                    result = results.get(i); // Get the most recent result with targets
+                }
+
+                if (latestResult == null || !latestResult.hasTargets() || (latestResult.hasTargets() && result.hasTargets())) {
+                    latestResult = result;
+                    inputs.persistingOldResults = false;
                 }
                 
                 inputs.hasTargets = latestResult.hasTargets();
             }
-        } 
 
-        if (inputs.hasTargets) {
-            List<PhotonTrackedTarget> objects = latestResult.getTargets();
-
-            inputs.trackedObjects = inputs.trackedObjects = objects.stream()
-            .map(object -> new TrackedObject( // Maps the PhotonTrackedTarget to a TrackedObject.
-                object.getDetectedObjectClassID(),
-                object.getPitch(),
-                object.getYaw(),
-                object.getArea(),
-                (double) object.getDetectedObjectConfidence()
-            ))
-            .sorted( // Sorts based on the type of object (class ID) and then by the sorting mode.
-                Comparator.comparingInt(TrackedObject::classId)
-                .thenComparing(sortingMode.getComparator())
-            )
-            .toArray(TrackedObject[]::new);
+            if (inputs.hasTargets) {
+                List<PhotonTrackedTarget> objects = latestResult.getTargets();
+    
+                inputs.trackedObjects = inputs.trackedObjects = objects.stream()
+                .map(object -> new TrackedObject( // Maps the PhotonTrackedTarget to a TrackedObject.
+                    object.getDetectedObjectClassID(),
+                    object.getPitch(),
+                    object.getYaw(),
+                    object.getArea(),
+                    (double) object.getDetectedObjectConfidence()
+                ))
+                .sorted( // Sorts based on the type of object (class ID) and then by the sorting mode.
+                    Comparator.comparingInt(TrackedObject::classId)
+                    .thenComparing(sortingMode.getComparator())
+                )
+                .toArray(TrackedObject[]::new);
+    
+                if (inputs.persistingOldResults) inputs.persistingOldResults = false;
+            } 
         } 
     }
 }
