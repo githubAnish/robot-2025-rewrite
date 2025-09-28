@@ -1,72 +1,42 @@
 package org.frogforce503.lib.auto.route;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.frogforce503.lib.planning.planned_path.PlannedPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 
-public class PlannedPathRoute extends BaseRoute<PlannedPath> {
-    public PlannedPathRoute(List<PlannedPath> paths) {
-        this.paths.addAll(paths);
-    }
+public class PlannedPathRoute implements BaseRoute {
+    private final List<PlannedPath> paths = new ArrayList<>();
 
     public PlannedPathRoute(PlannedPath... paths) {
-        this(Arrays.asList(paths));
+        for (PlannedPath path : paths) {
+            this.paths.add(path);
+        }
     }
 
     @Override
-    public Pose2d getInitialPose() {
-        return getFirstPath().getInitialHolonomicPose();
+    public Pose2d getInitialPose(Supplier<Pose2d> overridePoseSupplier) {
+        Optional<Pose2d> initialPose =
+            Optional.ofNullable(
+                paths
+                    .get(0)
+                    .getInitialHolonomicPose());
+
+        return initialPose.orElseGet(overridePoseSupplier);
     }
 
     @Override
     public List<Pose2d> getPoses() {
-        List<Pose2d> poses = new ArrayList<>();
-
-        this.paths
-            .stream()
-            .flatMap(
-                path ->
-                    path.getDriveTrajectory().getStates().stream())
-            .forEach(
-                state ->
-                    poses.add(state.poseMeters));
-
-        return poses;
-    }
-
-    public PlannedPathRoute addTrees(Tree... trees) {
-        for (Tree tree : trees) {
-            if (tree.trunk != null)
-                this.paths.add(tree.trunk);
-            
-            this.paths.addAll(Arrays.asList(tree.branches));
-        }
-        
-        return this;
-    }
-
-    public static class Tree {
-        public PlannedPath trunk;
-        public PlannedPath[] branches;
-        public PlannedPath fallbackPath;
-
-        public Tree withTrunk(PlannedPath trunk) {
-            this.trunk = trunk;
-            return this;
-        }
-
-        public Tree withBranches(PlannedPath... branches) {
-            this.branches = branches;
-            return this;
-        }
-
-        public Tree withFallbackPath(PlannedPath path) {
-            this.fallbackPath = path;
-            return this;
-        }
+        return
+            paths
+                .stream()
+                .flatMap(path -> path.getDriveTrajectory().getStates().stream())
+                .map(state -> state.poseMeters)
+                .collect(Collectors.toList());
     }
 }

@@ -1,9 +1,8 @@
 package org.frogforce503.robot2025.hardware;
 
-
-import org.frogforce503.lib.auto.follower.AutoPIDController;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import org.frogforce503.lib.swerve.SwervePathFollower;
 import org.frogforce503.robot2025.hardware.tunerconstants.TunerConstantsPracticeBot;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -174,14 +173,10 @@ public class RobotHardwarePracticeBot extends RobotHardware {
                     kVehicleToBackLeft,
                     kVehicleToBackRight});
 
-        this.autoPIDController =
-            AutoPIDController.builder()
-                .autoXController(
-                    new PIDController(0.0, 0.0, 0.0))
-                .autoYController(
-                    new PIDController(0.0, 0.0, 0.0))
-                .autoThetaController(
-                    new PIDController(0.0, 0.0, 0.0))
-                .build();
+        this.pathFollower =
+            new SwervePathFollower(
+                new PIDController(0.0, 0.0, 0.0),
+                new PIDController(0.0, 0.0, 0.0),
+                new PIDController(0.0, 0.0, 0.0));
     }    
 }

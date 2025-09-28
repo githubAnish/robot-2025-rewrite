@@ -2,12 +2,9 @@ package org.frogforce503.robot2025.auto;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.auto.AutoMode;
 import org.frogforce503.lib.auto.builder.ChoreoFactoryBuilder;
-import org.frogforce503.lib.drawing.DrawOnField;
 import org.frogforce503.lib.util.SwitchableChooser;
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.auto.blue.BlueBabyAuton;
@@ -154,7 +151,7 @@ public class AutoChooser {
             .getObject("Trajectory")
             .setPoses(new Pose2d[] {});
 
-        Logger.recordOutput("Swerve/Trajectory", new Pose2d[] {});
+        Logger.recordOutput("Drive/Trajectory", new Pose2d[] {});
 
         routineChooser.setOptions(
             AUTO_MAP
@@ -191,8 +188,7 @@ public class AutoChooser {
                 .getObject("Trajectory")
                 .setPoses(poses.toArray(Pose2d[]::new));
     
-            Logger.recordOutput("Swerve/Trajectory", poses.toArray(Pose2d[]::new));
-            Logger.recordOutput("Swerve/SelectedAuto", DrawOnField.path(poses));
+            Logger.recordOutput("Drive/Trajectory", poses.toArray(Pose2d[]::new));
 
             // Initialize superstructure starting state
             if (RobotBase.isSimulation()) {

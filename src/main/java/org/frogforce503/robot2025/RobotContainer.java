@@ -11,7 +11,6 @@ import org.frogforce503.lib.commands.RumbleCommand;
 import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.util.DoublePressTracker;
 import org.frogforce503.lib.util.ErrorUtil;
-import org.frogforce503.lib.util.ProximityService;
 import org.frogforce503.lib.util.FFSelectCommand;
 import org.frogforce503.lib.util.TriConsumer;
 import org.frogforce503.lib.util.TriggerUtil;
@@ -87,7 +86,6 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.ExtensionMethod;
 
@@ -140,8 +138,6 @@ public class RobotContainer implements UnitTest {
     // Driver-Assisted Commands
     private final LoggedNetworkBoolean autoDrivingEnabled =
         new LoggedNetworkBoolean("AutoDrivingEnabled", true);
-
-    private final ProximityService proximityService;
 
     private final AutoIntakeCommands autoIntakeCommands;
     private final AutoScoreCommands autoScoreCommands;
@@ -264,9 +260,6 @@ public class RobotContainer implements UnitTest {
                     ? new OffsetsIO() {}
                     : new OffsetsIOServer());
 
-        // Create proximity service
-        proximityService = new ProximityService(drive, field);
-
         // Create auto intake commands
         autoIntakeCommands =
             new AutoIntakeCommands(
@@ -276,7 +269,6 @@ public class RobotContainer implements UnitTest {
                 leds,
                 field,
                 offsetManager,
-                proximityService,
                 driverInputs,
                 autoDrivingEnabled::get);
 
@@ -289,7 +281,6 @@ public class RobotContainer implements UnitTest {
                 leds,
                 field,
                 offsetManager,
-                proximityService,
                 driverInputs,
                 autoDrivingEnabled::get);
 
@@ -469,9 +460,11 @@ public class RobotContainer implements UnitTest {
             (trigger, gamepiece, mode) ->
                 trigger
                     .onTrue(
-                        Commands.sequence(
+                        Commands.parallel(
                             Commands.runOnce(() -> superstructure.setCurrentPiece(gamepiece)),
-                            Commands.runOnce(() -> superstructure.setCurrentMode(mode))));
+                            Commands.runOnce(() -> superstructure.setCurrentMode(mode))
+                        )
+                        .ignoringDisable(true));
 
         bindSelection.accept(driver.y(), Gamepiece.CORAL, Mode.L1);
         bindSelection.accept(driver.b(), Gamepiece.CORAL, Mode.L2);

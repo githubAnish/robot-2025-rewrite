@@ -1,4 +1,4 @@
-package org.frogforce503.lib.auto.util;
+package org.frogforce503.lib.auto;
 
 import java.util.List;
 import java.util.function.Function;

@@ -1,4 +1,4 @@
-package org.frogforce503.lib.auto.obstacles;
+package org.frogforce503.lib.util;
 
 import org.frogforce503.lib.math.Polygon2d;
 

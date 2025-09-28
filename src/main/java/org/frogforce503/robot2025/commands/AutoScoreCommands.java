@@ -4,7 +4,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.io.JoystickInputs;
-import org.frogforce503.lib.util.ProximityService;
+import org.frogforce503.lib.util.ProximityUtil;
 import org.frogforce503.robot2025.commands.algae_score_barge.DriveToClosestBarge;
 import org.frogforce503.robot2025.commands.algae_score_processor.DriveToClosestProcessor;
 import org.frogforce503.robot2025.commands.coral_score_reef.AutoCoralScore;
@@ -34,9 +34,6 @@ public class AutoScoreCommands {
     // Offset Manager
     private final OffsetManager offsetManager;
 
-    // Proximity Service
-    private final ProximityService proximityService;
-
     // Reef Boundary (Used for L2 - L4 coral scoring)
     private final PrescoreBoundaryBuilder prescoreBoundaryBuilder;
 
@@ -53,7 +50,6 @@ public class AutoScoreCommands {
         Leds leds,
         FieldInfo field,
         OffsetManager offsetManager,
-        ProximityService proximityService,
         Supplier<JoystickInputs> driverInputs,
         BooleanSupplier autoDrivingEnabled
     ) {
@@ -63,7 +59,6 @@ public class AutoScoreCommands {
         this.leds = leds;
         this.field = field;
         this.offsetManager = offsetManager;
-        this.proximityService = proximityService;
         this.driverInputs = driverInputs;
         this.prescoreBoundaryBuilder = new PrescoreBoundaryBuilder(field, drive::getCurrentPose);
         this.autoDrivingEnabled = autoDrivingEnabled;
@@ -78,10 +73,10 @@ public class AutoScoreCommands {
                         field,
                         superstructure,
                         driverInputs.get(),
-                        offsetManager,
-                        proximityService,
                         drive::getCurrentPose,
-                        branchSupplier,
+                        branchSupplier
+                            .get()
+                            .getTarget(drive, field, offsetManager.getOffsetData()),
                         prescoreBoundaryBuilder::insideBoundary,
                         autoDrivingEnabled));
     }
@@ -92,12 +87,12 @@ public class AutoScoreCommands {
                 superstructure::getCurrentBranch);
     }
 
-    public Command coralAutoScore(Supplier<Branch> branchSupplier, Mode superstructureMode) {
+    public Command coralAutoScore(Branch branch, Mode mode) {
         return
             Commands.sequence(
-                Commands.runOnce(() -> superstructure.setCurrentMode(superstructureMode))
+                Commands.runOnce(() -> superstructure.setCurrentMode(mode))
                     .ignoringDisable(true),
-                coralAutoScore(branchSupplier));
+                coralAutoScore(() -> branch));
     }
 
     public Command coralAutoScoreL1() {
@@ -109,23 +104,24 @@ public class AutoScoreCommands {
                         field,
                         superstructure,
                         driverInputs.get(),
-                        proximityService,
                         drive::getCurrentPose,
-                        proximityService::getClosestReefSide,
+                        ProximityUtil
+                            .getClosestReefSide(drive, field)
+                            .getTarget(field),
                         prescoreBoundaryBuilder::insideBoundary,
                         autoDrivingEnabled));
     }
 
     public Command processorAutoScore() {
         return
-            Commands.deferredProxy(() -> new DriveToClosestProcessor(drive, field, proximityService))
+            Commands.deferredProxy(() -> new DriveToClosestProcessor(drive, field))
                 .onlyIf(autoDrivingEnabled)
                 .andThen(superstructure.scoreProcessor());
     }
 
     public Command bargeAutoScore() {
         return
-            Commands.deferredProxy(() -> new DriveToClosestBarge(drive, field, proximityService, driverInputs.get()))
+            Commands.deferredProxy(() -> new DriveToClosestBarge(drive, field, driverInputs.get()))
                 .onlyIf(autoDrivingEnabled)
                 .andThen(superstructure.scoreBarge());
     }

@@ -4,7 +4,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.io.JoystickInputs;
-import org.frogforce503.lib.util.ProximityService;
 import org.frogforce503.robot2025.commands.algae_backup.BackupFromClosestReefAlgae;
 import org.frogforce503.robot2025.commands.algae_intake_pluck.DriveToClosestReefAlgae;
 import org.frogforce503.robot2025.commands.coral_intake_station.DriveToClosestStation;
@@ -28,12 +27,6 @@ public class AutoIntakeCommands {
     // Field
     private final FieldInfo field;
 
-    // Offset Manager
-    private final OffsetManager offsetManager;
-
-    // Proximity Service
-    private final ProximityService proximityService;
-
     // Joystick Inputs
     private final Supplier<JoystickInputs> driverInputs;
 
@@ -47,7 +40,6 @@ public class AutoIntakeCommands {
         Leds leds,
         FieldInfo field,
         OffsetManager offsetManager,
-        ProximityService proximityService,
         Supplier<JoystickInputs> driverInputs,
         BooleanSupplier autoDrivingEnabled
     ) {
@@ -56,15 +48,13 @@ public class AutoIntakeCommands {
         this.superstructure = superstructure;
         this.leds = leds;
         this.field = field;
-        this.offsetManager = offsetManager;
-        this.proximityService = proximityService;
         this.driverInputs = driverInputs;
         this.autoDrivingEnabled = autoDrivingEnabled;
     }
 
     public Command coralAutoIntake() {
         return
-            Commands.deferredProxy(() -> new DriveToClosestStation(drive, field, proximityService, driverInputs.get()))
+            Commands.deferredProxy(() -> new DriveToClosestStation(drive, field, driverInputs.get()))
                 .onlyIf(autoDrivingEnabled)
                 .alongWith(superstructure.intakeCoral());
     }
@@ -74,7 +64,7 @@ public class AutoIntakeCommands {
             superstructure
                 .pluckHighAlgae()
                 .andThen(
-                    Commands.deferredProxy(() -> new DriveToClosestReefAlgae(drive, field, proximityService))
+                    Commands.deferredProxy(() -> new DriveToClosestReefAlgae(drive, field))
                         .onlyIf(autoDrivingEnabled));
     }
 
@@ -83,13 +73,13 @@ public class AutoIntakeCommands {
             superstructure
                 .pluckLowAlgae()
                 .andThen(
-                    Commands.deferredProxy(() -> new DriveToClosestReefAlgae(drive, field, proximityService))
+                    Commands.deferredProxy(() -> new DriveToClosestReefAlgae(drive, field))
                         .onlyIf(autoDrivingEnabled));
     }
 
     public Command algaeBackup() {
         return
-            Commands.deferredProxy(() -> new BackupFromClosestReefAlgae(drive, field, proximityService))
+            Commands.deferredProxy(() -> new BackupFromClosestReefAlgae(drive, field))
                 .onlyIf(autoDrivingEnabled)
                 .andThen(superstructure.holdAlgaeFromPluck());
     }

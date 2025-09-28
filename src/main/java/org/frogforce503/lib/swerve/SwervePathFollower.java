@@ -1,4 +1,4 @@
-package org.frogforce503.lib.auto.follower;
+package org.frogforce503.lib.swerve;
 
 import org.frogforce503.lib.planning.planned_path.PlannedPath.HolonomicState;
 
@@ -27,13 +27,6 @@ public class SwervePathFollower {
         this.thetaController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
-    public SwervePathFollower(AutoPIDController autoPIDController) {
-        this(
-            autoPIDController.autoXController(),
-            autoPIDController.autoYController(),
-            autoPIDController.autoThetaController());
-    }
-
     public void reset() {
         this.xController.reset();
         this.yController.reset();
@@ -52,7 +45,8 @@ public class SwervePathFollower {
             Math.abs(eRotate.getRadians()) < tolRotate.getRadians();
     }
 
-    /** Calculates the next {@link ChassisSpeeds} for the robot to follow based on the following parameters:
+    /** Calculates the next robot-relative {@link ChassisSpeeds} for the robot to follow based on the following parameters:
+     * 
      * @param currentPose Current pose of the robot
      * @param targetPose Desired pose the robot needs to go to
      * @param targetAngle Desired angle the robot needs to turn to
@@ -72,14 +66,14 @@ public class SwervePathFollower {
         poseError = targetPose.relativeTo(currentPose);
         rotationError = targetAngle.minus(currentPose.getRotation());
 
-        // Calculate feedback velocities (based on position error).
+        // Calculate feedback velocities (based on position error)
         final double xFeedback = xController.calculate(currentPose.getX(), targetPose.getX());
         final double yFeedback = yController.calculate(currentPose.getY(), targetPose.getY());
         final double thetaFeedback =
             thetaController.calculate(
                 currentPose.getRotation().getRadians(), targetAngle.getRadians());
 
-        // Return next output.
+        // Return next output
         return
             ChassisSpeeds.fromFieldRelativeSpeeds(
                 xFF + xFeedback,

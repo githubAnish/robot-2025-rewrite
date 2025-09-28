@@ -66,6 +66,8 @@ public class WristIOSpark implements WristIO {
 
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 
+        config.voltageCompensation(12);
+
         motor.clearFaults();
 
         // Apply configuration

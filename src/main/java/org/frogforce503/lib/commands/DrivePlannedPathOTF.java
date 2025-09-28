@@ -1,6 +1,5 @@
 package org.frogforce503.lib.commands;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.auto.builder.PlannedPathBuilder;
@@ -24,7 +23,7 @@ public class DrivePlannedPathOTF extends Command {
     private final Supplier<Pose2d> target;
     private final Constraints constraints;
 
-    private FollowPlannedPath pathFollowingCommand;
+    private DrivePlannedPath pathFollowingCommand;
 
     public DrivePlannedPathOTF(
         Drive drive,
@@ -69,7 +68,7 @@ public class DrivePlannedPathOTF extends Command {
                 currentVelocity.vyMetersPerSecond);
 
         pathFollowingCommand =
-            new FollowPlannedPath(
+            new DrivePlannedPath(
                 drive,
                 field,
                 pathBuilder
@@ -78,9 +77,8 @@ public class DrivePlannedPathOTF extends Command {
                         constraints.maxAcceleration,
                         initialRobotTranslationalVelocity,
                         0.0,
-                        List.of(
-                            Waypoint.fromHolonomicPose(robotPose.get()),
-                            Waypoint.fromHolonomicPose(target.get()))));
+                        Waypoint.fromHolonomicPose(robotPose.get()),
+                        Waypoint.fromHolonomicPose(target.get())));
 
         pathFollowingCommand.schedule();
     }

@@ -2,8 +2,8 @@ package org.frogforce503.lib.commands;
 
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.auto.follower.SwervePathFollower;
 import org.frogforce503.lib.planning.planned_path.PlannedPath;
+import org.frogforce503.lib.swerve.SwervePathFollower;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
@@ -17,11 +17,11 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class FollowPlannedPath extends Command {
+public class DrivePlannedPath extends Command {
     private final Drive drive;
     private final FieldInfo field;
 
-    private final SwervePathFollower controller;
+    private final SwervePathFollower controller = Robot.bot.pathFollower;
     private final Timer timer;
 
     private final Supplier<PlannedPath> dynamicPath;
@@ -35,13 +35,11 @@ public class FollowPlannedPath extends Command {
 
     private Supplier<Rotation2d> headingOverride = null;
 
-    public FollowPlannedPath(Drive drive, FieldInfo field, Supplier<PlannedPath> dynamicPath) {
+    public DrivePlannedPath(Drive drive, FieldInfo field, Supplier<PlannedPath> dynamicPath) {
         this.drive = drive;
         this.field = field;
 
         this.dynamicPath = dynamicPath;
-
-        this.controller = new SwervePathFollower(Robot.bot.autoPIDController);
 
         this.controller.setPoseTolerance(
             new Pose2d(
@@ -63,11 +61,11 @@ public class FollowPlannedPath extends Command {
         addRequirements(drive);
     }
 
-    public FollowPlannedPath(Drive drive, FieldInfo field, PlannedPath path) {
+    public DrivePlannedPath(Drive drive, FieldInfo field, PlannedPath path) {
         this(drive, field, () -> path);
     }
 
-    public FollowPlannedPath withHeadingOverride(Supplier<Rotation2d> rotationSupplier) {
+    public DrivePlannedPath withHeadingOverride(Supplier<Rotation2d> rotationSupplier) {
         this.headingOverride = rotationSupplier;
         return this;
     }

@@ -31,7 +31,7 @@ public class Drive extends SubsystemBase {
 
     @Setter @Getter private boolean coastAfterAutoEnd = false;
 
-    private SwerveVisualizer visualizer;
+    private DriveVisualizer visualizer;
 
     private ChassisSpeeds requestedSpeeds = new ChassisSpeeds();
 
@@ -39,7 +39,7 @@ public class Drive extends SubsystemBase {
         this.io = io;
         this.field = field;
 
-        this.visualizer = new SwerveVisualizer(DriveConstants.FAST_TRANSLATION_METERS_PER_SECOND);
+        this.visualizer = new DriveVisualizer(DriveConstants.FAST_TRANSLATION_METERS_PER_SECOND);
 
         setPose(Pose2d.kZero);
     }
@@ -60,26 +60,26 @@ public class Drive extends SubsystemBase {
 
     private void outputTelemetry() {
         // Toggles
-        Logger.recordOutput("Swerve/Toggles/SlowModeEnabled", slowModeEnabled);
-        Logger.recordOutput("Swerve/Toggles/RobotRelative", robotRelative);
+        Logger.recordOutput("Drive/Toggles/SlowModeEnabled", slowModeEnabled);
+        Logger.recordOutput("Drive/Toggles/RobotRelative", robotRelative);
 
         // Inputs
-        Logger.recordOutput("Swerve/Inputs/Pose", currentPose);
-        Logger.recordOutput("Swerve/Inputs/Velocity", currentVelocity);
-        Logger.recordOutput("Swerve/Inputs/Velocity/Magnitude", Math.hypot(currentVelocity.vxMetersPerSecond, currentVelocity.vyMetersPerSecond));
+        Logger.recordOutput("Drive/Inputs/Pose", currentPose);
+        Logger.recordOutput("Drive/Inputs/Velocity", currentVelocity);
+        Logger.recordOutput("Drive/Inputs/Velocity/Magnitude", Math.hypot(currentVelocity.vxMetersPerSecond, currentVelocity.vyMetersPerSecond));
 
         // Status
-        Logger.recordOutput("Swerve/State/AttainedWheelSpeed", Units.metersToFeet(inputs.data.state().ModuleStates[0].speedMetersPerSecond));
-        Logger.recordOutput("Swerve/State/Current Speeds", requestedSpeeds.toString());
+        Logger.recordOutput("Drive/State/AttainedWheelSpeed", Units.metersToFeet(inputs.data.state().ModuleStates[0].speedMetersPerSecond));
+        Logger.recordOutput("Drive/State/Current Speeds", requestedSpeeds.toString());
 
         SwerveModuleState[] states = inputs.data.state().ModuleStates;
-        Logger.recordOutput("Swerve/State/ModuleStates", states);
+        Logger.recordOutput("Drive/State/ModuleStates", states);
 
         for (int i = 0; i < states.length; i++) {
             SwerveModuleState state = states[i];
 
-            Logger.recordOutput("Swerve/Module/" + ModuleName.fromIndex(i) + "/Angle", state.angle.getDegrees());
-            Logger.recordOutput("Swerve/Module/" + ModuleName.fromIndex(i) + "/Velocity", state.speedMetersPerSecond);
+            Logger.recordOutput("Drive/Module/" + ModuleName.fromIndex(i) + "/Angle", state.angle.getDegrees());
+            Logger.recordOutput("Drive/Module/" + ModuleName.fromIndex(i) + "/Velocity", state.speedMetersPerSecond);
         }
 
         visualizer.updateModules(states, getAngle());

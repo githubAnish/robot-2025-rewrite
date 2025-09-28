@@ -51,6 +51,8 @@ public class ElevatorIOSpark implements ElevatorIO {
 
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 
+        config.voltageCompensation(12);
+
         encoder.setPosition(0.0);
 
         motor.clearFaults();

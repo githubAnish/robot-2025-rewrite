@@ -48,7 +48,7 @@ public class CharacterizationRunner {
                     stepVoltage,
                     timeout,
                     state ->
-                        Logger.recordOutput("Swerve/SysIdState", state.toString())),
+                        Logger.recordOutput("Drive/SysIdState", state.toString())),
                 new SysIdRoutine.Mechanism(
                     voltage ->
                         drive.runCharacterization(voltage.in(Volts)),
@@ -193,8 +193,8 @@ public class CharacterizationRunner {
                         double wheelRadius =
                             (state.gyroDelta * DriveConstants.driveBaseRadius) / wheelDelta;
 
-                        Logger.recordOutput("Swerve/WheelDelta", wheelDelta);
-                        Logger.recordOutput("Swerve/WheelRadius", wheelRadius);
+                        Logger.recordOutput("Drive/WheelDelta", wheelDelta);
+                        Logger.recordOutput("Drive/WheelRadius", wheelRadius);
                     })
 
                     // When cancelled, calculate and print results

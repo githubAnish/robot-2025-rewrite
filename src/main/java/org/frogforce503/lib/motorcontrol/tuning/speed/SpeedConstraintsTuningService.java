@@ -7,15 +7,12 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 
 public class SpeedConstraintsTuningService implements TuningService<Constraints> {
     private SpeedConstraintsTuningConfig config;
-    private Constraints oldConfig;
 
     public SpeedConstraintsTuningService(String key, Constraints config) {
-        this.config = new SpeedConstraintsTuningConfig(
-            new LoggedTunableNumber(key + "/MaxVelocityMetersPerSec", config.maxVelocity),
-            new LoggedTunableNumber(key + "/MaxAccelerationMetersPerSec2", config.maxAcceleration)
-        );
-
-        this.oldConfig = config;
+        this.config =
+            new SpeedConstraintsTuningConfig(
+                new LoggedTunableNumber(key + "/MaxVelocityMetersPerSec", config.maxVelocity),
+                new LoggedTunableNumber(key + "/MaxAccelerationMetersPerSec2", config.maxAcceleration));
     }
 
     @Override
@@ -35,14 +32,9 @@ public class SpeedConstraintsTuningService implements TuningService<Constraints>
 
     @Override
     public Constraints getUpdatedConfig() {
-        if (!config.maxVelocityMetersPerSec().hasChanged(hashCode()) &&
-            !config.maxAccelerationMetersPerSec2().hasChanged(hashCode())
-        ) {
-            return new Constraints(
+        return
+            new Constraints(
                 config.maxVelocityMetersPerSec().get(),
                 config.maxAccelerationMetersPerSec2().get());
-        }
-        
-        return oldConfig;
     }
 }

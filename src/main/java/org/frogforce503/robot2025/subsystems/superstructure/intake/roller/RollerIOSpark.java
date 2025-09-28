@@ -51,6 +51,8 @@ public class RollerIOSpark implements RollerIO {
 
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 
+        config.voltageCompensation(12);
+
         motor.clearFaults();
 
         encoder.setPosition(0.0);

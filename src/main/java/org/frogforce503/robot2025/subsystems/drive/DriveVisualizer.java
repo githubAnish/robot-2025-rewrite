@@ -2,6 +2,8 @@ package org.frogforce503.robot2025.subsystems.drive;
 
 import org.frogforce503.robot2025.Robot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,15 +11,12 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
-public class SwerveVisualizer {
-    private MechanismLigament2d[] m_moduleSpeeds;
-    private MechanismLigament2d robotDirection;
+public class DriveVisualizer {
+    private LoggedMechanismLigament2d[] m_moduleSpeeds;
+    private LoggedMechanismLigament2d robotDirection;
 
     private final double maxSpeed;
     
@@ -37,11 +36,11 @@ public class SwerveVisualizer {
             new Color8Bit(Color.kRed),
             new Color8Bit(Color.kYellow)};
 
-    public SwerveVisualizer(double maxSpeed) {
+    public DriveVisualizer(double maxSpeed) {
         this.maxSpeed = maxSpeed;
     
-        Mechanism2d visual =
-            new Mechanism2d(
+        LoggedMechanism2d visual =
+            new LoggedMechanism2d(
                 visualSize,
                 visualSize,
                 new Color8Bit(Color.kBlack));
@@ -53,11 +52,11 @@ public class SwerveVisualizer {
         Translation2d bottomLeft = new Translation2d((visualSize - width) / 2, (visualSize - length) / 2);
         Translation2d topRight = new Translation2d((visualSize + width) / 2, (visualSize + length) / 2);
 
-        MechanismLigament2d speedVectorDisplay =
-            new MechanismLigament2d("Speed", 0.5, 0, 10, speedColor);
+        LoggedMechanismLigament2d speedVectorDisplay =
+            new LoggedMechanismLigament2d("Speed", 0.5, 0, 10, speedColor);
 
         m_moduleSpeeds =
-            new MechanismLigament2d[] {
+            new LoggedMechanismLigament2d[] {
                 visual
                     .getRoot("FL_Speed", bottomLeft.getX(), topRight.getY())
                     .append(speedVectorDisplay),
@@ -74,9 +73,9 @@ public class SwerveVisualizer {
         robotDirection =
             visual
                 .getRoot("compass", visualSize / 2, visualSize / 2)
-                .append(new MechanismLigament2d("Angle", 0.5, 0, 25, new Color8Bit(Color.kYellow)));
+                .append(new LoggedMechanismLigament2d("Angle", 0.5, 0, 25, new Color8Bit(Color.kYellow)));
 
-        SmartDashboard.putData("Swerve/Visualizer", visual);
+        Logger.recordOutput("Drive/Visualizer", visual);
     }
 
     public void updateModules(SwerveModuleState[] moduleStates, Rotation2d angle) {
@@ -99,7 +98,7 @@ public class SwerveVisualizer {
 
         Rotation3d angle = new Rotation3d(0, -Math.PI/2, currentRotation.getRadians());
 
-        Logger.recordOutput("Swerve/State/ModulePoses",
+        Logger.recordOutput("Drive/State/ModulePoses",
             new Pose3d[] {
                 new Pose3d(fl.getX(), fl.getY(), 0.5, angle),
                 new Pose3d(fr.getX(), fr.getY(), 0.5, angle),
@@ -120,7 +119,7 @@ public class SwerveVisualizer {
                 .rotateBy(currentRotation)
                 .plus(currentTranslation);
 
-        Logger.recordOutput("Swerve/State/CornerPoses",
+        Logger.recordOutput("Drive/State/CornerPoses",
             new Pose3d[] {
                 new Pose3d(upperLeft.getX(), upperLeft.getY(), 0.5, angle),
                 new Pose3d(upperRight.getX(), upperRight.getY(), 0.5, angle)});

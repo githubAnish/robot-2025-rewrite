@@ -7,6 +7,11 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a regular (equilateral and equiangular) polygon in a 2D plane.
+ * This class provides methods to create, manipulate, and query properties of a regular polygon.
+ * A regular polygon is defined by its center, radius, number of sides, and an optional rotation angle.
+ */
 public class Polygon2d {
     @Getter private final Translation2d center;
     @Getter private final double radius;
@@ -25,7 +30,7 @@ public class Polygon2d {
         double angleIncrement = 2 * Math.PI / numSides;
 
         for (int i = 0; i < numSides; i++) {
-            double angle = angleToRotate.getRadians() + i * angleIncrement;
+            double angle = i * angleIncrement + angleToRotate.getRadians();
             double x = center.getX() + radius * Math.cos(angle);
             double y = center.getY() + radius * Math.sin(angle);
             this.vertices.add(new Translation2d(x, y));

@@ -1,14 +1,15 @@
-package org.frogforce503.lib.auto;
+package org.frogforce503.robot2025.auto;
 
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.auto.route.BaseRoute;
 import org.frogforce503.lib.commands.DriveToPose;
-import org.frogforce503.lib.commands.FollowPlannedPath;
+import org.frogforce503.lib.commands.DrivePlannedPath;
 import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
+import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Gamepiece;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -33,12 +34,10 @@ public abstract class AutoMode {
     }
 
     public abstract Command routine();
-    public abstract BaseRoute<?> getRoute();
+    public abstract BaseRoute getRoute();
 
     public Pose2d getStartingPose(Supplier<Pose2d> override) {
-        return
-            getRoute()
-                .getStartingPose(override);
+        return getRoute().getInitialPose(override);
     }
 
     /**
@@ -54,12 +53,15 @@ public abstract class AutoMode {
 
     // Utilities
     public Command drive(PlannedPath path) {
-        return new FollowPlannedPath(drive, field, path);
+        return new DrivePlannedPath(drive, field, path);
     }
 
-    public Command setSuperstructureMode(Mode superstructureMode) {
+    public Command setSuperstructureMode(Gamepiece gamepiece, Mode mode) {
         return
-            Commands.runOnce(() -> superstructure.setCurrentMode(superstructureMode))
-                .ignoringDisable(true);
+            Commands.parallel(
+                Commands.runOnce(() -> superstructure.setCurrentPiece(gamepiece)),
+                Commands.runOnce(() -> superstructure.setCurrentMode(mode))
+            )
+            .ignoringDisable(true);
     }
 }

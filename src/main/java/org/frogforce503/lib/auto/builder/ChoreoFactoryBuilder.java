@@ -2,19 +2,21 @@ package org.frogforce503.lib.auto.builder;
 
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
+import org.frogforce503.lib.swerve.SwervePathFollower;
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
 public class ChoreoFactoryBuilder {
     private final Drive drive;
+    private final SwervePathFollower pathFollower;
 
     public ChoreoFactoryBuilder(Drive drive) {
         this.drive = drive;
+        this.pathFollower = Robot.bot.pathFollower;
     }
 
     public AutoFactory buildFactory() {
@@ -22,32 +24,27 @@ public class ChoreoFactoryBuilder {
             new AutoFactory(
                 drive::getCurrentPose,
                 drive::setPose,
-                sample ->
-                    followChoreoTrajectory(
-                        (SwerveSample) sample,
-                        Robot.bot.autoPIDController.autoXController(),
-                        Robot.bot.autoPIDController.autoYController(),
-                        Robot.bot.autoPIDController.autoThetaController()),
+                this::followChoreoTrajectory,
                 Constants.useAllianceFlipping,
                 drive);
     }
     
-    private void followChoreoTrajectory(SwerveSample sample, PIDController xController, PIDController yController, PIDController thetaController) {
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
+    private void followChoreoTrajectory(SwerveSample sample) {
         // Get the current pose of the robot
-        Pose2d pose = drive.getCurrentPose();
+        Pose2d currentPose = drive.getCurrentPose();
 
-        // Generate the next speeds for the robot
+        // Generate the next field-relative speeds for the robot
         ChassisSpeeds speeds =
-            new ChassisSpeeds(
-                sample.vx + xController.calculate(pose.getX(), sample.x),
-                sample.vy + yController.calculate(pose.getY(), sample.y),
-                sample.omega + thetaController.calculate(pose.getRotation().getRadians(), sample.heading));
+            pathFollower.calculate(
+                currentPose,
+                sample.getPose(),
+                sample.vx,
+                sample.vy,
+                sample.omega);
 
-        // Apply the generated speeds
+        // Apply the generated speeds (with module forces)
         drive.runVelocity(
-            ChassisSpeeds.fromFieldRelativeSpeeds(speeds, pose.getRotation()),
+            speeds,
             sample.moduleForcesX(),
             sample.moduleForcesY());
     }

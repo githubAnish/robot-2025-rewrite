@@ -60,6 +60,8 @@ public class ClawIOSpark implements ClawIO {
 
         leftConfig.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 
+        leftConfig.voltageCompensation(12);
+
         rightConfig
             .apply(leftConfig)
             .inverted(Robot.bot.clawConstants.rightMotorConstants().motorInverted());

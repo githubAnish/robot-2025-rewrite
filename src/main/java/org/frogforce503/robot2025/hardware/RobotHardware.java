@@ -1,8 +1,8 @@
 package org.frogforce503.robot2025.hardware;
 
-import org.frogforce503.lib.auto.follower.AutoPIDController;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import org.frogforce503.lib.swerve.SwervePathFollower;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -141,6 +141,6 @@ public abstract class RobotHardware {
     public Translation2d kVehicleToFrontLeft;
     public Translation2d kVehicleToBackLeft;
 
-    // Auto Following PID
-    public AutoPIDController autoPIDController;
+    // Path Follower
+    public SwervePathFollower pathFollower;
 }

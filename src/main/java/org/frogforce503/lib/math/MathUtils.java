@@ -35,12 +35,12 @@ public final class MathUtils {
         if (digits <= 0) {
             throw new IllegalArgumentException("Digits must be only positive.");
         }
+
         double scalar = Math.pow(10, digits);
-        return
-            Math.round(num * scalar) / scalar;
+        return Math.round(num * scalar) / scalar;
     }
 
-    public static boolean isIn(double toCheckValue, double... options) {
+    public static boolean isAnOption(double toCheckValue, double... options) {
         return
             Arrays
                 .stream(options)

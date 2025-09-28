@@ -58,6 +58,8 @@ public class PivotIOSpark implements PivotIO {
 
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 
+        config.voltageCompensation(12);
+
         motor.clearFaults();
 
         // Apply configuration

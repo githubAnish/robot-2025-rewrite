@@ -18,7 +18,6 @@ public class OffsetManager extends VirtualSubsystem {
 
     public OffsetManager(String fileName, OffsetsIO io) {
         this.io = io;
-        
         this.offsetData = new OffsetDecoder(fileName).getMapper();
     }
 
