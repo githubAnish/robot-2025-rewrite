@@ -4,16 +4,15 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.io.JoystickInputs;
+import org.frogforce503.lib.reefscape.Branch;
+import org.frogforce503.lib.reefscape.PrescoreBoundary;
 import org.frogforce503.lib.util.ProximityUtil;
-import org.frogforce503.robot2025.commands.algae_score_barge.DriveToClosestBarge;
-import org.frogforce503.robot2025.commands.algae_score_processor.DriveToClosestProcessor;
-import org.frogforce503.robot2025.commands.coral_score_reef.AutoCoralScore;
-import org.frogforce503.robot2025.commands.coral_score_reef.Branch;
-import org.frogforce503.robot2025.commands.coral_score_reef.PrescoreBoundaryBuilder;
-import org.frogforce503.robot2025.fields.FieldInfo;
-import org.frogforce503.robot2025.offsets.OffsetManager;
+import org.frogforce503.robot2025.FieldInfo;
+import org.frogforce503.robot2025.commands.drive.DriveToBarge;
+import org.frogforce503.robot2025.commands.drive.DriveToProcessor;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.leds.Leds;
+import org.frogforce503.robot2025.subsystems.offsets.OffsetManager;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
 import org.frogforce503.robot2025.subsystems.vision.Vision;
@@ -35,7 +34,7 @@ public class AutoScoreCommands {
     private final OffsetManager offsetManager;
 
     // Reef Boundary (Used for L2 - L4 coral scoring)
-    private final PrescoreBoundaryBuilder prescoreBoundaryBuilder;
+    private final PrescoreBoundary prescoreBoundaryBuilder;
 
     // Joystick Inputs
     private final Supplier<JoystickInputs> driverInputs;
@@ -60,7 +59,7 @@ public class AutoScoreCommands {
         this.field = field;
         this.offsetManager = offsetManager;
         this.driverInputs = driverInputs;
-        this.prescoreBoundaryBuilder = new PrescoreBoundaryBuilder(field, drive::getCurrentPose);
+        this.prescoreBoundaryBuilder = new PrescoreBoundary(field, drive::getCurrentPose);
         this.autoDrivingEnabled = autoDrivingEnabled;
     }
 
@@ -114,14 +113,14 @@ public class AutoScoreCommands {
 
     public Command processorAutoScore() {
         return
-            Commands.deferredProxy(() -> new DriveToClosestProcessor(drive, field))
+            Commands.deferredProxy(() -> new DriveToProcessor(drive, field))
                 .onlyIf(autoDrivingEnabled)
                 .andThen(superstructure.scoreProcessor());
     }
 
     public Command bargeAutoScore() {
         return
-            Commands.deferredProxy(() -> new DriveToClosestBarge(drive, field, driverInputs.get()))
+            Commands.deferredProxy(() -> new DriveToBarge(drive, field, driverInputs.get()))
                 .onlyIf(autoDrivingEnabled)
                 .andThen(superstructure.scoreBarge());
     }

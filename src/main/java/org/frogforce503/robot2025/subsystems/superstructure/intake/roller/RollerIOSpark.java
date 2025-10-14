@@ -1,14 +1,17 @@
 package org.frogforce503.robot2025.subsystems.superstructure.intake.roller;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.Constants;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -31,7 +34,10 @@ public class RollerIOSpark implements RollerIO {
     private final Debouncer connectedDebouncer = new Debouncer(.5);
     
     public RollerIOSpark() {
-        motor = SparkUtil.getSpark(Robot.bot.intakeConstants.rollerConstants().rollerID(), Robot.bot.intakeConstants.rollerConstants().rollerIsSparkFlex());
+        motor =
+            Constants.bot.Intake.rollerConfig().rollerIsSparkFlex()
+                ? new SparkFlex(Constants.bot.Intake.rollerConfig().rollerID(), MotorType.kBrushless)
+                : new SparkMax(Constants.bot.Intake.rollerConfig().rollerID(), MotorType.kBrushless);
         encoder = motor.getEncoder();
 
         pidController = motor.getClosedLoopController();
@@ -41,13 +47,13 @@ public class RollerIOSpark implements RollerIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pidf(
-                    Robot.bot.intakeConstants.rollerConstants().kPIDF().kP(),
-                    Robot.bot.intakeConstants.rollerConstants().kPIDF().kI(),
-                    Robot.bot.intakeConstants.rollerConstants().kPIDF().kD(),
-                    Robot.bot.intakeConstants.rollerConstants().kPIDF().kV(),
+                    Constants.bot.Intake.rollerConfig().kPIDF().kP(),
+                    Constants.bot.Intake.rollerConfig().kPIDF().kI(),
+                    Constants.bot.Intake.rollerConfig().kPIDF().kD(),
+                    Constants.bot.Intake.rollerConfig().kPIDF().kV(),
                     ClosedLoopSlot.kSlot0);
 
-        config.inverted(Robot.bot.intakeConstants.rollerConstants().rollerInverted());
+        config.inverted(Constants.bot.Intake.rollerConfig().rollerInverted());
 
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 
@@ -57,7 +63,7 @@ public class RollerIOSpark implements RollerIO {
 
         encoder.setPosition(0.0);
 
-        // Apply configuration
+        // Apply config
         SparkUtil.configure(motor, config, true);
     }
 

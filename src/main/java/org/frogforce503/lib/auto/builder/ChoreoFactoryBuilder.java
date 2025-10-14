@@ -7,7 +7,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 import org.frogforce503.lib.swerve.SwervePathFollower;
 import org.frogforce503.robot2025.Constants;
-import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
 public class ChoreoFactoryBuilder {
@@ -16,7 +15,7 @@ public class ChoreoFactoryBuilder {
 
     public ChoreoFactoryBuilder(Drive drive) {
         this.drive = drive;
-        this.pathFollower = Robot.bot.pathFollower;
+        this.pathFollower = Constants.bot.swervePathFollower;
     }
 
     public AutoFactory buildFactory() {

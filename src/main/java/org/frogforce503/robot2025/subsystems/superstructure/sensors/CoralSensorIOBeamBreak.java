@@ -1,6 +1,6 @@
 package org.frogforce503.robot2025.subsystems.superstructure.sensors;
 
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.Constants;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -12,8 +12,8 @@ public class CoralSensorIOBeamBreak implements CoralSensorIO {
     private Debouncer lowerDebouncer = new Debouncer(0.1);
 
     public CoralSensorIOBeamBreak() {
-        upperBeamBreak = new DigitalInput(Robot.bot.sensorConstants.upperBeamID());
-        lowerBeamBreak = new DigitalInput(Robot.bot.sensorConstants.lowerBeamID());
+        upperBeamBreak = new DigitalInput(Constants.bot.Sensors.upperBeamID());
+        lowerBeamBreak = new DigitalInput(Constants.bot.Sensors.lowerBeamID());
     }
 
     @Override

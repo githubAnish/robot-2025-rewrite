@@ -9,7 +9,7 @@ public record JoystickInputs(
     DoubleSupplier ySupplier,
     DoubleSupplier omegaSupplier
 ) {
-    public static JoystickInputs kZero =
+    public static final JoystickInputs kZero =
         new JoystickInputs(
             () -> 0,
             () -> 0,

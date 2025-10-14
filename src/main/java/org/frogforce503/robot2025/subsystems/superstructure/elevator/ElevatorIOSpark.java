@@ -1,12 +1,13 @@
 package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.Constants;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
@@ -32,7 +33,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public ElevatorIOSpark() {
-        motor = SparkUtil.getSpark(Robot.bot.elevatorConstants.elevatorID(), false);
+        motor = new SparkMax(Constants.bot.Elevator.elevatorID(), MotorType.kBrushless);
         encoder = motor.getEncoder();
 
         pidController = motor.getClosedLoopController();
@@ -42,12 +43,12 @@ public class ElevatorIOSpark implements ElevatorIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pid(
-                    Robot.bot.elevatorConstants.kPIDF().kP(),
-                    Robot.bot.elevatorConstants.kPIDF().kI(),
-                    Robot.bot.elevatorConstants.kPIDF().kD(),
+                    Constants.bot.Elevator.kPIDF().kP(),
+                    Constants.bot.Elevator.kPIDF().kI(),
+                    Constants.bot.Elevator.kPIDF().kD(),
                     ClosedLoopSlot.kSlot0);
 
-        config.inverted(Robot.bot.elevatorConstants.elevatorInverted());
+        config.inverted(Constants.bot.Elevator.elevatorInverted());
 
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 

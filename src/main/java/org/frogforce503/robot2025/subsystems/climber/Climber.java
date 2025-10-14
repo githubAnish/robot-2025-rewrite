@@ -5,7 +5,7 @@ import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIO;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
@@ -34,7 +34,7 @@ public class Climber extends FFSubsystemBase {
 
     // Tuning
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Climber", Robot.bot.climberConstants.kPIDF());
+        new PIDFTuningService("Climber", Constants.bot.Climber.kPIDF());
 
     // Overrides
     private LoggedNetworkBoolean tuningEnabled =

@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.lib.util.Logic;
-import org.frogforce503.robot2025.commands.coral_score_reef.Branch;
+import org.frogforce503.lib.reefscape.Branch;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.ArmGoal;
 import org.frogforce503.robot2025.subsystems.superstructure.claw.Claw;
@@ -49,7 +49,7 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
     @Setter @Getter private Branch currentBranch = Branch.LEFT;
 
     // Visualizers
-    @Getter private final SuperstructureVisualizer measuredVisualizer, setpointVisualizer;
+    @Getter private final SuperstructureVisualizer visualizer;
 
     // Overrides
     @Getter private boolean manualControlEnabled;
@@ -63,8 +63,7 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
         this.intake = intake;
         this.coralSensorIO = coralSensorIO;
 
-        this.measuredVisualizer = new SuperstructureVisualizer("Measured", this, robotPoseSupplier);
-        this.setpointVisualizer = new SuperstructureVisualizer("Setpoint", this, robotPoseSupplier);
+        this.visualizer = new SuperstructureVisualizer(this, robotPoseSupplier);
     }
 
     @Override
@@ -73,17 +72,11 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
         Logger.processInputs("CoralSensors", coralSensorInputs);
 
         // Update visualizers
-        measuredVisualizer.updateOnlyIfInSimulation(
+        visualizer.updateOnlyIfInSimulation(
             elevator.getPosition(),
             arm.getPosition(),
             wrist.getPosition(),
             intake.getPivotPosition());
-
-        setpointVisualizer.updateOnlyIfInSimulation(
-            elevator.getSetpoint().position,
-            arm.getSetpoint().position,
-            wrist.getCurrentGoal().position,
-            intake.getSetpoint().position);
 
         Logger.recordOutput("Superstructure/Overrides/Brake Mode Enabled", brakeModeEnabled);
         Logger.recordOutput("Superstructure/Overrides/Manual Control Enabled", manualControlEnabled);

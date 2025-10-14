@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.Constants;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -10,6 +10,7 @@ import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.ClosedLoopConfigAccessor;
@@ -36,7 +37,7 @@ public class WristIOSpark implements WristIO {
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public WristIOSpark() {
-        motor = SparkUtil.getSpark(Robot.bot.wristConstants.wristID(), false);
+        motor = new SparkMax(Constants.bot.Wrist.wristID(), MotorType.kBrushless);
         mainEncoder = motor.getEncoder();
         seedEncoder = motor.getAbsoluteEncoder();
 
@@ -45,7 +46,7 @@ public class WristIOSpark implements WristIO {
         // Configure motor
         config
             .absoluteEncoder
-                .zeroOffset(Robot.bot.wristConstants.wristOffset())
+                .zeroOffset(Constants.bot.Wrist.wristOffset())
                 .positionConversionFactor(ABSOLUTE_CONVERSION_FACTOR)
                 .setSparkMaxDataPortConfig();
 
@@ -57,12 +58,12 @@ public class WristIOSpark implements WristIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pid(
-                    Robot.bot.wristConstants.kPIDF().kP(),
-                    Robot.bot.wristConstants.kPIDF().kI(),
-                    Robot.bot.wristConstants.kPIDF().kD(),
+                    Constants.bot.Wrist.kPIDF().kP(),
+                    Constants.bot.Wrist.kPIDF().kI(),
+                    Constants.bot.Wrist.kPIDF().kD(),
                     ClosedLoopSlot.kSlot0);
 
-        config.inverted(Robot.bot.wristConstants.wristInverted());
+        config.inverted(Constants.bot.Wrist.wristInverted());
 
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 

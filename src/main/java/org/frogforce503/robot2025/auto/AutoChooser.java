@@ -1,18 +1,18 @@
 package org.frogforce503.robot2025.auto;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.auto.builder.ChoreoFactoryBuilder;
+import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.lib.util.SwitchableChooser;
 import org.frogforce503.robot2025.Constants;
-import org.frogforce503.robot2025.auto.blue.BlueBabyAuton;
-import org.frogforce503.robot2025.auto.red.RedBabyAuton;
-import org.frogforce503.robot2025.auto.test.ChoreoWarmupAuto;
+import org.frogforce503.robot2025.FieldInfo;
+import org.frogforce503.robot2025.auto.AutoMap.StartingLocation;
+import org.frogforce503.robot2025.auto.autos.blue.BlueBabyAuton;
+import org.frogforce503.robot2025.auto.autos.red.RedBabyAuton;
 import org.frogforce503.robot2025.commands.AutoIntakeCommands;
 import org.frogforce503.robot2025.commands.AutoScoreCommands;
-import org.frogforce503.robot2025.fields.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.littletonrobotics.junction.Logger;
@@ -26,7 +26,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
+import lombok.Getter;
 
 public class AutoChooser {
     private final Drive drive;
@@ -35,8 +35,8 @@ public class AutoChooser {
 
     private final AutoFactory autoFactory;
 
-    private LoggedDashboardChooser<StartingLocation> startingSideSelector;
     private LoggedDashboardChooser<Alliance> colorSelector;
+    private LoggedDashboardChooser<StartingLocation> startingSideSelector;
     private SwitchableChooser<String> routineChooser;
 
     private LoggedDashboardBoolean commitAuton;
@@ -50,14 +50,7 @@ public class AutoChooser {
     private StartingLocation lastStartingSide = null;
     private String lastRoutine = "";
 
-    private
-        HashMap<
-            Alliance,
-            HashMap<
-                StartingLocation,
-                HashMap<
-                    String,
-                    Supplier<AutoMode>>>> AUTO_MAP = new HashMap<>();
+    @Getter private AutoMap autoMap = new AutoMap();
 
     public AutoChooser(
         Drive drive,
@@ -73,18 +66,8 @@ public class AutoChooser {
         this.autoFactory = new ChoreoFactoryBuilder(drive).buildFactory();
 
         this.colorSelector = new LoggedDashboardChooser<>("AutoChooser/Alliance Color");
-
-        // --------- ALLIANCE COLOR AUTOMATICALLY SELECTS TO BLUE --------- //
-
-        this.colorSelector.addDefaultOption("BLUE", Alliance.Blue);
-        this.colorSelector.addOption("RED", Alliance.Red);
-
-        // --------- ALLIANCE COLOR AUTOMATICALLY SELECTS TO RED --------- //
-
-        // this.colorSelector.addDefaultOption("RED", Alliance.Red);
-        // this.colorSelector.addOption("BLUE", Alliance.Blue);
-
-        // --------------------------------------------------------------- //
+        this.colorSelector.addDefaultOption("Red", Alliance.Red);
+        this.colorSelector.addOption("Blue", Alliance.Blue);
 
         this.startingSideSelector = new LoggedDashboardChooser<>("AutoChooser/Starting Location");
         this.startingSideSelector.addDefaultOption("LEFT", StartingLocation.LEFT);
@@ -97,49 +80,17 @@ public class AutoChooser {
         this.selectedAutoNameDisplay = new LoggedDashboardString("AutoChooser/Selected Auto Name", "NO AUTO SELECTED");
         this.autoReadyDisplay = new LoggedDashboardBoolean("AutoChooser/Ready to run??", false);
 
-        AUTO_MAP.put(Alliance.Red,
-            new HashMap<StartingLocation, HashMap<String, Supplier<AutoMode>>>() {{
-                put(StartingLocation.LEFT, new HashMap<String, Supplier<AutoMode>>() {{
-                    
-                }});
-                put(StartingLocation.CENTER, new HashMap<String, Supplier<AutoMode>>() {{
-                    put("RED-BABY-AUTON",
-                        () ->
-                            new RedBabyAuton(
-                                drive,
-                                field,
-                                superstructure,
-                                autoFactory,
-                                autoIntakeCommands,
-                                autoScoreCommands));
-                }});
-                put(StartingLocation.RIGHT, new HashMap<String, Supplier<AutoMode>>() {{
-                    
-                }});
-            }}
-        );
+        autoMap
+            .putAuto(
+                Alliance.Red,
+                StartingLocation.CENTER,
+                () -> new RedBabyAuton(drive, field, superstructure, autoFactory, autoIntakeCommands, autoScoreCommands));
 
-        AUTO_MAP.put(Alliance.Blue,
-            new HashMap<StartingLocation, HashMap<String, Supplier<AutoMode>>>() {{
-                put(StartingLocation.LEFT, new HashMap<String, Supplier<AutoMode>>() {{
-                    
-                }});
-                put(StartingLocation.CENTER, new HashMap<String, Supplier<AutoMode>>() {{
-                    put("BLUE-BABY-AUTON",
-                        () ->
-                            new BlueBabyAuton(
-                                drive,
-                                field,
-                                superstructure,
-                                autoFactory,
-                                autoIntakeCommands,
-                                autoScoreCommands));
-                }});
-                put(StartingLocation.RIGHT, new HashMap<String, Supplier<AutoMode>>() {{
-                    
-                }});
-            }}
-        );
+        autoMap
+            .putAuto(
+                Alliance.Blue,
+                StartingLocation.CENTER,
+                () -> new BlueBabyAuton(drive, field, superstructure, autoFactory, autoIntakeCommands, autoScoreCommands));
     }
 
     private void reset() {
@@ -147,14 +98,11 @@ public class AutoChooser {
         autoReadyDisplay.set(false);
         selectedAutoNameDisplay.set("NO AUTO SELECTED");
 
-        field
-            .getObject("Trajectory")
-            .setPoses(new Pose2d[] {});
-
+        field.getObject("Trajectory").setPoses(new Pose2d[] {});
         Logger.recordOutput("Drive/Trajectory", new Pose2d[] {});
 
         routineChooser.setOptions(
-            AUTO_MAP
+            autoMap
                 .get(colorSelector.get())
                 .get(startingSideSelector.get())
                 .keySet()
@@ -179,21 +127,14 @@ public class AutoChooser {
                     });
             
             // Display Path
-            List<Pose2d> poses =
-                selectedAuto
-                    .getRoute()
-                    .getPoses();
+            List<Pose2d> poses = selectedAuto.getRoute().getPoses();
     
-            field
-                .getObject("Trajectory")
-                .setPoses(poses.toArray(Pose2d[]::new));
-    
+            field.getObject("Trajectory").setPoses(poses);
             Logger.recordOutput("Drive/Trajectory", poses.toArray(Pose2d[]::new));
 
             // Initialize superstructure starting state
             if (RobotBase.isSimulation()) {
-                superstructure.getMeasuredVisualizer().setupAuto();
-                superstructure.getSetpointVisualizer().setupAuto();
+                superstructure.getVisualizer().setupAuto();
             }
 
             superstructure.setHasCoral(true);
@@ -225,20 +166,11 @@ public class AutoChooser {
         }
         
         if (commitAuton.get()) {
-            System.out.println("Commit Button Pressed - Returned from AutoChooser.java");
+            System.out.println("Commit Button Pressed" + ErrorUtil.attachJavaClassName(AutoChooser.class));
 
-            Alliance color =
-                RobotBase.isReal() && Constants.selectAllianceFromDS
-                    ? field.getAlliance()
-                    : colorSelector.get();
-
+            Alliance color = field.getAlliance();
             StartingLocation side = startingSideSelector.get();
-
-            var choice =
-                AUTO_MAP
-                    .get(color)
-                    .get(side)
-                    .get(routineChooser.get());
+            Supplier<AutoMode> choice = autoMap.getAuto(color, side, routineChooser.get());
 
             if (choice != null) {
                 AutoMode selected = choice.get();
@@ -263,22 +195,5 @@ public class AutoChooser {
         if (selectedAuto != null) {
             selectedAutoCommand.cancel();
         }
-    }
-
-    /** Warms up the auto chooser by running a test Choreo path for 5 seconds on robotInit. */
-    public void scheduleWarmupCommand() {
-        new ChoreoWarmupAuto(drive, field, superstructure, autoFactory)
-            .routine()
-                .withTimeout(5)
-                .andThen(new PrintCommand("Warmup Auto Finished"))
-                .ignoringDisable(true)
-                .withName("Warmup Choreo Auto")
-            .schedule();
-    }
-
-    public enum StartingLocation {
-        LEFT,
-        CENTER,
-        RIGHT
     }
 }

@@ -1,7 +1,5 @@
 package org.frogforce503.robot2025.subsystems.drive.io;
 
-import org.frogforce503.robot2025.subsystems.drive.DriveConstants.ModuleName;
-
 import org.littletonrobotics.junction.AutoLog;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
@@ -28,50 +26,24 @@ public interface DriveIO {
         Pose2d poseMeters,
         ChassisSpeeds velocityMeters) {}
 
-    record ModuleIOData(
-        boolean driveConnected,
+    record CharacterizationIOData(
         double drivePositionRad,
-        double driveVelocityRadPerSec,
-        double driveAppliedVolts,
-        double driveSupplyCurrentAmps,
-        double driveTorqueCurrentAmps,
-        boolean turnConnected,
-        boolean turnEncoderConnected,
-        Rotation2d turnAbsolutePosition,
-        Rotation2d turnPosition,
-        double turnVelocityRadPerSec,
-        double turnAppliedVolts,
-        double turnSupplyCurrentAmps,
-        double turnTorqueCurrentAmps
+        double driveVelocityRadPerSec
     ) {
-        public ModuleIOData() {
-            this(
-                false,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                false,
-                false,
-                Rotation2d.kZero,
-                Rotation2d.kZero,
-                0.0,
-                0.0,
-                0.0,
-                0.0);
+        public CharacterizationIOData() {
+            this(0.0, 0.0);
         }
     }
 
     default void updateInputs(DriveIOInputs inputs) {}
 
     // Required in only some cases, doesn't need to be retrieved during normal operation.
-    default ModuleIOData getModuleData(ModuleName moduleName) {
-        return new ModuleIOData();
+    default CharacterizationIOData getCharacterizationData(int moduleIndex) {
+        return new CharacterizationIOData();
     }
 
     // Required in only some cases, doesn't need to be retrieved during normal operation.
-    default Rotation2d getRawGyroAngle() {
+    default Rotation2d getGyroYaw() {
         return Rotation2d.kZero;
     }
 

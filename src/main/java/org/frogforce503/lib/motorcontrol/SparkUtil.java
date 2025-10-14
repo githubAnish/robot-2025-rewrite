@@ -4,11 +4,8 @@ import org.frogforce503.lib.util.ErrorUtil;
 
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SignalsConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 
@@ -19,20 +16,12 @@ public final class SparkUtil {
 
     private SparkUtil() {}
 
-    @SuppressWarnings("unchecked")
-    public static <T extends SparkBase> T getSpark(int deviceId, boolean isSparkFlex) {
-        return
-            isSparkFlex
-                ? (T) new SparkFlex(deviceId, MotorType.kBrushless)
-                : (T) new SparkMax(deviceId, MotorType.kBrushless);
-    }
-
     public static ClosedLoopSlot getClosedLoopSlot(int slot) {
         assert (0 <= slot && slot <= 3) : "Invalid slot ID: " + slot + ErrorUtil.attachJavaClassName(SparkUtil.class);
         return ClosedLoopSlot.values()[slot];
     }
 
-    public static void configure(SparkBase motor, SparkBaseConfig config, boolean burnFlash) {
+    public static <S extends SparkBase, C extends SparkBaseConfig> void configure(S motor, C config, boolean burnFlash) {
         motor.configure(
             config,
             burnFlash ? ResetMode.kResetSafeParameters : ResetMode.kNoResetSafeParameters,

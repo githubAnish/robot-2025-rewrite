@@ -2,8 +2,6 @@ package org.frogforce503.robot2025.subsystems.leds;
 
 import java.util.function.Consumer;
 
-import org.frogforce503.lib.leds.Animations;
-
 import lombok.Getter;
 
 public enum LedsGoal {

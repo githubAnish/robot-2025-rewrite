@@ -14,7 +14,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 public class SuperstructureVisualizer {
-    private final String name;
+    private final String name = "Superstructure";
     private final Superstructure superstructure;
     private final Supplier<Pose2d> robotPoseSupplier;
 
@@ -26,8 +26,7 @@ public class SuperstructureVisualizer {
     private LoggedNetworkBoolean hasAlgaeInClaw;
     private LoggedNetworkBoolean hasCoral;
     
-    public SuperstructureVisualizer(String name, Superstructure superstructure, Supplier<Pose2d> robotPoseSupplier) {
-        this.name = name;
+    public SuperstructureVisualizer(Superstructure superstructure, Supplier<Pose2d> robotPoseSupplier) {
         this.superstructure = superstructure;
         this.robotPoseSupplier = robotPoseSupplier;
 

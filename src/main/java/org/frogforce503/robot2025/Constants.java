@@ -1,23 +1,27 @@
 package org.frogforce503.robot2025;
 
+import org.frogforce503.robot2025.constants.RobotConstants;
+
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import lombok.Setter;
 import edu.wpi.first.wpilibj.RobotBase;
 
-/** This class contains global configuration describing the current robot and runtime mode. */
+/** This class contains global configuration describing the current robot and runtime mode. Contains robot constants as well. */
 public final class Constants {
   public static final double loopPeriodSecs = 0.02;
   public static final boolean useAllianceFlipping = false;
   public static final boolean selectAllianceFromDS = true;
-  @Setter private static Bot robotType = Bot.CompBot;
+
+  @Setter private static RobotType robotType = RobotType.CompBot;
+  public static RobotConstants bot;
 
   @SuppressWarnings("resource")
-  public static Bot getRobot() {
-    if (!disableHAL && RobotBase.isReal() && robotType == Bot.SimBot) {
+  public static RobotType getRobot() {
+    if (RobotBase.isReal() && robotType == RobotType.SimBot) {
         new Alert("Invalid robot selected, using competition robot as default.", AlertType.kError)
             .set(true);
-        robotType = Bot.CompBot;
+        robotType = RobotType.CompBot;
     }
     return robotType;
   }
@@ -40,20 +44,14 @@ public final class Constants {
     REPLAY
   }
 
-  public enum Bot {
+  public enum RobotType {
     CompBot, PracticeBot, ProgrammingBot, SimBot
-  }
-
-  public static boolean disableHAL = false;
-
-  public static void disableHAL() {
-    disableHAL = true;
   }
 
   /** Checks whether the correct robot is selected when deploying. */
   public static class CheckDeploy {
     public static void main(String... args) {
-      if (robotType == Bot.SimBot) {
+      if (robotType == RobotType.SimBot) {
         System.err.println("Cannot deploy, invalid robot selected: " + robotType);
         System.exit(1);
       }
@@ -63,7 +61,7 @@ public final class Constants {
   /** Checks that the default robot is selected. */
   public static class CheckPullRequest {
     public static void main(String... args) {
-      if (robotType != Bot.CompBot) {
+      if (robotType != RobotType.CompBot) {
         System.err.println("Do not merge, non-default constants are configured.");
         System.exit(1);
       }

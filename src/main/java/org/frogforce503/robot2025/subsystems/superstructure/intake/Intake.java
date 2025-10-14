@@ -1,7 +1,6 @@
 package org.frogforce503.robot2025.subsystems.superstructure.intake;
 
 import org.frogforce503.robot2025.Constants;
-import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.PivotIO;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.PivotIOInputsAutoLogged;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.RollerIO;
@@ -43,8 +42,8 @@ public class Intake extends FFSubsystemBase {
     private final Debouncer algaeFilter = new Debouncer(0.5, DebounceType.kRising);
 
     // Constants
-    private final Range range = Robot.bot.intakeConstants.pivotConstants().range();
-    private ArmFeedforward feedforward = Robot.bot.intakeConstants.pivotConstants().kPIDF().toArmFeedforward();
+    private final Range range = Constants.bot.Intake.pivotConfig().range();
+    private ArmFeedforward feedforward = Constants.bot.Intake.pivotConfig().kPIDF().toArmFeedforward();
     private final double parallelToGroundAngle = 107;
 
     // Control
@@ -53,10 +52,10 @@ public class Intake extends FFSubsystemBase {
 
     // Tuning
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Intake", Robot.bot.intakeConstants.pivotConstants().kPIDF());
+        new PIDFTuningService("Intake", Constants.bot.Intake.pivotConfig().kPIDF());
 
     private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Intake", Robot.bot.intakeConstants.pivotConstants().kConstraints());
+        new SpeedConstraintsTuningService("Intake", Constants.bot.Intake.pivotConfig().kConstraints());
 
     // Overrides
     private LoggedNetworkBoolean tuningEnabled =
@@ -79,7 +78,7 @@ public class Intake extends FFSubsystemBase {
 
         profile =
             new TrapezoidProfile(
-                Robot.bot.intakeConstants.pivotConstants().kConstraints());
+                Constants.bot.Intake.pivotConfig().kConstraints());
     }
 
     @Override

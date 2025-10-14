@@ -7,8 +7,9 @@ import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.commands.RumbleCommand;
+import org.frogforce503.lib.auto.builder.PlannedPathGenerator;
 import org.frogforce503.lib.io.JoystickInputs;
+import org.frogforce503.lib.planning.planned_path.Waypoint;
 import org.frogforce503.lib.util.DoublePressTracker;
 import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.lib.util.FFSelectCommand;
@@ -16,17 +17,15 @@ import org.frogforce503.lib.util.TriConsumer;
 import org.frogforce503.lib.util.TriggerUtil;
 import org.frogforce503.lib.vision.apriltag_detection.VisionMeasurement;
 import org.frogforce503.robot2025.auto.AutoChooser;
+import org.frogforce503.robot2025.auto.AutoWarmupExecutor;
 import org.frogforce503.robot2025.commands.AutoIntakeCommands;
 import org.frogforce503.robot2025.commands.AutoScoreCommands;
-import org.frogforce503.robot2025.commands.DriveCommands;
-import org.frogforce503.robot2025.commands.coral_score_reef.Branch;
-import org.frogforce503.robot2025.commands.gamepiece_eject.WaitAfterAlgaeEject;
-import org.frogforce503.robot2025.commands.gamepiece_eject.WaitAfterCoralEject;
-import org.frogforce503.robot2025.fields.FieldInfo;
-import org.frogforce503.robot2025.fields.FieldConfig.Venue;
-import org.frogforce503.robot2025.offsets.OffsetManager;
-import org.frogforce503.robot2025.offsets.OffsetsIO;
-import org.frogforce503.robot2025.offsets.OffsetsIOServer;
+import org.frogforce503.robot2025.commands.RumbleCommand;
+import org.frogforce503.lib.reefscape.Branch;
+import org.frogforce503.robot2025.commands.drive.DriveCommands;
+import org.frogforce503.robot2025.commands.WaitAfterAlgaeEject;
+import org.frogforce503.robot2025.commands.WaitAfterCoralEject;
+import org.frogforce503.robot2025.constants.FieldConfig.Venue;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
 import org.frogforce503.robot2025.subsystems.climber.Climber.ClimberGoal;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
@@ -34,10 +33,13 @@ import org.frogforce503.robot2025.subsystems.climber.ClimberIOSim;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSpark;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.drive.io.DriveIOPhoenix;
-import org.frogforce503.robot2025.subsystems.drive.io.DriveIOSim;
+import org.frogforce503.robot2025.subsystems.drive.io.DriveIOBasicSim;
 import org.frogforce503.robot2025.subsystems.leds.Leds;
 import org.frogforce503.robot2025.subsystems.leds.LedsIO;
 import org.frogforce503.robot2025.subsystems.leds.LedsIOCANdle;
+import org.frogforce503.robot2025.subsystems.offsets.OffsetManager;
+import org.frogforce503.robot2025.subsystems.offsets.OffsetsIO;
+import org.frogforce503.robot2025.subsystems.offsets.OffsetsIOServer;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Gamepiece;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
@@ -75,6 +77,7 @@ import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagI
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonSim;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonVision;
 import org.frogforce503.robot2025.subsystems.vision.object_detection.ObjectDetectionIO;
+import org.frogforce503.robot2025.visualization.GameVisualizer;
 import org.frogforce503.test.UnitTest;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -82,7 +85,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.UnaryFunction;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -97,17 +99,16 @@ public class RobotContainer implements UnitTest {
     private final Superstructure superstructure;
     private Climber climber;
     private Leds leds;
+    private final OffsetManager offsetManager;
 
     // Field
     private final FieldInfo field = new FieldInfo();
 
-    // Dashboard Inputs
+    // Auto
     private final AutoChooser autoChooser;
+    private final AutoWarmupExecutor autoWarmupExecutor;
 
-    // Offset Manager
-    private final OffsetManager offsetManager;
-
-    // Visualizer
+    // Simulation
     private final GameVisualizer gameVisualizer;
     private final VisionSimulator visionVisualizer = new VisionSimulator();
 
@@ -164,10 +165,10 @@ public class RobotContainer implements UnitTest {
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
-                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Robot.bot.FRONT_LEFT_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Robot.bot.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.LOWER_FRONT_RIGHT, Robot.bot.LOWER_FRONT_RIGHT_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Robot.bot.ELEVATOR_BACK_CAMERA_TO_CENTER)
+                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Constants.bot.Vision.FRONT_LEFT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Constants.bot.Vision.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.LOWER_FRONT_RIGHT, Constants.bot.Vision.LOWER_FRONT_RIGHT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Constants.bot.Vision.ELEVATOR_BACK_CAMERA_TO_CENTER())
                         },
                         new ObjectDetectionIO[] {});
                 elevator = new Elevator(new ElevatorIOSpark(), new DigitalIOElevator());
@@ -185,10 +186,10 @@ public class RobotContainer implements UnitTest {
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
-                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Robot.bot.FRONT_LEFT_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Robot.bot.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Robot.bot.ELEVATOR_BACK_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_FRONT, Robot.bot.ELEVATOR_FRONT_CAMERA_TO_CENTER)
+                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Constants.bot.Vision.FRONT_LEFT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Constants.bot.Vision.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Constants.bot.Vision.ELEVATOR_BACK_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_FRONT, Constants.bot.Vision.ELEVATOR_FRONT_CAMERA_TO_CENTER())
                         },
                         new ObjectDetectionIO[] {});
                 elevator = new Elevator(new ElevatorIOSpark(), new DigitalIOElevator());
@@ -200,16 +201,16 @@ public class RobotContainer implements UnitTest {
                 leds = new Leds(new LedsIOCANdle());
             }
             case SimBot -> {
-                drive = new Drive(new DriveIOSim(), field);
+                drive = new Drive(new DriveIOBasicSim(), field);
                 vision =
                     new Vision(
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
-                            new AprilTagIOPhotonSim(CameraName.FRONT_LEFT, Robot.bot.FRONT_LEFT_CAMERA_TO_CENTER, visionVisualizer),
-                            new AprilTagIOPhotonSim(CameraName.UPPER_FRONT_RIGHT, Robot.bot.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER, visionVisualizer),
-                            new AprilTagIOPhotonSim(CameraName.LOWER_FRONT_RIGHT, Robot.bot.LOWER_FRONT_RIGHT_CAMERA_TO_CENTER, visionVisualizer),
-                            new AprilTagIOPhotonSim(CameraName.ELEVATOR_BACK, Robot.bot.ELEVATOR_BACK_CAMERA_TO_CENTER, visionVisualizer)
+                            new AprilTagIOPhotonSim(CameraName.FRONT_LEFT, Constants.bot.Vision.FRONT_LEFT_CAMERA_TO_CENTER(), visionVisualizer),
+                            new AprilTagIOPhotonSim(CameraName.UPPER_FRONT_RIGHT, Constants.bot.Vision.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER(), visionVisualizer),
+                            new AprilTagIOPhotonSim(CameraName.LOWER_FRONT_RIGHT, Constants.bot.Vision.LOWER_FRONT_RIGHT_CAMERA_TO_CENTER(), visionVisualizer),
+                            new AprilTagIOPhotonSim(CameraName.ELEVATOR_BACK, Constants.bot.Vision.ELEVATOR_BACK_CAMERA_TO_CENTER(), visionVisualizer)
                         },
                         new ObjectDetectionIO[] {});
                 elevator = new Elevator(new ElevatorIOSim(), new DigitalIO() {});
@@ -292,6 +293,8 @@ public class RobotContainer implements UnitTest {
                 superstructure,
                 autoIntakeCommands,
                 autoScoreCommands);
+
+        autoWarmupExecutor = new AutoWarmupExecutor(autoChooser);
 
         // Create game visualizer
         gameVisualizer = new GameVisualizer(field, drive::getCurrentPose);
@@ -496,7 +499,7 @@ public class RobotContainer implements UnitTest {
 
         operator
             .leftTrigger()
-            .onTrue(Commands.runOnce(this::seedWristPosition));
+            .onTrue(Commands.runOnce(superstructure::seedWristPosition));
         
         operator
             .back()
@@ -567,6 +570,12 @@ public class RobotContainer implements UnitTest {
                         .ignoringDisable(true));
     }
 
+    public void updateVisualizers() {
+        if (RobotBase.isSimulation()) {
+            visionVisualizer.update(drive.getCurrentPose());
+        }
+    }
+
     // Main Driver Commands
     public Command intake() {
         return new FFSelectCommand<>(intakeRunner, superstructure::getCurrentMode);
@@ -584,44 +593,25 @@ public class RobotContainer implements UnitTest {
         return new FFSelectCommand<>(releaseScoreRunner, superstructure::getCurrentMode);
     }
 
-    // Auto Chooser
-    public void warmupAutoChooser() {
-        autoChooser.scheduleWarmupCommand();
-    }
-
-    public void startAuto() {
+    public void autonomousInit() {
         autoChooser.startAuto();
     }
 
-    public void updateAutoChooser() {
-        autoChooser.periodic();
-    }
-
-    public void cleanupAutoChooser() {
+    public void teleopInit() {
+        superstructure.stopClaw().schedule(); // Make sure coral doesn't eject in case state goes to EJECT_CORAL
         autoChooser.cleanup();
     }
 
-    // Visualizer
-    public void updateVisualizers() {
-        if (RobotBase.isSimulation()) {
-            visionVisualizer.update(drive.getCurrentPose());
+    public void disabledInit() {
+        if (drive.isCoastAfterAutoEnd()) {
+            drive.coast(); // Coasts drivetrain in disabled mode if post-auto coasting is enabled
         }
     }
 
-    // Other
-    public void seedWristPosition() {
+    public void disabledPeriodic() {
+        autoWarmupExecutor.execute(); // Warming up autos
+        autoChooser.periodic();
         superstructure.seedWristPosition();
-    }
-
-    public void stopClaw() {
-        superstructure.stopClaw().schedule();
-    }
-
-    /** Coasts drivetrain in disabled mode if post-auto coasting is enabled. */
-    public void coastAfterAutoEnd() {
-        if (RobotState.isDisabled() && drive.isCoastAfterAutoEnd()) {
-            drive.coast();
-        }
     }
 
     @Override

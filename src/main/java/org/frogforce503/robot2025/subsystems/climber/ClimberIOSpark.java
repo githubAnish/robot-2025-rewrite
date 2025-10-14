@@ -1,12 +1,13 @@
 package org.frogforce503.robot2025.subsystems.climber;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.Constants;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
@@ -31,7 +32,7 @@ public class ClimberIOSpark implements ClimberIO {
     private final Debouncer connectedDebouncer = new Debouncer(.5);
     
     public ClimberIOSpark() {
-        motor = (SparkMax) SparkUtil.getSpark(Robot.bot.climberConstants.winchID(), false);
+        motor = new SparkMax(Constants.bot.Climber.winchID(), MotorType.kBrushless);
         encoder = motor.getEncoder();
 
         pidController = motor.getClosedLoopController();
@@ -41,12 +42,12 @@ public class ClimberIOSpark implements ClimberIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pid(
-                    Robot.bot.climberConstants.kPIDF().kP(),
-                    Robot.bot.climberConstants.kPIDF().kI(),
-                    Robot.bot.climberConstants.kPIDF().kD(),
+                    Constants.bot.Climber.kPIDF().kP(),
+                    Constants.bot.Climber.kPIDF().kI(),
+                    Constants.bot.Climber.kPIDF().kD(),
                     ClosedLoopSlot.kSlot0);
 
-        config.inverted(Robot.bot.climberConstants.winchInverted());
+        config.inverted(Constants.bot.Climber.winchInverted());
 
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 

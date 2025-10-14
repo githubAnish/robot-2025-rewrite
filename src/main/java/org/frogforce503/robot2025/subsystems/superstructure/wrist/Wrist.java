@@ -16,7 +16,7 @@ import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.Constants;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -25,13 +25,13 @@ public class Wrist extends FFSubsystemBase {
     private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
     // Constants
-    private final Range range = Robot.bot.wristConstants.range();
-    private ArmFeedforward feedforward = Robot.bot.wristConstants.kPIDF().toArmFeedforward();
+    private final Range range = Constants.bot.Wrist.range();
+    private ArmFeedforward feedforward = Constants.bot.Wrist.kPIDF().toArmFeedforward();
     private final double parallelToGroundAngle = 90;
 
     // Tuning
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Wrist", Robot.bot.wristConstants.kPIDF());
+        new PIDFTuningService("Wrist", Constants.bot.Wrist.kPIDF());
 
     // Overrides
     private LoggedNetworkBoolean tuningEnabled =

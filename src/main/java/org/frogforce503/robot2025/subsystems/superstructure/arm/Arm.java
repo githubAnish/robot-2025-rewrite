@@ -1,7 +1,6 @@
 package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
 import org.frogforce503.robot2025.Constants;
-import org.frogforce503.robot2025.Robot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -31,8 +30,8 @@ public class Arm extends FFSubsystemBase {
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
     // Constants
-    private final Range range = Robot.bot.armConstants.range();
-    private ArmFeedforward feedforward = Robot.bot.armConstants.kPIDF().toArmFeedforward();
+    private final Range range = Constants.bot.Arm.range();
+    private ArmFeedforward feedforward = Constants.bot.Arm.kPIDF().toArmFeedforward();
     private final double parallelToGroundAngle = 88.5;
 
     // Control
@@ -41,10 +40,10 @@ public class Arm extends FFSubsystemBase {
 
     // Tuning
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Arm", Robot.bot.armConstants.kPIDF());
+        new PIDFTuningService("Arm", Constants.bot.Arm.kPIDF());
 
     private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Arm", Robot.bot.armConstants.kConstraints());
+        new SpeedConstraintsTuningService("Arm", Constants.bot.Arm.kConstraints());
 
     // Overrides
     private LoggedNetworkBoolean tuningEnabled =
@@ -66,7 +65,7 @@ public class Arm extends FFSubsystemBase {
 
         profile =
             new TrapezoidProfile(
-                Robot.bot.armConstants.kConstraints());
+                Constants.bot.Arm.kConstraints());
     }
 
     @Override

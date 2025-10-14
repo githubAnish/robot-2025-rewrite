@@ -1,0 +1,62 @@
+package org.frogforce503.robot2025.commands;
+
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+
+import org.frogforce503.lib.io.JoystickInputs;
+import org.frogforce503.robot2025.FieldInfo;
+import org.frogforce503.robot2025.commands.drive.DriveFromPathToPose;
+import org.frogforce503.robot2025.commands.drive.DriveToPose;
+import org.frogforce503.robot2025.subsystems.drive.Drive;
+import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+
+/**
+ * A command group that drives the robot to a target while managing scoring actions.
+ * 
+ * <p>The command performs the following actions (in parallel):
+ * <ul>
+ *   <li>Prescores until the robot reaches a specified boundary.</li>
+ *   <li>Scores when the robot is inside the boundary.</li>
+ *   <li>Drives to the target pose if auto-driving is enabled.</li>
+ * </ul>
+ */
+public class AutoCoralScore extends ParallelCommandGroup {
+    public AutoCoralScore(
+        Drive drive,
+        FieldInfo field,
+        Superstructure superstructure,
+        JoystickInputs inputs,
+        Supplier<Pose2d> robotPose,
+        Supplier<Pose2d> target,
+        BooleanSupplier insideBoundary,
+        BooleanSupplier autoDrivingEnabled
+    ) {
+        super(
+            Commands.either(
+                new SuperstructureScore(superstructure),
+                new SuperstructurePreScore(superstructure),
+                insideBoundary)
+                    .repeatedly(),
+            Commands.either(
+                new DriveFromPathToPose(
+                    drive,
+                    field,
+                    robotPose,
+                    target),
+                new DriveToPose(
+                    drive,
+                    field,
+                    robotPose,
+                    target,
+                    inputs.times(0.75)),
+                RobotState::isAutonomous)
+                    .onlyIf(autoDrivingEnabled));
+
+        addRequirements(drive, superstructure);
+    }
+}

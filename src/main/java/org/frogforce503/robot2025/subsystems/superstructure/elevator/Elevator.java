@@ -8,7 +8,6 @@ import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.Constants;
-import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIO;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
@@ -35,8 +34,8 @@ public class Elevator extends FFSubsystemBase {
     private final DigitalIOInputsAutoLogged digitalInputs = new DigitalIOInputsAutoLogged();
 
     // Constants
-    private final Range range = Robot.bot.elevatorConstants.range();
-    private ElevatorFeedforward feedforward = Robot.bot.elevatorConstants.kPIDF().toElevatorFeedforward();
+    private final Range range = Constants.bot.Elevator.range();
+    private ElevatorFeedforward feedforward = Constants.bot.Elevator.kPIDF().toElevatorFeedforward();
     
     // Control
     private TrapezoidProfile profile;
@@ -44,10 +43,10 @@ public class Elevator extends FFSubsystemBase {
 
     // Tuning
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Elevator", Robot.bot.elevatorConstants.kPIDF());
+        new PIDFTuningService("Elevator", Constants.bot.Elevator.kPIDF());
 
     private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Elevator", Robot.bot.elevatorConstants.kConstraints());
+        new SpeedConstraintsTuningService("Elevator", Constants.bot.Elevator.kConstraints());
 
     // Overrides
     private LoggedNetworkBoolean tuningEnabled =
@@ -70,7 +69,7 @@ public class Elevator extends FFSubsystemBase {
 
         profile =
             new TrapezoidProfile(
-                Robot.bot.elevatorConstants.kConstraints());
+                Constants.bot.Elevator.kConstraints());
     }
 
     @Override

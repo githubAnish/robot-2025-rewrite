@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.Constants;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -9,6 +9,7 @@ import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.ClosedLoopConfigAccessor;
@@ -33,7 +34,7 @@ public class ArmIOSpark implements ArmIO {
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public ArmIOSpark() {
-        motor = SparkUtil.getSpark(Robot.bot.armConstants.armID(), false);
+        motor = new SparkMax(Constants.bot.Arm.armID(), MotorType.kBrushless);
         encoder = motor.getAbsoluteEncoder();
 
         pidController = motor.getClosedLoopController();
@@ -41,7 +42,7 @@ public class ArmIOSpark implements ArmIO {
         // Configure motor
         config
             .absoluteEncoder
-                .zeroOffset(Robot.bot.armConstants.armOffset())
+                .zeroOffset(Constants.bot.Arm.armOffset)
                 .positionConversionFactor(ABSOLUTE_CONVERSION_FACTOR)
                 .setSparkMaxDataPortConfig();
 
@@ -49,12 +50,12 @@ public class ArmIOSpark implements ArmIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
                 .pid(
-                    Robot.bot.armConstants.kPIDF().kP(),
-                    Robot.bot.armConstants.kPIDF().kI(),
-                    Robot.bot.armConstants.kPIDF().kD(),
+                    Constants.bot.Arm.kPIDF().kP(),
+                    Constants.bot.Arm.kPIDF().kI(),
+                    Constants.bot.Arm.kPIDF().kD(),
                     ClosedLoopSlot.kSlot0);
 
-        config.inverted(Robot.bot.armConstants.armInverted());
+        config.inverted(Constants.bot.Arm.armInverted());
 
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 

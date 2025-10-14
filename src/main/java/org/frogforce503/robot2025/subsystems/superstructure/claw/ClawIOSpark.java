@@ -1,12 +1,13 @@
 package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.Constants;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
@@ -36,10 +37,10 @@ public class ClawIOSpark implements ClawIO {
     private final Debouncer connectedDebouncer = new Debouncer(.5);
     
     public ClawIOSpark() {
-        leftMotor = SparkUtil.getSpark(Robot.bot.clawConstants.leftMotorConstants().motorID(), false);
+        leftMotor = new SparkMax(Constants.bot.Claw.leftMotorConfig().motorID(), MotorType.kBrushless);
         leftEncoder = leftMotor.getEncoder();
 
-        rightMotor = SparkUtil.getSpark(Robot.bot.clawConstants.rightMotorConstants().motorID(), false);
+        rightMotor = new SparkMax(Constants.bot.Claw.rightMotorConfig().motorID(), MotorType.kBrushless);
         rightEncoder = rightMotor.getEncoder();
 
         leftPidController = leftMotor.getClosedLoopController();
@@ -50,13 +51,13 @@ public class ClawIOSpark implements ClawIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pidf(
-                    Robot.bot.clawConstants.leftMotorConstants().kPIDF().kP(),
-                    Robot.bot.clawConstants.leftMotorConstants().kPIDF().kI(),
-                    Robot.bot.clawConstants.leftMotorConstants().kPIDF().kD(),
-                    Robot.bot.clawConstants.leftMotorConstants().kPIDF().kV(),
+                    Constants.bot.Claw.leftMotorConfig().kPIDF().kP(),
+                    Constants.bot.Claw.leftMotorConfig().kPIDF().kI(),
+                    Constants.bot.Claw.leftMotorConfig().kPIDF().kD(),
+                    Constants.bot.Claw.leftMotorConfig().kPIDF().kV(),
                     ClosedLoopSlot.kSlot0);
 
-        leftConfig.inverted(Robot.bot.clawConstants.leftMotorConstants().motorInverted());
+        leftConfig.inverted(Constants.bot.Claw.leftMotorConfig().motorInverted());
 
         leftConfig.smartCurrentLimit(STATOR_CURRENT_LIMIT);
 
@@ -64,15 +65,15 @@ public class ClawIOSpark implements ClawIO {
 
         rightConfig
             .apply(leftConfig)
-            .inverted(Robot.bot.clawConstants.rightMotorConstants().motorInverted());
+            .inverted(Constants.bot.Claw.rightMotorConfig().motorInverted());
 
         rightConfig
             .closedLoop
             .pidf(
-                Robot.bot.clawConstants.rightMotorConstants().kPIDF().kP(),
-                Robot.bot.clawConstants.rightMotorConstants().kPIDF().kI(),
-                Robot.bot.clawConstants.rightMotorConstants().kPIDF().kD(),
-                Robot.bot.clawConstants.rightMotorConstants().kPIDF().kV(),
+                Constants.bot.Claw.rightMotorConfig().kPIDF().kP(),
+                Constants.bot.Claw.rightMotorConfig().kPIDF().kI(),
+                Constants.bot.Claw.rightMotorConfig().kPIDF().kD(),
+                Constants.bot.Claw.rightMotorConfig().kPIDF().kV(),
                 ClosedLoopSlot.kSlot0);
 
         leftMotor.clearFaults();

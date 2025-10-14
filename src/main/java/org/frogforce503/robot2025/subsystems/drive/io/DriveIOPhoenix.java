@@ -1,9 +1,8 @@
 package org.frogforce503.robot2025.subsystems.drive.io;
 
 import org.frogforce503.lib.swerve.SwerveDriveCoast;
-import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
-import org.frogforce503.robot2025.subsystems.drive.DriveConstants.ModuleName;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -11,7 +10,6 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
-import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
@@ -27,13 +25,11 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Voltage;
 
 public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> implements DriveIO {
     // Signals
-    private final ModuleSignals[] moduleSignals = new ModuleSignals[4];
     private final StatusSignal<Angle> rawGyroYaw;
+    private final CharacterizationSignals[] characterizationSignals = new CharacterizationSignals[4];
 
     // State
     private ChassisSpeeds currentVelocity;
@@ -51,34 +47,18 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     public DriveIOPhoenix() {
         super(
             TalonFX::new, TalonFX::new, CANcoder::new,
-            Robot.bot.phoenixConstants,
-            Robot.bot.frontLeftConstants, Robot.bot.frontRightConstants, Robot.bot.backLeftConstants, Robot.bot.backRightConstants);
+            Constants.bot.Drive.DrivetrainConstants(),
+            Constants.bot.Drive.FrontLeft(), Constants.bot.Drive.FrontRight(), Constants.bot.Drive.BackLeft(), Constants.bot.Drive.BackRight());
 
         rawGyroYaw = super.getPigeon2().getYaw();
 
-        for (int i = 0; i < moduleSignals.length; i++) {
-            SwerveModule<TalonFX, TalonFX, CANcoder> module = super.getModule(i);
-        
-            final TalonFX driveMotor = module.getDriveMotor();
-            final TalonFX steerMotor = module.getSteerMotor();
-            final CANcoder steerEncoder = module.getEncoder();
+        for (int i = 0; i < characterizationSignals.length; i++) {
+            TalonFX driveMotor = super.getModule(i).getDriveMotor();
 
-            moduleSignals[i] =
-                new ModuleSignals(
-                    // Inputs from drive motor
+            characterizationSignals[i] =
+                new CharacterizationSignals(
                     driveMotor.getPosition(),
-                    driveMotor.getVelocity(),
-                    driveMotor.getMotorVoltage(),
-                    driveMotor.getSupplyCurrent(),
-                    driveMotor.getTorqueCurrent(),
-
-                    // Inputs from turn motor
-                    steerEncoder.getAbsolutePosition(),
-                    steerMotor.getPosition(),
-                    steerMotor.getVelocity(),
-                    steerMotor.getMotorVoltage(),
-                    steerMotor.getSupplyCurrent(),
-                    steerMotor.getTorqueCurrent());
+                    driveMotor.getVelocity());
         }
     }
 
@@ -87,22 +67,10 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         // Refresh all signals
         BaseStatusSignal.refreshAll(rawGyroYaw);
 
-        for (ModuleSignals data : moduleSignals) {
+        for (CharacterizationSignals data : characterizationSignals) {
             BaseStatusSignal.refreshAll(
-                // Inputs from drive motor
                 data.drivePosition,
-                data.driveVelocity,
-                data.driveAppliedVolts,
-                data.driveSupplyCurrentAmps,
-                data.driveTorqueCurrentAmps,
-
-                // Inputs from turn motor
-                data.turnPosition,
-                data.turnAbsolutePosition,
-                data.turnVelocity,
-                data.turnAppliedVolts,
-                data.turnSupplyCurrentAmps,
-                data.turnTorqueCurrentAmps
+                data.driveVelocity
             );
         }
 
@@ -123,43 +91,18 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     }
 
     @Override
-    public ModuleIOData getModuleData(ModuleName moduleName) {
-        ModuleSignals signals = moduleSignals[moduleName.moduleIndex];
-
-        return
-            new ModuleIOData(
-                // Inputs from drive motor
-                BaseStatusSignal.isAllGood(
-                    signals.drivePosition,
-                    signals.driveVelocity,
-                    signals.driveAppliedVolts,
-                    signals.driveSupplyCurrentAmps,
-                    signals.driveTorqueCurrentAmps),
-                Units.rotationsToRadians(signals.drivePosition.getValueAsDouble()),
-                Units.rotationsToRadians(signals.driveVelocity.getValueAsDouble()),
-                signals.driveAppliedVolts.getValueAsDouble(),
-                signals.driveSupplyCurrentAmps.getValueAsDouble(),
-                signals.driveTorqueCurrentAmps.getValueAsDouble(),
-
-                // Inputs from turn motor
-                BaseStatusSignal.isAllGood(
-                    signals.turnPosition,
-                    signals.turnVelocity,
-                    signals.turnAppliedVolts,
-                    signals.turnSupplyCurrentAmps,
-                    signals.turnTorqueCurrentAmps),
-                BaseStatusSignal.isAllGood(signals.turnAbsolutePosition),
-                Rotation2d.fromRotations(signals.turnAbsolutePosition.getValueAsDouble()).minus(moduleName.encoderOffset),
-                Rotation2d.fromRotations(signals.turnPosition.getValueAsDouble()),
-                Units.rotationsToRadians(signals.turnVelocity.getValueAsDouble()),
-                signals.turnAppliedVolts.getValueAsDouble(),
-                signals.turnSupplyCurrentAmps.getValueAsDouble(),
-                signals.turnTorqueCurrentAmps.getValueAsDouble());
+    public Rotation2d getGyroYaw() {
+        return Rotation2d.fromDegrees(rawGyroYaw.getValueAsDouble());
     }
 
     @Override
-    public Rotation2d getRawGyroAngle() {
-        return Rotation2d.fromDegrees(rawGyroYaw.getValueAsDouble());
+    public CharacterizationIOData getCharacterizationData(int moduleIndex) {
+        CharacterizationSignals signals = characterizationSignals[moduleIndex];
+
+        return
+            new CharacterizationIOData(
+                Units.rotationsToRadians(signals.drivePosition.getValueAsDouble()),
+                Units.rotationsToRadians(signals.driveVelocity.getValueAsDouble()));
     }
 
     @Override
@@ -215,19 +158,7 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         super.setControl(RUN_CHARACTERIZATION.withVolts(output));
     }
 
-    private record ModuleSignals(
-        // Inputs from drive motor
+    private record CharacterizationSignals(
         StatusSignal<Angle> drivePosition,
-        StatusSignal<AngularVelocity> driveVelocity,
-        StatusSignal<Voltage> driveAppliedVolts,
-        StatusSignal<Current> driveSupplyCurrentAmps,
-        StatusSignal<Current> driveTorqueCurrentAmps,
-
-        // Inputs from turn motor
-        StatusSignal<Angle> turnAbsolutePosition,
-        StatusSignal<Angle> turnPosition,
-        StatusSignal<AngularVelocity> turnVelocity,
-        StatusSignal<Voltage> turnAppliedVolts,
-        StatusSignal<Current> turnSupplyCurrentAmps,
-        StatusSignal<Current> turnTorqueCurrentAmps) {}
+        StatusSignal<AngularVelocity> driveVelocity) {}
 }

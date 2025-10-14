@@ -16,12 +16,11 @@ import java.lang.reflect.Field;
 import org.frogforce503.lib.subsystem.VirtualSubsystem;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.lib.util.NTClientLogger;
-import org.frogforce503.robot2025.Constants.Bot;
-import org.frogforce503.robot2025.fields.FieldConfig.Venue;
-import org.frogforce503.robot2025.hardware.RobotHardware;
-import org.frogforce503.robot2025.hardware.RobotHardwareCompBot;
-import org.frogforce503.robot2025.hardware.RobotHardwarePracticeBot;
-import org.frogforce503.robot2025.hardware.RobotHardwareProgrammingBot;
+import org.frogforce503.robot2025.Constants.RobotType;
+import org.frogforce503.robot2025.constants.RobotConstantsCompBot;
+import org.frogforce503.robot2025.constants.RobotConstantsPracticeBot;
+import org.frogforce503.robot2025.constants.RobotConstantsProgrammingBot;
+import org.frogforce503.robot2025.constants.FieldConfig.Venue;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -41,10 +40,9 @@ public class Robot extends LoggedRobot {
   private final double loopOverrunWarningTimeout = 0.2;
 
   private RobotContainer robotContainer;
-  public static RobotHardware bot;
 
   // Configuration Parameters
-  private final Bot selectedBot = Bot.SimBot;
+  private final RobotType selectedBot = RobotType.SimBot;
   private final Venue selectedVenue = Venue.Shop;
   
   /*
@@ -53,14 +51,12 @@ public class Robot extends LoggedRobot {
   public Robot() {
     Constants.setRobotType(selectedBot);
     
-    bot =
+    Constants.bot =
         switch (Constants.getRobot()) {
-            case SimBot, CompBot -> new RobotHardwareCompBot();
-            case PracticeBot -> new RobotHardwarePracticeBot();
-            case ProgrammingBot -> new RobotHardwareProgrammingBot();
+            case SimBot, CompBot -> new RobotConstantsCompBot();
+            case PracticeBot -> new RobotConstantsPracticeBot();
+            case ProgrammingBot -> new RobotConstantsProgrammingBot();
         };
-    
-    bot.initializeConstants();
   }
  
  
@@ -122,9 +118,6 @@ public class Robot extends LoggedRobot {
 
     // Switch thread to high priority to improve loop timing
     // Threads.setCurrentThreadPriority(true, 5);
-
-    // Warmup auto chooser
-    robotContainer.warmupAutoChooser();
   }
 
   @Override
@@ -152,7 +145,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void autonomousInit() {
-    robotContainer.startAuto();
+    robotContainer.autonomousInit();
   }
 
   @Override
@@ -160,8 +153,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
-    robotContainer.stopClaw(); // Make sure coral doesn't eject in case state goes to EJECT_CORAL
-    robotContainer.cleanupAutoChooser();
+    robotContainer.teleopInit();
   }
 
   @Override
@@ -169,13 +161,12 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void disabledInit() {
-    robotContainer.coastAfterAutoEnd();
+    robotContainer.disabledInit();
   }
 
   @Override
   public void disabledPeriodic() {
-    robotContainer.updateAutoChooser();
-    robotContainer.seedWristPosition();
+    robotContainer.disabledPeriodic();
   }
 
   @Override

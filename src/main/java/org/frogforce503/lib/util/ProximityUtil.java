@@ -4,12 +4,8 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.frogforce503.robot2025.commands.algae_score_barge.Barge;
-import org.frogforce503.robot2025.commands.algae_score_processor.Processor;
-import org.frogforce503.robot2025.commands.cage.Cage;
-import org.frogforce503.robot2025.commands.coral_intake_station.Station;
-import org.frogforce503.robot2025.commands.coral_score_reef.ReefSide;
-import org.frogforce503.robot2025.fields.FieldInfo;
+import org.frogforce503.robot2025.FieldInfo;
+import org.frogforce503.lib.reefscape.*;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -81,13 +77,5 @@ public final class ProximityUtil {
                 drive,
                 barge -> barge.getTarget(drive, field).get(),
                 Barge.values());
-    }
-
-    public static Cage getClosestCage(Drive drive, FieldInfo field) {
-        return
-            chassisClosestTo(
-                drive,
-                cage -> cage.getTarget(field).get(),
-                Cage.values());
     }
 }
