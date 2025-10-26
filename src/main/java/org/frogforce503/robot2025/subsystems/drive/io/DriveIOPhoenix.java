@@ -1,5 +1,7 @@
 package org.frogforce503.robot2025.subsystems.drive.io;
 
+import java.util.Arrays;
+
 import org.frogforce503.lib.swerve.SwerveDriveCoast;
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
@@ -70,8 +72,7 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         for (CharacterizationSignals data : characterizationSignals) {
             BaseStatusSignal.refreshAll(
                 data.drivePosition,
-                data.driveVelocity
-            );
+                data.driveVelocity);
         }
 
         // Get chassis state & update drive inputs

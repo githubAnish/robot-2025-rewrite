@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.frogforce503.lib.subsystem.VirtualSubsystem;
 import org.frogforce503.lib.util.LoggedTracer;
-import org.frogforce503.robot2025.constants.FieldConfig.Venue;
+import org.frogforce503.robot2025.constants.field.FieldConfig.Venue;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.util.Units;

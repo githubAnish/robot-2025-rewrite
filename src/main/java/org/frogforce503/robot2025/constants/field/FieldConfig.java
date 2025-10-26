@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.constants;
+package org.frogforce503.robot2025.constants.field;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;

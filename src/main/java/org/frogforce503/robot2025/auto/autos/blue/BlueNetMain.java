@@ -1,3 +1,4 @@
+package org.frogforce503.robot2025.auto.autos.blue;
 // package org.frogforce503.robot2025.auto.blue;
 
 // import org.frogforce503.lib.auto.AutoMode;

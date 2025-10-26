@@ -20,7 +20,6 @@ import org.frogforce503.robot2025.constants.RobotHardware;
 import org.frogforce503.robot2025.constants.RobotHardwareCompBot;
 import org.frogforce503.robot2025.constants.RobotHardwarePracticeBot;
 import org.frogforce503.robot2025.constants.RobotHardwareProgrammingBot;
-import org.frogforce503.robot2025.constants.FieldConfig.Venue;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;

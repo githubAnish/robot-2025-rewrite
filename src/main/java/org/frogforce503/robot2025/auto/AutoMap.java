@@ -3,7 +3,6 @@ package org.frogforce503.robot2025.auto;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import edu.wpi.first.wpilibj.DriverStation.Alliance;

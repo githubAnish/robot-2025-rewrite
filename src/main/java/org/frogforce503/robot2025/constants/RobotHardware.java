@@ -14,4 +14,5 @@ public interface RobotHardware {
     public LedsConfig getLedsConfig();
 
     public VisionConfig getVisionConfig();
+    public DriveConfig getDriveConfig();
 }

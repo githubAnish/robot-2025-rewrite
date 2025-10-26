@@ -3,6 +3,7 @@ package org.frogforce503.robot2025.constants;
 import org.frogforce503.robot2025.constants.subsystem.ArmConfig;
 import org.frogforce503.robot2025.constants.subsystem.ClawConfig;
 import org.frogforce503.robot2025.constants.subsystem.ClimberConfig;
+import org.frogforce503.robot2025.constants.subsystem.DriveConfig;
 import org.frogforce503.robot2025.constants.subsystem.ElevatorConfig;
 import org.frogforce503.robot2025.constants.subsystem.IntakeConfig;
 import org.frogforce503.robot2025.constants.subsystem.LedsConfig;
@@ -65,5 +66,10 @@ public class RobotHardwareProgrammingBot implements RobotHardware {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getVisionConfig'");
     }
-    
+
+    @Override
+    public DriveConfig getDriveConfig() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDriveConfig'");
+    }
 }

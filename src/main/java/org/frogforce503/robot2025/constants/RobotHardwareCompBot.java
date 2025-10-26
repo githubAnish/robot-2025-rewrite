@@ -146,5 +146,10 @@ public class RobotHardwareCompBot implements RobotHardware {
 
                 .build();
     }
-    
+
+    @Override
+    public DriveConfig getDriveConfig() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDriveConfig'");
+    }
 }

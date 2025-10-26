@@ -15,19 +15,23 @@ import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 
 public class TeleopSwerveCommand extends Command {
+    // Constants
     private final double HEADING_HOLD_DELAY = 0.25;
 
+    // Requirements
     private final Drive drive;
     private final FieldInfo field;
     private final JoystickInputs inputs;
     private final BooleanSupplier robotRelative;
     private final BooleanSupplier slowMode;
 
+    // Rate limiters
     private final SlewRateLimiter xLimiter = new SlewRateLimiter(3.0);
     private final SlewRateLimiter yLimiter = new SlewRateLimiter(3.0);
     private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(6.0);
 
-    private final PIDController headingController = new PIDController(4.0, 0.0, 0.45);
+    // Heading control
+    private final PIDController manualHeadingController = new PIDController(4.0, 0.0, 0.45);
     private Rotation2d targetHeading = new Rotation2d();
     private double lastManualRotTime = 0.0;
 
@@ -44,7 +48,7 @@ public class TeleopSwerveCommand extends Command {
         this.robotRelative = robotRelative;
         this.slowMode = slowMode;
 
-        headingController.enableContinuousInput(-Math.PI, Math.PI);
+        manualHeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
         addRequirements(drive);
     }
@@ -53,15 +57,17 @@ public class TeleopSwerveCommand extends Command {
     public void initialize() {
         targetHeading = drive.getAngle();
         lastManualRotTime = Timer.getFPGATimestamp();
+
+        manualHeadingController.reset();
     }
 
     @Override
     public void execute() {
-        // Get driver joystick inputs
+        // Get driver input velocities
         Translation2d driverLinearVelocity = inputs.getLinearVelocityFromJoysticks();
         double driverOmega = inputs.getOmegaFromJoysticks();
 
-        // Compute speed limits
+        // Determine max velocities based on slow mode
         double maxLinearVelocity =
             slowMode.getAsBoolean()
                 ? DriveConstants.SLOW_TRANSLATION_METERS_PER_SECOND
@@ -72,30 +78,35 @@ public class TeleopSwerveCommand extends Command {
                 ? DriveConstants.SLOW_ROTATION_RADIANS_PER_SECOND
                 : DriveConstants.FAST_ROTATION_RADIANS_PER_SECOND;
 
-        // Apply slew rate limiting
+        // Apply rate limiting
         double xVelocity = xLimiter.calculate(driverLinearVelocity.getX()) * maxLinearVelocity;
         double yVelocity = yLimiter.calculate(driverLinearVelocity.getY()) * maxLinearVelocity;
         double omega = 0.0;
 
-        // Heading hold logic with short delay
+        // Determine angular velocity
+        Rotation2d currentHeading = drive.getAngle();
+
+        // Manual heading stabilization
         if (Math.abs(driverOmega) > 0.05) {
+            // Driver is rotating
             omega = driverOmega * maxOmega;
-            targetHeading = drive.getAngle();
+            targetHeading = currentHeading;
             lastManualRotTime = Timer.getFPGATimestamp();
 
         } else if (Timer.getFPGATimestamp() - lastManualRotTime > HEADING_HOLD_DELAY) {
+            // Stabilize to last heading
             omega =
-                headingController.calculate(
-                    drive.getAngle().getRadians(),
+                manualHeadingController.calculate(
+                    currentHeading.getRadians(),
                     targetHeading.getRadians());
-
         } else {
-            omega = 0.0; // Free drift before PID re-engages
+            // Free drift before PID re-engages
+            omega = 0.0;
         }
 
-        // Smooth omega transitions
         omega = omegaLimiter.calculate(omega);
 
+        // Apply speeds to drivetrain
         ChassisSpeeds speeds = new ChassisSpeeds(xVelocity, yVelocity, omega);
 
         drive.runVelocity(

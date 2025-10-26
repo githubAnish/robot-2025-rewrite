@@ -1,6 +1,6 @@
 package org.frogforce503.robot2025;
 
-import org.frogforce503.robot2025.constants.FieldConfig.Venue;
+import org.frogforce503.robot2025.constants.field.FieldConfig.Venue;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
