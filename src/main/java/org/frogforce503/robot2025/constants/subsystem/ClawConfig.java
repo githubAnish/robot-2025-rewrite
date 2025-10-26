@@ -1,13 +1,14 @@
 package org.frogforce503.robot2025.constants.subsystem;
 
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import lombok.Builder;
 
-public class ClawConfig {
-    public int leftMotorID;
-    public int leftMotorInverted;
-    public PIDFConfig leftMotorPIDF;
+@Builder
+public record ClawConfig(
+    int leftMotorID,
+    boolean leftMotorInverted,
+    PIDFConfig leftMotorPIDF,
 
-    public int rightMotorID;
-    public int rightMotorInverted;
-    public PIDFConfig rightMotorPIDF;
-}
+    int rightMotorID,
+    boolean rightMotorInverted,
+    PIDFConfig rightMotorPIDF) {}

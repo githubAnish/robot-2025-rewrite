@@ -1,20 +1,20 @@
 package org.frogforce503.robot2025;
 
-import org.frogforce503.robot2025.constants.RobotConstants;
+import org.frogforce503.robot2025.constants.FieldConfig.Venue;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import lombok.Setter;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /** This class contains global configuration describing the current robot and runtime mode. Contains robot constants as well. */
 public final class Constants {
   public static final double loopPeriodSecs = 0.02;
+
   public static final boolean useAllianceFlipping = false;
   public static final boolean selectAllianceFromDS = true;
 
-  @Setter private static RobotType robotType = RobotType.CompBot;
-  public static RobotConstants bot;
+  private static RobotType robotType = RobotType.SimBot;
+  public static final Venue selectedVenue = Venue.Shop;
 
   @SuppressWarnings("resource")
   public static RobotType getRobot() {

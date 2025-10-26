@@ -1,8 +1,9 @@
 package org.frogforce503.robot2025.constants.subsystem;
+import lombok.Builder;
 
-public class SensorConfig {
-    public int elevatorZeroSwitchID;
-    public int lowerBeamID;
-    public int upperBeamID;
-    public int winchSwitchID;
-}
+@Builder
+public record SensorConfig(
+    int elevatorZeroSwitchID,
+    int lowerBeamID,
+    int upperBeamID,
+    int winchSwitchID) {}

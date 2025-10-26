@@ -4,11 +4,12 @@ import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import lombok.Builder;
 
-public class ElevatorConfig {
-    public int elevatorID;
-    public boolean elevatorInverted;
-    public PIDFConfig kPIDF;
-    public Constraints kConstraints;
-    public Range range;
-}
+@Builder
+public record ElevatorConfig(
+    int elevatorID,
+    boolean elevatorInverted,
+    PIDFConfig kPIDF,
+    Constraints kConstraints,
+    Range range) {}

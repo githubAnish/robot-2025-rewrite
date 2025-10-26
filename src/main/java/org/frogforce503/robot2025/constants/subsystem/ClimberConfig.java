@@ -1,9 +1,10 @@
 package org.frogforce503.robot2025.constants.subsystem;
 
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import lombok.Builder;
 
-public class ClimberConfig {
-    public int winchID;
-    public boolean winchInverted;
-    public PIDFConfig kPIDF;
-}
+@Builder
+public record ClimberConfig(
+    int winchID,
+    boolean winchInverted,
+    PIDFConfig kPIDF) {}

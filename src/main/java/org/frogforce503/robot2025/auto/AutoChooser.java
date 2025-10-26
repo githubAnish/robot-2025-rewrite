@@ -162,7 +162,7 @@ public class AutoChooser {
 
         // Select alliance color only when in simulation, else use DriverStation app to choose (only when this feature is enabled)
         if (RobotBase.isSimulation() && Constants.selectAllianceFromDS) {
-            field.overrideAllianceColor(colorSelector.get());
+            field.setAlliance(colorSelector.get());
         }
         
         if (commitAuton.get()) {

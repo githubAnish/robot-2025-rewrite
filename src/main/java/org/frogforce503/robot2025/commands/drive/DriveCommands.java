@@ -69,7 +69,7 @@ public class DriveCommands {
             double omega =
                 getOmegaFromJoysticks(inputs.omegaSupplier().getAsDouble());
 
-            BooleanSupplier slowModeEnabled = drive::isSlowModeEnabled;
+            BooleanSupplier slowModeEnabled = drive::isSlowMode;
 
             // Calculate max linear velocity
             double maxLinearVelocity =

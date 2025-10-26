@@ -1,14 +1,6 @@
 package org.frogforce503.robot2025.constants.subsystem;
 
-import edu.wpi.first.math.geometry.Translation2d;
+import lombok.Builder;
 
-public class DriveConfig {
-    public Translation2d centerOfRotation;
-
-    public double wheelRadius;
-
-    public double maxSpeed;
-    public double maxOmega;
-
-    public double driveBaseRadius;
-}
+@Builder
+public record DriveConfig() {}

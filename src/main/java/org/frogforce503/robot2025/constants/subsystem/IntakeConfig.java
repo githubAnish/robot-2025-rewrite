@@ -4,17 +4,18 @@ import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import lombok.Builder;
 
-public class IntakeConfig {
-    public int pivotID;
-    public boolean pivotInverted;
-    public double pivotOffset;
-    public PIDFConfig pivotPIDF;
-    public Constraints pivotConstraints;
-    public Range pivotRange;
+@Builder
+public record IntakeConfig(
+    int pivotID,
+    boolean pivotInverted,
+    double pivotOffset,
+    PIDFConfig pivotPIDF,
+    Constraints pivotConstraints,
+    Range pivotRange,
 
-    public int rollerID;
-    public boolean rollerInverted;
-    public boolean rollerIsSparkFlex;
-    public PIDFConfig rollerPIDF;
-}
+    int rollerID,
+    boolean rollerInverted,
+    boolean rollerIsSparkFlex,
+    PIDFConfig rollerPIDF) {}

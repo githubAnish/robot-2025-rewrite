@@ -10,28 +10,29 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import lombok.Getter;
 
 /** Wrapper class for all field-related information. */
-public class FieldInfo {
+public class FieldInfo extends Field2d {
     private Alliance allianceColor = Alliance.Red;
     private boolean allianceColorBeenOverriden = false;
 
     @Getter private FieldConfig config;
-    @Getter private Field2d display;
 
     public FieldInfo() {
         this.config = new FieldConfig();
-        this.display = new Field2d();
 
-        SmartDashboard.putData("Field", this.display);
+        SmartDashboard.putData("Field", this);
 
         config.setVenue(Venue.Shop);
     }
 
-    // Status
+    public void setAlliance(Alliance color) {
+        allianceColorBeenOverriden = true;
+        this.allianceColor = color;
+    }
+
     public Alliance getAlliance() {
         return 
             allianceColorBeenOverriden || DriverStation.getAlliance().isEmpty()
@@ -45,20 +46,6 @@ public class FieldInfo {
 
     public boolean onBlueAlliance() {
         return getAlliance() == Alliance.Blue;
-    }
-
-    public void overrideAllianceColor(Alliance color) {
-        allianceColorBeenOverriden = true;
-        this.allianceColor = color;
-    }
-
-    // Display
-    public void setRobotPose(Pose2d robotPose) {
-        display.setRobotPose(robotPose);
-    }
-
-    public FieldObject2d getObject(String name) {
-        return display.getObject(name);
     }
 
     // Configuration

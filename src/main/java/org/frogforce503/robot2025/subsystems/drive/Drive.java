@@ -28,8 +28,8 @@ public class Drive extends SubsystemBase {
     private ChassisSpeeds requestedSpeeds = new ChassisSpeeds();
 
     // Toggles
-    @Getter private boolean slowModeEnabled = false;
     @Getter private boolean robotRelative = false;
+    @Getter private boolean slowMode = false;
     @Setter @Getter private boolean coastAfterAutoEnd = false;
 
     public Drive(DriveIO io, FieldInfo field) {
@@ -55,7 +55,7 @@ public class Drive extends SubsystemBase {
 
     private void outputTelemetry() {
         // Toggles
-        Logger.recordOutput("Drive/Toggles/SlowModeEnabled", slowModeEnabled);
+        Logger.recordOutput("Drive/Toggles/SlowModeEnabled", slowMode);
         Logger.recordOutput("Drive/Toggles/RobotRelative", robotRelative);
 
         // Inputs
@@ -85,7 +85,7 @@ public class Drive extends SubsystemBase {
 
     // Toggles
     public void toggleSlowMode() {
-        slowModeEnabled = !slowModeEnabled;
+        slowMode = !slowMode;
     }
 
     public void toggleRobotRelative() {

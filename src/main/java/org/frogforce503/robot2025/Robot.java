@@ -16,10 +16,10 @@ import java.lang.reflect.Field;
 import org.frogforce503.lib.subsystem.VirtualSubsystem;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.lib.util.NTClientLogger;
-import org.frogforce503.robot2025.Constants.RobotType;
-import org.frogforce503.robot2025.constants.RobotConstantsCompBot;
-import org.frogforce503.robot2025.constants.RobotConstantsPracticeBot;
-import org.frogforce503.robot2025.constants.RobotConstantsProgrammingBot;
+import org.frogforce503.robot2025.constants.RobotHardware;
+import org.frogforce503.robot2025.constants.RobotHardwareCompBot;
+import org.frogforce503.robot2025.constants.RobotHardwarePracticeBot;
+import org.frogforce503.robot2025.constants.RobotHardwareProgrammingBot;
 import org.frogforce503.robot2025.constants.FieldConfig.Venue;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -39,27 +39,21 @@ import com.ctre.phoenix6.SignalLogger;
 public class Robot extends LoggedRobot {
   private final double loopOverrunWarningTimeout = 0.2;
 
+  public static RobotHardware bot;
   private RobotContainer robotContainer;
-
-  // Configuration Parameters
-  private final RobotType selectedBot = RobotType.SimBot;
-  private final Venue selectedVenue = Venue.Shop;
   
   /*
    * Robot Constructor 
    */
   public Robot() {
-    Constants.setRobotType(selectedBot);
-    
-    Constants.bot =
-        switch (Constants.getRobot()) {
-            case SimBot, CompBot -> new RobotConstantsCompBot();
-            case PracticeBot -> new RobotConstantsPracticeBot();
-            case ProgrammingBot -> new RobotConstantsProgrammingBot();
-        };
+    bot =
+      switch (Constants.getRobot()) {
+        case CompBot, SimBot -> new RobotHardwareCompBot();
+        case PracticeBot -> new RobotHardwarePracticeBot();
+        case ProgrammingBot -> new RobotHardwareProgrammingBot();
+      };
   }
- 
- 
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -113,7 +107,7 @@ public class Robot extends LoggedRobot {
     RobotController.setBrownoutVoltage(6.0);
 
     // Initialize RobotContainer
-    robotContainer = new RobotContainer(selectedVenue);
+    robotContainer = new RobotContainer();
     robotContainer.test(); // Unit tester
 
     // Switch thread to high priority to improve loop timing

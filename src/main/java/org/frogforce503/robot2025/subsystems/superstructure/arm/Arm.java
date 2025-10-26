@@ -1,6 +1,7 @@
 package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
 import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.constants.subsystem.ArmConfig;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -65,7 +66,7 @@ public class Arm extends FFSubsystemBase {
 
         profile =
             new TrapezoidProfile(
-                Constants.bot.Arm.kConstraints());
+                Constants.Arm.kConstraints());
     }
 
     @Override

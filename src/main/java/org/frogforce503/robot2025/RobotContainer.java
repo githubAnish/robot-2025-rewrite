@@ -7,9 +7,8 @@ import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.auto.builder.PlannedPathGenerator;
 import org.frogforce503.lib.io.JoystickInputs;
-import org.frogforce503.lib.planning.planned_path.Waypoint;
+import org.frogforce503.lib.reefscape.Branch;
 import org.frogforce503.lib.util.DoublePressTracker;
 import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.lib.util.FFSelectCommand;
@@ -21,11 +20,9 @@ import org.frogforce503.robot2025.auto.AutoWarmupExecutor;
 import org.frogforce503.robot2025.commands.AutoIntakeCommands;
 import org.frogforce503.robot2025.commands.AutoScoreCommands;
 import org.frogforce503.robot2025.commands.RumbleCommand;
-import org.frogforce503.lib.reefscape.Branch;
-import org.frogforce503.robot2025.commands.drive.DriveCommands;
+import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
 import org.frogforce503.robot2025.commands.WaitAfterAlgaeEject;
 import org.frogforce503.robot2025.commands.WaitAfterCoralEject;
-import org.frogforce503.robot2025.constants.FieldConfig.Venue;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
 import org.frogforce503.robot2025.subsystems.climber.Climber.ClimberGoal;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
@@ -147,8 +144,8 @@ public class RobotContainer implements UnitTest {
     private LoggedNetworkBoolean superstructureCoastOverride =
         new LoggedNetworkBoolean("Coast Mode/Superstructure", false);
     
-    public RobotContainer(final Venue venue) {
-        field.setVenue(venue);
+    public RobotContainer() {
+        field.setVenue(Constants.selectedVenue);
 
         Elevator elevator = null;
         Arm arm = null;
@@ -165,10 +162,10 @@ public class RobotContainer implements UnitTest {
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
-                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Constants.bot.Vision.FRONT_LEFT_CAMERA_TO_CENTER()),
-                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Constants.bot.Vision.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER()),
-                            new AprilTagIOPhotonVision(CameraName.LOWER_FRONT_RIGHT, Constants.bot.Vision.LOWER_FRONT_RIGHT_CAMERA_TO_CENTER()),
-                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Constants.bot.Vision.ELEVATOR_BACK_CAMERA_TO_CENTER())
+                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Robot.bot.getVisionConfig().FRONT_LEFT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Robot.bot.getVisionConfig().UPPER_FRONT_RIGHT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.LOWER_FRONT_RIGHT, Robot.bot.getVisionConfig().LOWER_FRONT_RIGHT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Robot.bot.getVisionConfig().ELEVATOR_BACK_CAMERA_TO_CENTER())
                         },
                         new ObjectDetectionIO[] {});
                 elevator = new Elevator(new ElevatorIOSpark(), new DigitalIOElevator());
@@ -186,10 +183,10 @@ public class RobotContainer implements UnitTest {
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
-                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Constants.bot.Vision.FRONT_LEFT_CAMERA_TO_CENTER()),
-                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Constants.bot.Vision.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER()),
-                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Constants.bot.Vision.ELEVATOR_BACK_CAMERA_TO_CENTER()),
-                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_FRONT, Constants.bot.Vision.ELEVATOR_FRONT_CAMERA_TO_CENTER())
+                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Robot.bot.getVisionConfig().FRONT_LEFT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Robot.bot.getVisionConfig().UPPER_FRONT_RIGHT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Robot.bot.getVisionConfig().ELEVATOR_BACK_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_FRONT, Robot.bot.getVisionConfig().ELEVATOR_FRONT_CAMERA_TO_CENTER())
                         },
                         new ObjectDetectionIO[] {});
                 elevator = new Elevator(new ElevatorIOSpark(), new DigitalIOElevator());
@@ -207,10 +204,10 @@ public class RobotContainer implements UnitTest {
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
-                            new AprilTagIOPhotonSim(CameraName.FRONT_LEFT, Constants.bot.Vision.FRONT_LEFT_CAMERA_TO_CENTER(), visionVisualizer),
-                            new AprilTagIOPhotonSim(CameraName.UPPER_FRONT_RIGHT, Constants.bot.Vision.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER(), visionVisualizer),
-                            new AprilTagIOPhotonSim(CameraName.LOWER_FRONT_RIGHT, Constants.bot.Vision.LOWER_FRONT_RIGHT_CAMERA_TO_CENTER(), visionVisualizer),
-                            new AprilTagIOPhotonSim(CameraName.ELEVATOR_BACK, Constants.bot.Vision.ELEVATOR_BACK_CAMERA_TO_CENTER(), visionVisualizer)
+                            new AprilTagIOPhotonSim(CameraName.FRONT_LEFT, Robot.bot.getVisionConfig().FRONT_LEFT_CAMERA_TO_CENTER(), visionVisualizer),
+                            new AprilTagIOPhotonSim(CameraName.UPPER_FRONT_RIGHT, Robot.bot.getVisionConfig().UPPER_FRONT_RIGHT_CAMERA_TO_CENTER(), visionVisualizer),
+                            new AprilTagIOPhotonSim(CameraName.LOWER_FRONT_RIGHT, Robot.bot.getVisionConfig().LOWER_FRONT_RIGHT_CAMERA_TO_CENTER(), visionVisualizer),
+                            new AprilTagIOPhotonSim(CameraName.ELEVATOR_BACK, Robot.bot.getVisionConfig().ELEVATOR_BACK_CAMERA_TO_CENTER(), visionVisualizer)
                         },
                         new ObjectDetectionIO[] {});
                 elevator = new Elevator(new ElevatorIOSim(), new DigitalIO() {});
@@ -256,7 +253,7 @@ public class RobotContainer implements UnitTest {
         // Create offset manager
         offsetManager =
             new OffsetManager(
-                venue,
+                Constants.selectedVenue,
                 Constants.getMode() == Constants.Mode.REPLAY
                     ? new OffsetsIO() {}
                     : new OffsetsIOServer());
@@ -439,10 +436,13 @@ public class RobotContainer implements UnitTest {
                     .onTrue(Commands.runOnce(runnable));
 
         // Joystick drive command
-        Supplier<Command> joystickDriveCommandFactory =
-            () -> DriveCommands.joystickDrive(drive, field, driverInputs.get(), drive::isRobotRelative);
-
-        drive.setDefaultCommand(joystickDriveCommandFactory.get());
+        drive.setDefaultCommand(
+            new TeleopSwerveCommand(
+                drive,
+                field,
+                driverInputs.get(),
+                drive::isRobotRelative,
+                drive::isSlowMode));
 
         // Main Controls
         driver
