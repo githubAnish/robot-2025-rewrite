@@ -1,14 +1,14 @@
 package org.frogforce503.robot2025.subsystems.superstructure.sensors;
 
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.Robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 
-public class DigitalIOElevator implements DigitalIO {
+public class LimitSwitchIOClimber implements LimitSwitchIO {
     private DigitalInput zeroSwitch;
 
-    public DigitalIOElevator() {
-        zeroSwitch = new DigitalInput(Constants.bot.Sensors.elevatorZeroSwitchID());
+    public LimitSwitchIOClimber() {
+        zeroSwitch = new DigitalInput(Robot.bot.getSensorsConfig().winchSwitchID());
     }
 
     @Override

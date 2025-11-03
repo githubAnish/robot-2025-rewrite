@@ -8,8 +8,9 @@ import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.Constants;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIO;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIOInputsAutoLogged;
+import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIO;
+import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -19,88 +20,71 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.util.function.BooleanConsumer;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import lombok.Getter;
 
 public class Elevator extends FFSubsystemBase {
     private final ElevatorIO elevatorIO;
     private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
     
-    private final DigitalIO digitalIO;
-    private final DigitalIOInputsAutoLogged digitalInputs = new DigitalIOInputsAutoLogged();
+    private final LimitSwitchIO limitSwitchIO;
+    private final LimitSwitchIOInputsAutoLogged limitSwitchInputs = new LimitSwitchIOInputsAutoLogged();
 
     // Constants
-    private final Range range = Constants.bot.Elevator.range();
-    private ElevatorFeedforward feedforward = Constants.bot.Elevator.kPIDF().toElevatorFeedforward();
+    private final Range range = Robot.bot.getElevatorConfig().range();
+    private ElevatorFeedforward feedforward = Robot.bot.getElevatorConfig().kPIDF().toElevatorFF();
+    private final double tolerance = 0.5;
     
     // Control
+    private double targetHeight = ElevatorGoal.START.getHeight();
+
+    private boolean shouldRunProfile = false;
     private TrapezoidProfile profile;
     @Getter private State setpoint = new State();
+    private boolean atGoal = false;
 
     // Tuning
-    private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Elevator", Constants.bot.Elevator.kPIDF());
-
-    private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Elevator", Constants.bot.Elevator.kConstraints());
-
-    // Overrides
     private LoggedNetworkBoolean tuningEnabled =
         new LoggedNetworkBoolean("Tuning/Elevator/Tuning?", false);
 
-    private LoggedNetworkBoolean coastOverride =
-        new LoggedNetworkBoolean("Coast Mode/Elevator", false);
+    private TuningService<PIDFConfig> pidfTuningService =
+        new PIDFTuningService("Elevator", Robot.bot.getElevatorConfig().kPIDF());
 
-    private boolean requestPositionControl = true;
+    private TuningService<Constraints> speedTuningService =
+        new SpeedConstraintsTuningService("Elevator", Robot.bot.getElevatorConfig().kConstraints());
 
-    // Alerts
-    private final Alert coastModeWhileRunning =
-        new Alert("Elevator is in coast mode while running!", AlertType.kError);
-
-    @Getter private ElevatorGoal currentGoal = ElevatorGoal.DOWN;
-
-    public Elevator(ElevatorIO elevatorIO, DigitalIO digitalIO) {
+    public Elevator(ElevatorIO elevatorIO, LimitSwitchIO limitSwitchIO) {
         this.elevatorIO = elevatorIO;
-        this.digitalIO = digitalIO;
+        this.limitSwitchIO = limitSwitchIO;
 
         profile =
             new TrapezoidProfile(
-                Constants.bot.Elevator.kConstraints());
+                Robot.bot.getElevatorConfig().kConstraints());
     }
 
     @Override
     public void periodic() {
+        super.periodic();
+
         elevatorIO.updateInputs(elevatorInputs);
         Logger.processInputs("Elevator/Elevator", elevatorInputs);
 
-        digitalIO.updateInputs(digitalInputs);
-        Logger.processInputs("Elevator/LimitSwitch", digitalInputs);
-
-        coastModeWhileRunning
-            .set(coastOverride.get() && !RobotState.isDisabled());
+        limitSwitchIO.updateInputs(limitSwitchInputs);
+        Logger.processInputs("Elevator/LimitSwitch", limitSwitchInputs);
 
         // Update tunable numbers
         tuningExecutor().accept(tuningEnabled.get());
 
-        // Set coast mode
-        if (RobotState.isDisabled()) {
-            setBrakeMode(!coastOverride.get());
-        }
-
         // Reset encoder if limit switch pressed & elevator is going down
-        if (digitalInputs.data.pressed() && elevatorInputs.data.position() > setpoint.position) {
+        if (limitSwitchInputs.data.pressed() && elevatorInputs.data.position() > setpoint.position) {
             elevatorIO.resetEncoder();
+            setpoint = new State(0.0, 0.0);
         }
 
-        // Run position mode unless requested to stop
-        if (requestPositionControl) {
+        // Update profile
+        if (shouldRunProfile) {
             var goalState =
                 new State(
-                    range.clamp(currentGoal.position),
+                    range.clamp(targetHeight),
                     0.0);
 
             double previousVelocity = setpoint.velocity;
@@ -116,25 +100,35 @@ public class Elevator extends FFSubsystemBase {
                         0.0);
             }
 
-            double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
+            atGoal = isAtHeight(goalState.position);
 
-            elevatorIO.runPosition(setpoint.position, feedforward.calculate(setpoint.velocity, accel));
+            if (atGoal) {
+                stop();
+            } else {
+                double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
+                elevatorIO.runPosition(setpoint.position, feedforward.calculate(setpoint.velocity, accel));
+            }
 
-            // Log state
+            /// Log state
             Logger.recordOutput("Elevator/Profile/SetpointPosition", setpoint.position);
             Logger.recordOutput("Elevator/Profile/SetpointVelocity", setpoint.velocity);
             Logger.recordOutput("Elevator/Profile/GoalPosition", goalState.position);
+            Logger.recordOutput("Elevator/AtGoal", atGoal);
+        } else {
+            // Reset setpoint
+            setpoint = new State(getHeight(), 0.0);
+      
+            // Clear logs
+            Logger.recordOutput("Elevator/Profile/SetpointPosition", 0.0);
+            Logger.recordOutput("Elevator/Profile/SetpointVelocity", 0.0);
+            Logger.recordOutput("Elevator/Profile/GoalPosition", 0.0);
+            Logger.recordOutput("Elevator/AtGoal", true);
         }
 
-        Logger.recordOutput("Elevator/Goal", currentGoal.name());
-        Logger.recordOutput("Elevator/Reached Goal", atGoal());
+        Logger.recordOutput("Elevator/CurrentPosition", getHeight());
 
         // Record cycle time
         LoggedTracer.record("Elevator");
-    }
-
-    public double getPosition() {
-        return elevatorInputs.data.position();
     }
 
     @Override
@@ -152,7 +146,7 @@ public class Elevator extends FFSubsystemBase {
                     newPIDFConfig.kI(),
                     newPIDFConfig.kD());
 
-                feedforward = newPIDFConfig.toElevatorFeedforward();
+                feedforward = newPIDFConfig.toElevatorFF();
 
                 profile =
                     new TrapezoidProfile(
@@ -163,42 +157,35 @@ public class Elevator extends FFSubsystemBase {
         };
     }
 
-    @Override
-    public boolean atGoal() {
-        return MathUtil.isNear(currentGoal.position, elevatorInputs.data.position(), 1);
+    public double getHeight() {
+        return elevatorInputs.data.position();
     }
 
+    @Override
     public void setBrakeMode(boolean enabled) {
         elevatorIO.setBrakeMode(enabled);
     }
 
     @Override
-    public Command stop() {
-        return Commands.sequence(
-            runOnce(() -> requestPositionControl = false),
-            runOnce(elevatorIO::stop)
-        );
+    public void stop() {
+        elevatorIO.stop();
     }
 
-    @Override
-    public Command runManual(double output) {
-        return Commands.sequence(
-            runOnce(() -> requestPositionControl = false),
-            run(() -> elevatorIO.runOpenLoop(output))
-        );
+    public void runOpenLoop(double output) {
+        shouldRunProfile = false;
+        elevatorIO.runOpenLoop(output);
     }
 
-    public Command setGoal(ElevatorGoal goal) {
-        return Commands.sequence(
-            runOnce(() -> requestPositionControl = true),
-            runOnce(() -> currentGoal = goal)
-        );
+    public boolean isAtHeight(double setpointHeight, double tolerance) {
+        return MathUtil.isNear(setpointHeight, getHeight(), tolerance);
     }
 
-    public Command runGoal(ElevatorGoal goal) {
-        return Commands.sequence(
-            setGoal(goal),
-            Commands.waitUntil(this::atGoal)
-        );
+    public boolean isAtHeight(double setpointHeight) {
+        return isAtHeight(setpointHeight, tolerance);
+    }
+
+    public void setGoal(ElevatorGoal goal) {
+        this.shouldRunProfile = true;
+        this.targetHeight = goal.getHeight();
     }
 }

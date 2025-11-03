@@ -1,26 +1,25 @@
 package org.frogforce503.lib.reefscape;
 
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.frogforce503.lib.math.GeomUtil;
 import org.frogforce503.lib.math.Polygon2d;
 import org.frogforce503.robot2025.FieldInfo;
+import org.frogforce503.robot2025.subsystems.drive.Drive;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 
 /** Builds a hexagonal boundary surrounding the reef that signals the robot when to switch from prescoring to scoring mode. */
 public class PrescoreBoundary {
+    private final Drive drive;
     private final FieldInfo field;
-    private final Supplier<Pose2d> robotPose;
 
     /** Distance from the colored tape (surrounding the reef) that the robot needs to switch from prescoring to scoring position. */
     private final double distanceFromTape = Units.inchesToMeters(18);
 
-    public PrescoreBoundary(FieldInfo field, Supplier<Pose2d> robotPose) {
+    public PrescoreBoundary(Drive drive, FieldInfo field) {
+        this.drive = drive;
         this.field = field;
-        this.robotPose = robotPose;
     }
 
     public Polygon2d get() {
@@ -40,8 +39,8 @@ public class PrescoreBoundary {
         return
             get()
                 .contains(
-                    robotPose
-                        .get()
+                    drive
+                        .getCurrentPose()
                         .getTranslation());
     }
 

@@ -1,9 +1,7 @@
 package org.frogforce503.robot2025.subsystems.drive.io;
 
-import java.util.Arrays;
-
 import org.frogforce503.lib.swerve.SwerveDriveCoast;
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -49,8 +47,8 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     public DriveIOPhoenix() {
         super(
             TalonFX::new, TalonFX::new, CANcoder::new,
-            Constants.bot.Drive.DrivetrainConstants(),
-            Constants.bot.Drive.FrontLeft(), Constants.bot.Drive.FrontRight(), Constants.bot.Drive.BackLeft(), Constants.bot.Drive.BackRight());
+            Robot.bot.getDriveConfig().drivetrainConstants(),
+            Robot.bot.getDriveConfig().frontLeft(), Robot.bot.getDriveConfig().frontRight(), Robot.bot.getDriveConfig().backLeft(), Robot.bot.getDriveConfig().backRight());
 
         rawGyroYaw = super.getPigeon2().getYaw();
 

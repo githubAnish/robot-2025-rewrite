@@ -1,6 +1,12 @@
 package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
+import lombok.Getter;
+
 public enum ClawGoal {
+    START(0.0),
+
+    NONE(0),
+
     OFF(0),
 
     INTAKE_CORAL(0),
@@ -16,14 +22,14 @@ public enum ClawGoal {
 
     HANDOFF_INTAKE_TO_CLAW(0);
     
-    public double velocityLeft, velocityRight;
+    @Getter private double leftVelocity, rightVelocity;
 
-    private ClawGoal(double velocityLeft, double velocityRight) {
-        this.velocityLeft = velocityLeft;
-        this.velocityRight = velocityRight;
+    private ClawGoal(double leftVelocity, double rightVelocity) {
+        this.leftVelocity = leftVelocity;
+        this.rightVelocity = rightVelocity;
     }
 
-    private ClawGoal(double volts) {
-        this(volts, volts);
+    private ClawGoal(double velocity) {
+        this(velocity, velocity);
     }
 }

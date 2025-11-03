@@ -1,6 +1,6 @@
 package org.frogforce503.robot2025.subsystems.drive.io;
 
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.Timer;
 import lombok.Setter;
 
 public class DriveIOBasicSim implements DriveIO {
-    private final SwerveDriveKinematics kinematics = Constants.bot.kinematics;
+    private final SwerveDriveKinematics kinematics;
 
     private SwerveModuleState[] states =
         new SwerveModuleState[] {
@@ -29,7 +29,9 @@ public class DriveIOBasicSim implements DriveIO {
     private double lastUpdate = -1.0;
     private double dt = 0;
 
-    public DriveIOBasicSim() {}
+    public DriveIOBasicSim() {
+        this.kinematics = DriveConstants.kinematics;
+    }
 
     @Override
     public void updateInputs(DriveIOInputs inputs) {

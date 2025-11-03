@@ -1,6 +1,12 @@
 package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
+import lombok.Getter;
+
 public enum ArmGoal {
+    START(0.0),
+
+    NONE(0),
+
     DOWN(18),
 
     PRESCORE_L1(0),
@@ -29,9 +35,9 @@ public enum ArmGoal {
 
     BARGE(0);
     
-    public double position;
+    @Getter private double angle;
 
-    private ArmGoal(double position) {
-        this.position = position;
+    private ArmGoal(double angle) { // Converts degrees to Rotation2d
+        this.angle = angle;
     }
 }

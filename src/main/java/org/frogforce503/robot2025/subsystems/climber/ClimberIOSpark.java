@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.subsystems.climber;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.Robot;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -25,6 +25,8 @@ public class ClimberIOSpark implements ClimberIO {
     private SparkClosedLoopController pidController;
 
     // Config
+    private IdleMode currentIdleMode = IdleMode.kBrake; // Buffer variable to avoid calling configAccessor
+
     private SparkMaxConfig config = new SparkMaxConfig();
     private final int STATOR_CURRENT_LIMIT = 80;
 
@@ -32,7 +34,7 @@ public class ClimberIOSpark implements ClimberIO {
     private final Debouncer connectedDebouncer = new Debouncer(.5);
     
     public ClimberIOSpark() {
-        motor = new SparkMax(Constants.bot.Climber.winchID(), MotorType.kBrushless);
+        motor = new SparkMax(Robot.bot.getClimberConfig().winchID(), MotorType.kBrushless);
         encoder = motor.getEncoder();
 
         pidController = motor.getClosedLoopController();
@@ -40,16 +42,12 @@ public class ClimberIOSpark implements ClimberIO {
         // Configure motor
         config
             .closedLoop
-                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .pid(
-                    Constants.bot.Climber.kPIDF().kP(),
-                    Constants.bot.Climber.kPIDF().kI(),
-                    Constants.bot.Climber.kPIDF().kD(),
-                    ClosedLoopSlot.kSlot0);
+                .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
 
-        config.inverted(Constants.bot.Climber.winchInverted());
-
+        config.inverted(Robot.bot.getClimberConfig().winchInverted());
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
+        config.voltageCompensation(12);
+        config.idleMode(currentIdleMode);
 
         motor.clearFaults();
 
@@ -92,16 +90,14 @@ public class ClimberIOSpark implements ClimberIO {
     }
 
     @Override
-    public void setPID(double kP, double kI, double kD) {
-        config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
-
-        SparkUtil.configure(motor, config, false);
-    }
-
-    @Override
     public void setBrakeMode(boolean enabled) {
-        config.idleMode(enabled ? IdleMode.kBrake : IdleMode.kCoast);
+        IdleMode request = enabled ? IdleMode.kBrake : IdleMode.kCoast;
 
-        SparkUtil.configure(motor, config, false);
+        if (request != currentIdleMode) { // Doesn't set brake mode if it's already set
+            config.idleMode(request);
+            SparkUtil.configure(motor, config, false);
+            
+            currentIdleMode = request;
+        }
     }
 }

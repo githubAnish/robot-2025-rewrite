@@ -1,6 +1,7 @@
 package org.frogforce503.robot2025.constants;
 
-import org.frogforce503.robot2025.constants.subsystem.*;
+import org.frogforce503.robot2025.constants.configs.*;
+import org.frogforce503.robot2025.constants.tunerconstants.TunerConstantsPracticeBot;
 
 public class RobotHardwarePracticeBot implements RobotHardware {
 
@@ -60,7 +61,19 @@ public class RobotHardwarePracticeBot implements RobotHardware {
 
     @Override
     public DriveConfig getDriveConfig() {
+        return
+            DriveConfig.builder()
+                .drivetrainConstants(TunerConstantsPracticeBot.DrivetrainConstants)
+                .frontLeft(TunerConstantsPracticeBot.FrontLeft)
+                .frontRight(TunerConstantsPracticeBot.FrontRight)
+                .backLeft(TunerConstantsPracticeBot.BackLeft)
+                .backRight(TunerConstantsPracticeBot.BackRight)
+                .build();
+    }
+
+    @Override
+    public PathFollowingConfig getPathFollowingConfig() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDriveConfig'");
+        throw new UnsupportedOperationException("Unimplemented method 'getPathFollowingConfig'");
     }
 }

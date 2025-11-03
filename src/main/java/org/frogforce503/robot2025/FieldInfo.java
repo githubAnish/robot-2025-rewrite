@@ -2,7 +2,6 @@ package org.frogforce503.robot2025;
 
 import org.frogforce503.lib.math.Polygon2d;
 import org.frogforce503.robot2025.constants.field.FieldConfig;
-import org.frogforce503.robot2025.constants.field.FieldConfig.Venue;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,8 +23,6 @@ public class FieldInfo extends Field2d {
         this.config = new FieldConfig();
 
         SmartDashboard.putData("Field", this);
-
-        config.setVenue(Venue.Shop);
     }
 
     public void setAlliance(Alliance color) {
@@ -49,10 +46,6 @@ public class FieldInfo extends Field2d {
     }
 
     // Configuration
-    public void setVenue(Venue venue) {
-        config.setVenue(venue);
-    }
-    
     public Pose2d getTagById(int tagID) {
         return config.getTagById(tagID);
     }

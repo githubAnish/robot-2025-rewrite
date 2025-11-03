@@ -14,7 +14,7 @@ import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.leds.Leds;
 import org.frogforce503.robot2025.subsystems.offsets.OffsetManager;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
-import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
+import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.SuperstructureMode;
 import org.frogforce503.robot2025.subsystems.vision.Vision;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -86,7 +86,7 @@ public class AutoScoreCommands {
                 superstructure::getCurrentBranch);
     }
 
-    public Command coralAutoScore(Branch branch, Mode mode) {
+    public Command coralAutoScore(Branch branch, SuperstructureMode mode) {
         return
             Commands.sequence(
                 Commands.runOnce(() -> superstructure.setCurrentMode(mode))

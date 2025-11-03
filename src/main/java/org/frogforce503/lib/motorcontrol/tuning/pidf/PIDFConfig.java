@@ -2,6 +2,7 @@ package org.frogforce503.lib.motorcontrol.tuning.pidf;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 
 /**
@@ -54,15 +55,19 @@ public record PIDFConfig(
                 this(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         }
 
-        public SimpleMotorFeedforward toSimpleMotorFeedforward() {
+        public SimpleMotorFeedforward getSimpleMotorFF() {
                 return new SimpleMotorFeedforward(kS(), kV(), kA());
         }
 
-        public ArmFeedforward toArmFeedforward() {
+        public ArmFeedforward toArmFF() {
                 return new ArmFeedforward(kS(), kG(), kV(), kA());
         }
 
-        public ElevatorFeedforward toElevatorFeedforward() {
+        public ElevatorFeedforward toElevatorFF() {
                 return new ElevatorFeedforward(kS(), kG(), kV(), kA());
+        }
+
+        public PIDController toPIDController() {
+                return new PIDController(kP(), kI(), kD());
         }
 }

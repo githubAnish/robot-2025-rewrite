@@ -1,6 +1,6 @@
 package org.frogforce503.robot2025;
 
-import org.frogforce503.robot2025.constants.field.FieldConfig.Venue;
+import org.frogforce503.robot2025.constants.field.FieldVenue;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -14,7 +14,7 @@ public final class Constants {
   public static final boolean selectAllianceFromDS = true;
 
   private static RobotType robotType = RobotType.SimBot;
-  public static final Venue selectedVenue = Venue.Shop;
+  public static final FieldVenue fieldVenue = FieldVenue.Shop;
 
   @SuppressWarnings("resource")
   public static RobotType getRobot() {

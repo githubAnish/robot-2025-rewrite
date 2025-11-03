@@ -1,6 +1,6 @@
 package org.frogforce503.robot2025.subsystems.leds;
 
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.Robot;
 
 import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.led.Animation;
@@ -15,7 +15,7 @@ public class LedsIOCANdle implements LedsIO {
     private CANdle leds;
 
     public LedsIOCANdle() {
-        leds = new CANdle(Constants.bot.Leds.candleID());
+        leds = new CANdle(Robot.bot.getLedsConfig().candleID());
 
         CANdleConfiguration config = new CANdleConfiguration();
 

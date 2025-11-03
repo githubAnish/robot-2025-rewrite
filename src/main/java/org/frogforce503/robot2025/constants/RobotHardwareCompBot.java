@@ -2,7 +2,8 @@ package org.frogforce503.robot2025.constants;
 
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
-import org.frogforce503.robot2025.constants.subsystem.*;
+import org.frogforce503.robot2025.constants.configs.*;
+import org.frogforce503.robot2025.constants.tunerconstants.TunerConstantsCompBot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -58,11 +59,11 @@ public class RobotHardwareCompBot implements RobotHardware {
             ClawConfig.builder()
                 .leftMotorID(5)
                 .leftMotorInverted(true)
-                .leftMotorPIDF(new PIDFConfig(0.0001, 0.0, 0.00005, 0.0, 0.0, 0.000096, 0.0))
 
                 .rightMotorID(8)
                 .rightMotorInverted(false)
-                .rightMotorPIDF(new PIDFConfig(0.0001, 0.0, 0.00005, 0.0, 0.0, 0.000096, 0.0))
+                
+                .kPIDF(new PIDFConfig(0.0001, 0.0, 0.00005, 0.0, 0.0, 0.000096, 0.0))
 
                 .build();
     }
@@ -92,7 +93,6 @@ public class RobotHardwareCompBot implements RobotHardware {
             ClimberConfig.builder()
                 .winchID(9)
                 .winchInverted(false)
-                .kPIDF(new PIDFConfig(0.0, 0.0, 0.0))
                 .build();
     }
 
@@ -149,7 +149,23 @@ public class RobotHardwareCompBot implements RobotHardware {
 
     @Override
     public DriveConfig getDriveConfig() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDriveConfig'");
+        return
+            DriveConfig.builder()
+                .drivetrainConstants(TunerConstantsCompBot.DrivetrainConstants)
+                .frontLeft(TunerConstantsCompBot.FrontLeft)
+                .frontRight(TunerConstantsCompBot.FrontRight)
+                .backLeft(TunerConstantsCompBot.BackLeft)
+                .backRight(TunerConstantsCompBot.BackRight)
+                .build();
+    }
+
+    @Override
+    public PathFollowingConfig getPathFollowingConfig() {
+        return
+            PathFollowingConfig.builder()
+                .xPID(new PIDFConfig(5.0, 0.0, 0.0))
+                .yPID(new PIDFConfig(5.0, 0.0, 0.0))
+                .thetaPID(new PIDFConfig(4.0, 0.0, 0.0))
+                .build();
     }
 }

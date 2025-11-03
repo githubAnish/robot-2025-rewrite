@@ -2,7 +2,7 @@ package org.frogforce503.lib.math;
 
 import edu.wpi.first.math.MathUtil;
 
-/** A range, with a min and max. */
+/** A range of 2 numbers, with a min and max value. */
 public record Range(
     double min,
     double max

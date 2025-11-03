@@ -1,7 +1,8 @@
-package org.frogforce503.robot2025.subsystems.superstructure;
+package org.frogforce503.robot2025.visualization;
 
 import java.util.function.Supplier;
 
+import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -11,7 +12,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.RobotBase;
 
 public class SuperstructureVisualizer {
     private final String name = "Superstructure";
@@ -37,12 +37,6 @@ public class SuperstructureVisualizer {
         intakePose = new Pose3d();
         movingStagePose = new Pose3d(new Translation3d(), new Rotation3d(0, 0, Math.PI/2));
         gearboxPose = new Pose3d();
-    }
-
-    public void updateOnlyIfInSimulation(double elevatorPosition, double armPosition, double wristPosition, double intakePosition) {
-        if (RobotBase.isSimulation()) {
-            update(elevatorPosition, armPosition, wristPosition, intakePosition);
-        }
     }
 
     public void update(double elevatorPosition, double armPosition, double wristPosition, double intakePosition) {

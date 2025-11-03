@@ -13,17 +13,19 @@ import edu.wpi.first.math.geometry.Pose2d;
 public final class ProximityUtil {
     private ProximityUtil() {}
 
+    private static double distanceBetweenPoses(Pose2d first, Pose2d second) {
+        return
+            first
+                .minus(second)
+                .getTranslation()
+                .getNorm();
+    }
+
     private static int poseDistanceComparator(Pose2d target, Pose2d first, Pose2d second) {
         return
             Double.compare(
-                first
-                    .minus(target)
-                    .getTranslation()
-                    .getNorm(),
-                second
-                    .minus(target)
-                    .getTranslation()
-                    .getNorm());
+                distanceBetweenPoses(first, target),
+                distanceBetweenPoses(second, target));
     }
 
     public static <T> T closestTo(Supplier<Pose2d> target, Function<T, Pose2d> poseExtractor, T... options) {

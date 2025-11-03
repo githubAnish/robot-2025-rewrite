@@ -8,9 +8,7 @@ import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.commands.drive.DrivePlannedPath;
 import org.frogforce503.robot2025.commands.drive.DriveToPose;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
-import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
-import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Gamepiece;
-import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
+import org.frogforce503.robot2025.subsystems.superstructure.SuperstructureMode;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -56,12 +54,9 @@ public abstract class AutoMode {
         return new DrivePlannedPath(drive, field, path);
     }
 
-    public Command setSuperstructureMode(Gamepiece gamepiece, Mode mode) {
+    public Command setSuperstructureMode(SuperstructureMode mode) {
         return
-            Commands.parallel(
-                Commands.runOnce(() -> superstructure.setCurrentPiece(gamepiece)),
-                Commands.runOnce(() -> superstructure.setCurrentMode(mode))
-            )
-            .ignoringDisable(true);
+            Commands.runOnce(() -> superstructure.setCurrentMode(mode))
+                .ignoringDisable(true);
     }
 }

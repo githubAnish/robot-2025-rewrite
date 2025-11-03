@@ -1,7 +1,8 @@
 package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import org.frogforce503.robot2025.Robot;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -12,7 +13,6 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
-import com.revrobotics.spark.config.ClosedLoopConfigAccessor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.filter.Debouncer;
@@ -26,15 +26,18 @@ public class ArmIOSpark implements ArmIO {
     private SparkClosedLoopController pidController;
 
     // Config
+    private PIDFConfig currentPidConfig = Robot.bot.getArmConfig().kPIDF(); // Buffer variable to avoid calling configAccessor
+    private IdleMode currentIdleMode = IdleMode.kBrake; // Buffer variable to avoid calling configAccessor
+
     private SparkMaxConfig config = new SparkMaxConfig();
-    private final double ABSOLUTE_CONVERSION_FACTOR = 360.0;
     private final int STATOR_CURRENT_LIMIT = 30;
+    private final double ABSOLUTE_CONVERSION_FACTOR = 360.0;
 
     // Connected Debouncers
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public ArmIOSpark() {
-        motor = new SparkMax(Constants.bot.Arm.armID(), MotorType.kBrushless);
+        motor = new SparkMax(Robot.bot.getArmConfig().armID(), MotorType.kBrushless);
         encoder = motor.getAbsoluteEncoder();
 
         pidController = motor.getClosedLoopController();
@@ -42,7 +45,7 @@ public class ArmIOSpark implements ArmIO {
         // Configure motor
         config
             .absoluteEncoder
-                .zeroOffset(Constants.bot.Arm.armOffset)
+                .zeroOffset(Robot.bot.getArmConfig().armOffset())
                 .positionConversionFactor(ABSOLUTE_CONVERSION_FACTOR)
                 .setSparkMaxDataPortConfig();
 
@@ -50,16 +53,15 @@ public class ArmIOSpark implements ArmIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
                 .pid(
-                    Constants.bot.Arm.kPIDF().kP(),
-                    Constants.bot.Arm.kPIDF().kI(),
-                    Constants.bot.Arm.kPIDF().kD(),
+                    currentPidConfig.kP(),
+                    currentPidConfig.kI(),
+                    currentPidConfig.kD(),
                     ClosedLoopSlot.kSlot0);
 
-        config.inverted(Constants.bot.Arm.armInverted());
-
+        config.inverted(Robot.bot.getArmConfig().armInverted());
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
-
         config.voltageCompensation(12);
+        config.idleMode(currentIdleMode);
 
         motor.clearFaults();
 
@@ -101,19 +103,23 @@ public class ArmIOSpark implements ArmIO {
 
     @Override
     public void setPID(double kP, double kI, double kD) {
-        ClosedLoopConfigAccessor accessor = motor.configAccessor.closedLoop;
-
-        if (accessor.getP() != kP || accessor.getI() != kI || accessor.getD() != kD) {
+        if (currentPidConfig.kP() != kP || currentPidConfig.kI() != kI || currentPidConfig.kD() != kD) {
             config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
+            SparkUtil.configure(motor, config, false);
+            
+            currentPidConfig = new PIDFConfig(kP, kI, kD);
         }
-
-        SparkUtil.configure(motor, config, false);
     }
 
     @Override
     public void setBrakeMode(boolean enabled) {
-        config.idleMode(enabled ? IdleMode.kBrake : IdleMode.kCoast);
+        IdleMode request = enabled ? IdleMode.kBrake : IdleMode.kCoast;
 
-        SparkUtil.configure(motor, config, false);
+        if (request != currentIdleMode) { // Doesn't set brake mode if it's already set
+            config.idleMode(request);
+            SparkUtil.configure(motor, config, false);
+            
+            currentIdleMode = request;
+        }
     }
 }

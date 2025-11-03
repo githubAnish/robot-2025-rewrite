@@ -1,7 +1,8 @@
-package org.frogforce503.robot2025.subsystems.superstructure.arm;
+package org.frogforce503.robot2025.subsystems.superstructure.intake.pivot;
 
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.subsystems.superstructure.intake.IntakeGoal;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -21,18 +22,18 @@ import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
 
-public class Arm extends FFSubsystemBase {
-    private final ArmIO io;
-    private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
+public class IntakePivot extends FFSubsystemBase {
+    private final PivotIO io;
+    private final PivotIOInputsAutoLogged inputs = new PivotIOInputsAutoLogged();
 
     // Constants
-    private final double parallelToGroundAngleDeg = 88.5;
-    private final Range range = Robot.bot.getArmConfig().range();
-    private ArmFeedforward feedforward = Robot.bot.getArmConfig().kPIDF().toArmFF();
-    private final double tolerance = 0.5;
+    private final double parallelToGroundAngleDeg = 107;
+    private final Range range = Robot.bot.getIntakeConfig().pivotRange();
+    private ArmFeedforward feedforward = Robot.bot.getIntakeConfig().pivotPIDF().toArmFF();
+    private final double tolerance = 1.0;
 
     // Control
-    private double targetAngle = ArmGoal.START.getAngle();
+    private double targetPivotAngle = IntakeGoal.START.getPivotAngle();
 
     private boolean shouldRunProfile = false;
     private TrapezoidProfile profile;
@@ -41,20 +42,20 @@ public class Arm extends FFSubsystemBase {
 
     // Tuning
     private LoggedNetworkBoolean tuningEnabled =
-        new LoggedNetworkBoolean("Tuning/Arm/Tuning?", false);
-
+        new LoggedNetworkBoolean("Tuning/IntakePivot/Tuning?", false);
+    
     private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Arm", Robot.bot.getArmConfig().kPIDF());
+        new PIDFTuningService("IntakePivot", Robot.bot.getIntakeConfig().pivotPIDF());
 
     private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Arm", Robot.bot.getArmConfig().kConstraints());
+        new SpeedConstraintsTuningService("IntakePivot", Robot.bot.getIntakeConfig().pivotConstraints());
 
-    public Arm(ArmIO io) {
-        this.io = io;
+    public IntakePivot(PivotIO pivotIO) {
+        this.io = pivotIO;
 
         profile =
             new TrapezoidProfile(
-                Robot.bot.getArmConfig().kConstraints());
+                Robot.bot.getIntakeConfig().pivotConstraints());
     }
 
     @Override
@@ -62,7 +63,7 @@ public class Arm extends FFSubsystemBase {
         super.periodic();
 
         io.updateInputs(inputs);
-        Logger.processInputs("Arm", inputs);
+        Logger.processInputs("IntakePivot", inputs);
 
         // Update tunable numbers
         tuningExecutor().accept(tuningEnabled.get());
@@ -71,7 +72,7 @@ public class Arm extends FFSubsystemBase {
         if (shouldRunProfile) {
             var goalState =
                 new State(
-                    range.clamp(targetAngle),
+                    range.clamp(targetPivotAngle),
                     0.0);
 
             double previousVelocity = setpoint.velocity;
@@ -87,7 +88,7 @@ public class Arm extends FFSubsystemBase {
                         0.0);
             }
 
-            atGoal = isAtAngle(goalState.position);
+            atGoal = isPivotAtAngle(goalState.position);
 
             if (atGoal) {
                 stop();
@@ -97,25 +98,25 @@ public class Arm extends FFSubsystemBase {
             }
 
             // Log state
-            Logger.recordOutput("Arm/Profile/SetpointPosition", setpoint.position);
-            Logger.recordOutput("Arm/Profile/SetpointVelocity", setpoint.velocity);
-            Logger.recordOutput("Arm/Profile/GoalPosition", goalState.position);
-            Logger.recordOutput("Arm/AtGoal", atGoal);
+            Logger.recordOutput("IntakePivot/Profile/SetpointPosition", setpoint.position);
+            Logger.recordOutput("IntakePivot/Profile/SetpointVelocity", setpoint.velocity);
+            Logger.recordOutput("IntakePivot/Profile/GoalPosition", goalState.position);
+            Logger.recordOutput("IntakePivot/AtGoal", atGoal);
         } else {
             // Reset setpoint
             setpoint = new State(getAngle(), 0.0);
       
             // Clear logs
-            Logger.recordOutput("Arm/Profile/SetpointPosition", 0.0);
-            Logger.recordOutput("Arm/Profile/SetpointVelocity", 0.0);
-            Logger.recordOutput("Arm/Profile/GoalPosition", 0.0);
-            Logger.recordOutput("Arm/AtGoal", true);
+            Logger.recordOutput("IntakePivot/Profile/SetpointPosition", 0.0);
+            Logger.recordOutput("IntakePivot/Profile/SetpointVelocity", 0.0);
+            Logger.recordOutput("IntakePivot/Profile/GoalPosition", 0.0);
+            Logger.recordOutput("IntakePivot/AtGoal", true);
         }
 
-        Logger.recordOutput("Arm/CurrentPosition", getAngle());
+        Logger.recordOutput("IntakePivot/CurrentPosition", getAngle());
 
         // Record cycle time
-        LoggedTracer.record("Arm");
+        LoggedTracer.record("IntakePivot");
     }
 
     @Override
@@ -158,21 +159,21 @@ public class Arm extends FFSubsystemBase {
         io.stop();
     }
 
-    public void runOpenLoop(double output) {
-        this.shouldRunProfile = false;
-        io.runOpenLoop(output);
+    public void runOpenLoop(double pivotOutput, double rollerOutput) {
+        shouldRunProfile = false;
+        io.runOpenLoop(pivotOutput);
     }
 
-    public boolean isAtAngle(double setpointAngle, double tolerance) {
+    public boolean isPivotAtAngle(double setpointAngle, double tolerance) {
         return MathUtil.isNear(setpointAngle, getAngle(), tolerance);
     }
 
-    public boolean isAtAngle(double setpointAngle) {
-        return isAtAngle(setpointAngle, tolerance);
+    public boolean isPivotAtAngle(double setpointAngle) {
+        return isPivotAtAngle(setpointAngle, tolerance);
     }
 
-    public void setGoal(ArmGoal goal) {
+    public void setGoal(IntakeGoal goal) {
         this.shouldRunProfile = true;
-        this.targetAngle = goal.getAngle();
+        this.targetPivotAngle = goal.getPivotAngle();
     }
 }

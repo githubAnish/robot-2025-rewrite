@@ -1,7 +1,8 @@
 package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import org.frogforce503.robot2025.Robot;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -29,6 +30,9 @@ public class ClawIOSpark implements ClawIO {
     private SparkClosedLoopController rightPidController;
 
     // Config
+    private PIDFConfig currentPidConfig = Robot.bot.getClawConfig().kPIDF(); // Buffer variable to avoid calling configAccessor
+    private IdleMode currentIdleMode = IdleMode.kBrake; // Buffer variable to avoid calling configAccessor
+    
     private SparkMaxConfig leftConfig = new SparkMaxConfig();
     private SparkMaxConfig rightConfig = new SparkMaxConfig();
     private final int STATOR_CURRENT_LIMIT = 35;
@@ -37,10 +41,10 @@ public class ClawIOSpark implements ClawIO {
     private final Debouncer connectedDebouncer = new Debouncer(.5);
     
     public ClawIOSpark() {
-        leftMotor = new SparkMax(Constants.bot.Claw.leftMotorConfig().motorID(), MotorType.kBrushless);
+        leftMotor = new SparkMax(Robot.bot.getClawConfig().leftMotorID(), MotorType.kBrushless);
         leftEncoder = leftMotor.getEncoder();
 
-        rightMotor = new SparkMax(Constants.bot.Claw.rightMotorConfig().motorID(), MotorType.kBrushless);
+        rightMotor = new SparkMax(Robot.bot.getClawConfig().rightMotorID(), MotorType.kBrushless);
         rightEncoder = rightMotor.getEncoder();
 
         leftPidController = leftMotor.getClosedLoopController();
@@ -51,34 +55,24 @@ public class ClawIOSpark implements ClawIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pidf(
-                    Constants.bot.Claw.leftMotorConfig().kPIDF().kP(),
-                    Constants.bot.Claw.leftMotorConfig().kPIDF().kI(),
-                    Constants.bot.Claw.leftMotorConfig().kPIDF().kD(),
-                    Constants.bot.Claw.leftMotorConfig().kPIDF().kV(),
+                    currentPidConfig.kP(),
+                    currentPidConfig.kI(),
+                    currentPidConfig.kD(),
+                    currentPidConfig.kV(),
                     ClosedLoopSlot.kSlot0);
 
-        leftConfig.inverted(Constants.bot.Claw.leftMotorConfig().motorInverted());
-
+        leftConfig.inverted(Robot.bot.getClawConfig().leftMotorInverted());
         leftConfig.smartCurrentLimit(STATOR_CURRENT_LIMIT);
-
         leftConfig.voltageCompensation(12);
+        leftConfig.idleMode(currentIdleMode);
 
         rightConfig
             .apply(leftConfig)
-            .inverted(Constants.bot.Claw.rightMotorConfig().motorInverted());
-
-        rightConfig
-            .closedLoop
-            .pidf(
-                Constants.bot.Claw.rightMotorConfig().kPIDF().kP(),
-                Constants.bot.Claw.rightMotorConfig().kPIDF().kI(),
-                Constants.bot.Claw.rightMotorConfig().kPIDF().kD(),
-                Constants.bot.Claw.rightMotorConfig().kPIDF().kV(),
-                ClosedLoopSlot.kSlot0);
+            .inverted(Robot.bot.getClawConfig().rightMotorInverted());
 
         leftMotor.clearFaults();
         rightMotor.clearFaults();
-
+        
         leftEncoder.setPosition(0.0);
         rightEncoder.setPosition(0.0);
 
@@ -133,11 +127,30 @@ public class ClawIOSpark implements ClawIO {
     }
 
     @Override
-    public void setBrakeMode(boolean enabled) {
-        leftConfig.idleMode(enabled ? IdleMode.kBrake : IdleMode.kCoast);
-        rightConfig.idleMode(enabled ? IdleMode.kBrake : IdleMode.kCoast);
+    public void setPID(double kP, double kI, double kD) {
+        if (currentPidConfig.kP() != kP || currentPidConfig.kI() != kI || currentPidConfig.kD() != kD) {
+            leftConfig.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
+            rightConfig.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
 
-        SparkUtil.configure(leftMotor, leftConfig, false);
-        SparkUtil.configure(rightMotor, rightConfig, false);
+            SparkUtil.configure(leftMotor, leftConfig, false);
+            SparkUtil.configure(rightMotor, rightConfig, false);
+            
+            currentPidConfig = new PIDFConfig(kP, kI, kD);
+        }
+    }
+
+    @Override
+    public void setBrakeMode(boolean enabled) {
+        IdleMode request = enabled ? IdleMode.kBrake : IdleMode.kCoast;
+
+        if (request != currentIdleMode) { // Doesn't set brake mode if it's already set
+            leftConfig.idleMode(request);
+            rightConfig.idleMode(request);
+
+            SparkUtil.configure(leftMotor, leftConfig, false);
+            SparkUtil.configure(rightMotor, rightConfig, false);
+            
+            currentIdleMode = request;
+        }
     }
 }

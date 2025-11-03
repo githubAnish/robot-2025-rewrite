@@ -3,24 +3,29 @@ package org.frogforce503.robot2025.subsystems.superstructure;
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.math.MathUtils;
+import org.frogforce503.lib.reefscape.Gamepiece;
+import org.frogforce503.lib.subsystem.VirtualSubsystem;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.lib.util.Logic;
-import org.frogforce503.lib.reefscape.Branch;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.ArmGoal;
 import org.frogforce503.robot2025.subsystems.superstructure.claw.Claw;
 import org.frogforce503.robot2025.subsystems.superstructure.claw.ClawGoal;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.Elevator;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.ElevatorGoal;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.Intake;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.IntakeGoal;
+import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.IntakePivot;
+import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.IntakeRoller;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIO;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIOInputsAutoLogged;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristGoal;
+import org.frogforce503.robot2025.visualization.SuperstructureVisualizer;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -28,13 +33,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lombok.Getter;
 import lombok.Setter;
 
-public class Superstructure extends SubsystemBase implements SuperstructureBaseFactory {
+public class Superstructure extends VirtualSubsystem {
     // Subsystems
-    private final Elevator elevator;
-    private final Arm arm;
-    private final Wrist wrist;
-    private final Claw claw;
-    private final Intake intake;
+    @Getter private final Elevator elevator;
+    @Getter private final Arm arm;
+    @Getter private final Wrist wrist;
+    @Getter private final Claw claw;
+    @Getter private final IntakePivot intakePivot;
+    @Getter private final IntakeRoller intakeRoller;
 
     private final CoralSensorIO coralSensorIO;
     private final CoralSensorIOInputsAutoLogged coralSensorInputs = new CoralSensorIOInputsAutoLogged();
@@ -44,23 +50,32 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
     @Setter @Getter private boolean hasAlgaeInClaw;
     @Setter @Getter private boolean hasAlgaeInIntake;
 
-    @Setter @Getter private Mode currentMode = Mode.CORAL_INTAKE;
-    @Setter @Getter private Gamepiece currentPiece = Gamepiece.CORAL;
-    @Setter @Getter private Branch currentBranch = Branch.LEFT;
+    @Setter @Getter private SuperstructureMode currentMode = SuperstructureMode.CORAL_INTAKE;
+    @Getter private Gamepiece currentPiece = Gamepiece.CORAL;
 
     // Visualizers
     @Getter private final SuperstructureVisualizer visualizer;
 
     // Overrides
-    @Getter private boolean manualControlEnabled;
-    @Getter private boolean brakeModeEnabled;
+    private LoggedNetworkBoolean superstructureCoastOverride =
+        new LoggedNetworkBoolean("Coast Mode/Superstructure", false);
 
-    public Superstructure(Elevator elevator, Arm arm, Wrist wrist, Claw claw, Intake intake, CoralSensorIO coralSensorIO, Supplier<Pose2d> robotPoseSupplier) {
+    public Superstructure(
+        Elevator elevator,
+        Arm arm,
+        Wrist wrist,
+        Claw claw,
+        IntakePivot intakePivot,
+        IntakeRoller intakeRoller,
+        CoralSensorIO coralSensorIO,
+        Supplier<Pose2d> robotPoseSupplier
+    ) {
         this.elevator = elevator;
         this.arm = arm;
         this.wrist = wrist;
         this.claw = claw;
-        this.intake = intake;
+        this.intakePivot = intakePivot;
+        this.intakeRoller = intakeRoller;
         this.coralSensorIO = coralSensorIO;
 
         this.visualizer = new SuperstructureVisualizer(this, robotPoseSupplier);
@@ -71,103 +86,67 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
         coralSensorIO.updateInputs(coralSensorInputs);
         Logger.processInputs("CoralSensors", coralSensorInputs);
 
+        setCoastMode(
+            DriverStation.isDisabled() &&
+            superstructureCoastOverride.get());
+
+        currentPiece = currentMode.getGamepiece();
+
         // Update visualizers
-        visualizer.updateOnlyIfInSimulation(
-            elevator.getPosition(),
-            arm.getPosition(),
-            wrist.getPosition(),
-            intake.getPivotPosition());
+        if (RobotBase.isSimulation()) {
+            visualizer.update(
+                elevator.getHeight(),
+                arm.getAngle(),
+                wrist.getRelativeAngle(),
+                intakePivot.getAngle());
+        }
 
-        Logger.recordOutput("Superstructure/Overrides/Brake Mode Enabled", brakeModeEnabled);
-        Logger.recordOutput("Superstructure/Overrides/Manual Control Enabled", manualControlEnabled);
-
-        Logger.recordOutput("Superstructure/Inputs/Has Coral", hasCoral);
-        Logger.recordOutput("Superstructure/Inputs/Algae In Claw", hasAlgaeInClaw);
-        Logger.recordOutput("Superstructure/Inputs/Algae In Intake", hasAlgaeInIntake);
+        Logger.recordOutput("Superstructure/Has Coral", hasCoral);
+        Logger.recordOutput("Superstructure/Algae In Claw", hasAlgaeInClaw);
+        Logger.recordOutput("Superstructure/Algae In Intake", hasAlgaeInIntake);
 
         Logger.recordOutput("Superstructure/Current Gamepiece", currentPiece);
         Logger.recordOutput("Superstructure/Mode", currentMode);
-        Logger.recordOutput("Superstructure/Branch", currentBranch);
 
         // Record cycle time
         LoggedTracer.record("Superstructure");
     }
 
-    public boolean upperSensorGot() {
-        return coralSensorInputs.data.upperGot();
+    public boolean upperSensorTripped() {
+        return coralSensorInputs.data.upperTripped();
     }
 
-    public boolean lowerSensorGot() {
-        return coralSensorInputs.data.lowerGot();
+    public boolean lowerSensorTripped() {
+        return coralSensorInputs.data.lowerTripped();
     }
 
-    public void setPiece() {
-        currentPiece =
-            currentPiece == Gamepiece.CORAL
-                ? Gamepiece.ALGAE
-                : Gamepiece.CORAL;
+    public void setCoastMode(boolean enabled) {
+        elevator.getCoastOverride().set(enabled);
+        arm.getCoastOverride().set(enabled);
+        wrist.getCoastOverride().set(enabled);
+        claw.getCoastOverride().set(enabled);
+        intakePivot.getCoastOverride().set(enabled);
+        intakeRoller.getCoastOverride().set(enabled);
     }
 
     public void seedWristPosition() {
         if (RobotBase.isReal() &&
-            MathUtils.inRange(arm.getPosition(), 0, 30) &&
-            MathUtils.inRange(wrist.getAbsolutePosition(), 0, 180)
+            MathUtils.inRange(arm.getAngle(), 0, 30) &&
+            MathUtils.inRange(wrist.getAbsoluteAngle(), 0, 180)
         ) {
             wrist.setEncoderPosition(
-                arm.getPosition() + wrist.getAbsolutePosition());
+                arm.getAngle() + wrist.getAbsoluteAngle());
         }
     }
 
-    /** Set the superstructure brake mode only if no subsystem has brake mode set individually through each subsystem's coast override. */
-    public void setBrakeMode(boolean enabled) {
-        brakeModeEnabled = enabled;
-
-        elevator.setBrakeMode(enabled);
-        arm.setBrakeMode(enabled);
-        wrist.setBrakeMode(enabled);
-        claw.setBrakeMode(enabled);
-        intake.setBrakeMode(enabled);
-    }
-
-    // Manual Control
-    public void toggleManualControl() {
-        manualControlEnabled = !manualControlEnabled;
-    }
-
-    public Command manualElevatorControl(double percent) {
-        return elevator.runManual(percent);
-    }
-
-    public Command manualArmControl(double percent) {
-        return arm.runManual(percent);
-    }
-
-    public Command manualWristControl(double percent) {
-        return wrist.runManual(percent);
-    }
-
-    public Command manualIntakeControl(double percent) {
-        return intake.runManual(percent);
-    }
-
-    // Climbing Commands
-    public Command setPivotDown() {
-        return manualIntakeControl(-0.2);
-    }
-
-    public Command bringPivotUp() {
-        return manualIntakeControl(0.2);
-    }
-
     // Main Commands
-    public Command stop() {
-        return
-            Commands.parallel(
-                elevator.stop(),
-                arm.stop(),
-                wrist.stop(),
-                claw.stop(),
-                intake.stop());
+    public void stop() {
+        elevator.stop();
+        arm.stop();
+        wrist.stop();
+        claw.stop();
+        intakePivot.stop();
+        intakeRoller.stop();
     }
 
     @Override
@@ -534,30 +513,5 @@ public class Superstructure extends SubsystemBase implements SuperstructureBaseF
                 claw.stop(),
                 Commands.runOnce(() -> hasCoral = true)
             );
-    }
-
-    // Miscellaneous commands here
-    public Command stopClaw() {
-        return claw.stop();
-    }
-
-    public enum Mode {
-        CORAL_INTAKE,
-        L1,
-        L2,
-        L3,
-        L4,
-
-        ALGAE_GROUND,
-        ALGAE_HANDOFF,
-        ALGAE_PLUCK_HIGH,
-        ALGAE_PLUCK_LOW,
-        PROCESSOR,
-        BARGE
-    }
-
-    public enum Gamepiece {
-        CORAL,
-        ALGAE
     }
 }

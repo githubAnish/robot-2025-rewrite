@@ -1,8 +1,9 @@
 package org.frogforce503.robot2025.constants;
 
-import org.frogforce503.robot2025.constants.subsystem.*;
+import org.frogforce503.robot2025.constants.configs.*;
 
 public interface RobotHardware {
+    // Subsystem Configuration Getters
     public ElevatorConfig getElevatorConfig();
     public ArmConfig getArmConfig();
     public WristConfig getWristConfig();
@@ -15,4 +16,7 @@ public interface RobotHardware {
 
     public VisionConfig getVisionConfig();
     public DriveConfig getDriveConfig();
+
+    // Other Configuration Getters
+    public PathFollowingConfig getPathFollowingConfig();
 }

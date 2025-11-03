@@ -1,7 +1,8 @@
 package org.frogforce503.robot2025.subsystems.superstructure.intake.roller;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import org.frogforce503.robot2025.Robot;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -27,6 +28,9 @@ public class RollerIOSpark implements RollerIO {
     private SparkClosedLoopController pidController;
 
     // Config
+    private PIDFConfig currentPidConfig = Robot.bot.getIntakeConfig().rollerPIDF(); // Buffer variable to avoid calling configAccessor
+    private IdleMode currentIdleMode = IdleMode.kBrake; // Buffer variable to avoid calling configAccessor
+
     private SparkMaxConfig config = new SparkMaxConfig();
     private final int STATOR_CURRENT_LIMIT = 80;
 
@@ -35,9 +39,9 @@ public class RollerIOSpark implements RollerIO {
     
     public RollerIOSpark() {
         motor =
-            Constants.bot.Intake.rollerConfig().rollerIsSparkFlex()
-                ? new SparkFlex(Constants.bot.Intake.rollerConfig().rollerID(), MotorType.kBrushless)
-                : new SparkMax(Constants.bot.Intake.rollerConfig().rollerID(), MotorType.kBrushless);
+            Robot.bot.getIntakeConfig().rollerIsSparkFlex()
+                ? new SparkFlex(Robot.bot.getIntakeConfig().rollerID(), MotorType.kBrushless)
+                : new SparkMax(Robot.bot.getIntakeConfig().rollerID(), MotorType.kBrushless);
         encoder = motor.getEncoder();
 
         pidController = motor.getClosedLoopController();
@@ -47,17 +51,16 @@ public class RollerIOSpark implements RollerIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pidf(
-                    Constants.bot.Intake.rollerConfig().kPIDF().kP(),
-                    Constants.bot.Intake.rollerConfig().kPIDF().kI(),
-                    Constants.bot.Intake.rollerConfig().kPIDF().kD(),
-                    Constants.bot.Intake.rollerConfig().kPIDF().kV(),
+                    currentPidConfig.kP(),
+                    currentPidConfig.kI(),
+                    currentPidConfig.kD(),
+                    currentPidConfig.kV(),
                     ClosedLoopSlot.kSlot0);
 
-        config.inverted(Constants.bot.Intake.rollerConfig().rollerInverted());
-
+        config.inverted(Robot.bot.getIntakeConfig().rollerInverted());
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
-
         config.voltageCompensation(12);
+        config.idleMode(currentIdleMode);
 
         motor.clearFaults();
 
@@ -100,9 +103,24 @@ public class RollerIOSpark implements RollerIO {
     }
 
     @Override
-    public void setBrakeMode(boolean enabled) {
-        config.idleMode(enabled ? IdleMode.kBrake : IdleMode.kCoast);
+    public void setPID(double kP, double kI, double kD) {
+        if (currentPidConfig.kP() != kP || currentPidConfig.kI() != kI || currentPidConfig.kD() != kD) {
+            config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
+            SparkUtil.configure(motor, config, false);
+            
+            currentPidConfig = new PIDFConfig(kP, kI, kD);
+        }
+    }
 
-        SparkUtil.configure(motor, config, false);
+    @Override
+    public void setBrakeMode(boolean enabled) {
+        IdleMode request = enabled ? IdleMode.kBrake : IdleMode.kCoast;
+
+        if (request != currentIdleMode) { // Doesn't set brake mode if it's already set
+            config.idleMode(request);
+            SparkUtil.configure(motor, config, false);
+            
+            currentIdleMode = request;
+        }
     }
 }

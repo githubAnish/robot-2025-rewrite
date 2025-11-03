@@ -1,7 +1,8 @@
 package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import org.frogforce503.robot2025.Robot;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -11,7 +12,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
-import com.revrobotics.spark.config.ClosedLoopConfigAccessor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -26,6 +26,9 @@ public class ElevatorIOSpark implements ElevatorIO {
     private SparkClosedLoopController pidController;
 
     // Config
+    private PIDFConfig currentPidConfig = Robot.bot.getElevatorConfig().kPIDF(); // Buffer variable to avoid calling configAccessor
+    private IdleMode currentIdleMode = IdleMode.kBrake; // Buffer variable to avoid calling configAccessor
+
     private SparkMaxConfig config = new SparkMaxConfig();
     private final int STATOR_CURRENT_LIMIT = 80;
 
@@ -33,7 +36,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public ElevatorIOSpark() {
-        motor = new SparkMax(Constants.bot.Elevator.elevatorID(), MotorType.kBrushless);
+        motor = new SparkMax(Robot.bot.getElevatorConfig().elevatorID(), MotorType.kBrushless);
         encoder = motor.getEncoder();
 
         pidController = motor.getClosedLoopController();
@@ -43,20 +46,19 @@ public class ElevatorIOSpark implements ElevatorIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pid(
-                    Constants.bot.Elevator.kPIDF().kP(),
-                    Constants.bot.Elevator.kPIDF().kI(),
-                    Constants.bot.Elevator.kPIDF().kD(),
+                    currentPidConfig.kP(),
+                    currentPidConfig.kI(),
+                    currentPidConfig.kD(),
                     ClosedLoopSlot.kSlot0);
 
-        config.inverted(Constants.bot.Elevator.elevatorInverted());
-
+        config.inverted(Robot.bot.getElevatorConfig().elevatorInverted());
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
-
         config.voltageCompensation(12);
-
-        encoder.setPosition(0.0);
+        config.idleMode(currentIdleMode);
 
         motor.clearFaults();
+
+        resetEncoder();
 
         // Apply configuration
         SparkUtil.configure(motor, config, true);
@@ -96,20 +98,24 @@ public class ElevatorIOSpark implements ElevatorIO {
 
     @Override
     public void setPID(double kP, double kI, double kD) {
-        ClosedLoopConfigAccessor accessor = motor.configAccessor.closedLoop;
-
-        if (accessor.getP() != kP || accessor.getI() != kI || accessor.getD() != kD) {
+        if (currentPidConfig.kP() != kP || currentPidConfig.kI() != kI || currentPidConfig.kD() != kD) {
             config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
+            SparkUtil.configure(motor, config, false);
+            
+            currentPidConfig = new PIDFConfig(kP, kI, kD);
         }
-
-        SparkUtil.configure(motor, config, false);
     }
 
     @Override
     public void setBrakeMode(boolean enabled) {
-        config.idleMode(enabled ? IdleMode.kBrake : IdleMode.kCoast);
+        IdleMode request = enabled ? IdleMode.kBrake : IdleMode.kCoast;
 
-        SparkUtil.configure(motor, config, false);
+        if (request != currentIdleMode) { // Doesn't set brake mode if it's already set
+            config.idleMode(request);
+            SparkUtil.configure(motor, config, false);
+            
+            currentIdleMode = request;
+        }
     }
 
     @Override

@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.frogforce503.lib.subsystem.VirtualSubsystem;
 import org.frogforce503.lib.util.LoggedTracer;
-import org.frogforce503.robot2025.constants.field.FieldConfig.Venue;
+import org.frogforce503.robot2025.Constants;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.util.Units;
@@ -23,11 +23,11 @@ public class OffsetManager extends VirtualSubsystem {
 
     /**
      * <p> Gets the offsets file based on the selected field config venue. </p>
-     * <p> Add the word "Offsets" between the field config file name and .json to get the offsets file name. </p>
+     * <p> Add the word "Offsets" between the field config file name and .json suffix to get the offsets file name. </p>
      * <p> For example, if the field config file path = "Shop.json," then the offsets file path should be "ShopOffsets.json". </p>
      */
-    public OffsetManager(Venue fieldconfigVenue, OffsetsIO io) {
-        this(fieldconfigVenue.filePath.split(".json")[0] + "Offsets.json", io);
+    public OffsetManager(OffsetsIO io) {
+        this(Constants.fieldVenue.filePath.split(".json")[0] + "Offsets.json", io);
     }
 
     @Override

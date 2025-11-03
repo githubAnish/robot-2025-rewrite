@@ -3,12 +3,6 @@ package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.util.function.BooleanConsumer;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import lombok.Getter;
 
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.tuning.TuningService;
@@ -16,7 +10,7 @@ import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.Robot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -25,28 +19,23 @@ public class Wrist extends FFSubsystemBase {
     private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
     // Constants
-    private final Range range = Constants.bot.Wrist.range();
-    private ArmFeedforward feedforward = Constants.bot.Wrist.kPIDF().toArmFeedforward();
     private final double parallelToGroundAngle = 90;
+    private final Range range = Robot.bot.getWristConfig().range();
+    private ArmFeedforward feedforward = Robot.bot.getWristConfig().kPIDF().toArmFF();
+    private final double tolerance = 1.0;
+
+    // Control
+    private double targetAngle = WristGoal.START.getAngle();
+    
+    private boolean shouldRunPosition = false;
+    private boolean atGoal = false;
 
     // Tuning
-    private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Wrist", Constants.bot.Wrist.kPIDF());
-
-    // Overrides
     private LoggedNetworkBoolean tuningEnabled =
         new LoggedNetworkBoolean("Tuning/Wrist/Tuning?", false);
 
-    private LoggedNetworkBoolean coastOverride =
-        new LoggedNetworkBoolean("Coast Mode/Wrist", false);
-
-    private boolean requestPositionControl = true;
-
-    // Alerts
-    private final Alert coastModeWhileRunning =
-        new Alert("Wrist is in coast mode while running!", AlertType.kError);
-
-    @Getter private WristGoal currentGoal = WristGoal.INTAKE_CORAL;
+    private TuningService<PIDFConfig> pidfTuningService =
+        new PIDFTuningService("Wrist", Robot.bot.getWristConfig().kPIDF());
 
     public Wrist(WristIO io) {
         this.io = io;
@@ -54,48 +43,42 @@ public class Wrist extends FFSubsystemBase {
 
     @Override
     public void periodic() {
+        super.periodic();
+
         io.updateInputs(inputs);
         Logger.processInputs("Wrist", inputs);
-
-        coastModeWhileRunning
-            .set(coastOverride.get() && !RobotState.isDisabled());
 
         // Update tunable numbers
         tuningExecutor().accept(tuningEnabled.get());
 
-        // Set coast mode
-        if (RobotState.isDisabled()) {
-            setBrakeMode(!coastOverride.get());
-        }
-
         // Run position mode unless requested to stop
-        if (requestPositionControl) {
-            var goalState =
-                MathUtil.clamp(currentGoal.position, range.min(), range.max());
+        if (shouldRunPosition) {
+            var goalState = range.clamp(targetAngle);
 
-            io.runPosition(goalState, feedforward.calculate(Math.toRadians(currentGoal.position - parallelToGroundAngle), 0.0));
+            atGoal = isAtAngle(goalState);
+
+            if (atGoal) {
+                stop();
+            } else {
+                io.runPosition(goalState, feedforward.calculate(Math.toRadians(goalState - parallelToGroundAngle), 0.0));
+            }
 
             // Log state
-            Logger.recordOutput("Wrist/Profile/GoalPosition", goalState);
+            Logger.recordOutput("Wrist/GoalPosition", goalState);
+            Logger.recordOutput("Wrist/AtGoal", atGoal);
+        } else {
+            // Reset setpoint
+            targetAngle = 0.0;
+      
+            // Clear logs
+            Logger.recordOutput("Wrist/GoalPosition", 0.0);
+            Logger.recordOutput("Wrist/AtGoal", true);
         }
 
-        Logger.recordOutput("Wrist/Goal", currentGoal.name());
-        Logger.recordOutput("Wrist/Reached Goal", atGoal());
+        Logger.recordOutput("Wrist/CurrentPosition", getRelativeAngle());
 
         // Record cycle time
         LoggedTracer.record("Wrist");
-    }
-
-    public void setEncoderPosition(double position) {
-        io.setEncoderPosition(position);
-    }
-
-    public double getPosition() {
-        return inputs.data.relativePosition();
-    }
-
-    public double getAbsolutePosition() {
-        return inputs.data.absolutePosition();
     }
 
     @Override
@@ -111,47 +94,48 @@ public class Wrist extends FFSubsystemBase {
                     newPIDFConfig.kI(),
                     newPIDFConfig.kD());
 
-                feedforward = newPIDFConfig.toArmFeedforward();
+                feedforward = newPIDFConfig.toArmFF();
             }
         };
     }
 
-    @Override
-    public boolean atGoal() {
-        return MathUtil.isNear(currentGoal.position, inputs.data.relativePosition(), 1);
+    public double getRelativeAngle() {
+        return inputs.data.relativePosition();
+    }
+
+    public double getAbsoluteAngle() {
+        return inputs.data.absolutePosition();
+    }
+
+    public void setEncoderPosition(double position) {
+        io.setEncoderPosition(position);
     }
 
     @Override
-    public Command stop() {
-        return Commands.sequence(
-            runOnce(() -> requestPositionControl = false),
-            runOnce(io::stop)
-        );
-    }
-
     public void setBrakeMode(boolean enabled) {
         io.setBrakeMode(enabled);
     }
 
     @Override
-    public Command runManual(double output) {
-        return Commands.sequence(
-            runOnce(() -> requestPositionControl = false),
-            run(() -> io.runOpenLoop(output))
-        );
+    public void stop() {
+        io.stop();
     }
 
-    public Command setGoal(WristGoal goal) {
-        return Commands.sequence(
-            runOnce(() -> requestPositionControl = true),
-            runOnce(() -> currentGoal = goal)
-        );
+    public void runOpenLoop(double output) {
+        this.shouldRunPosition = false;
+        io.runOpenLoop(output);
     }
 
-    public Command runGoal(WristGoal goal) {
-        return Commands.sequence(
-            setGoal(goal),
-            Commands.waitUntil(this::atGoal)
-        );
+    public boolean isAtAngle(double setpointAngle, double tolerance) {
+        return MathUtil.isNear(setpointAngle, getRelativeAngle(), tolerance);
+    }
+
+    public boolean isAtAngle(double setpointAngle) {
+        return isAtAngle(setpointAngle, tolerance);
+    }
+
+    public void setGoal(WristGoal goal) {
+        this.shouldRunPosition = true;
+        this.targetAngle = goal.getAngle();
     }
 }

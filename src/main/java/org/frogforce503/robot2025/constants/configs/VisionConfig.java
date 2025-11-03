@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.constants.subsystem;
+package org.frogforce503.robot2025.constants.configs;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import lombok.Builder;

@@ -9,10 +9,6 @@ import org.frogforce503.lib.util.SwitchableChooser;
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.auto.AutoMap.StartingLocation;
-import org.frogforce503.robot2025.auto.autos.blue.BlueBabyAuton;
-import org.frogforce503.robot2025.auto.autos.red.RedBabyAuton;
-import org.frogforce503.robot2025.commands.AutoIntakeCommands;
-import org.frogforce503.robot2025.commands.AutoScoreCommands;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.littletonrobotics.junction.Logger;
@@ -52,12 +48,12 @@ public class AutoChooser {
 
     @Getter private AutoMap autoMap = new AutoMap();
 
+    private final AutoWarmupExecutor autoWarmupExecutor = new AutoWarmupExecutor(this);
+
     public AutoChooser(
         Drive drive,
         FieldInfo field,
-        Superstructure superstructure,
-        AutoIntakeCommands autoIntakeCommands,
-        AutoScoreCommands autoScoreCommands
+        Superstructure superstructure
     ) {
         this.drive = drive;
         this.field = field;
@@ -79,18 +75,6 @@ public class AutoChooser {
         this.commitAuton = new LoggedDashboardBoolean("AutoChooser/Commit Auton Config", false);
         this.selectedAutoNameDisplay = new LoggedDashboardString("AutoChooser/Selected Auto Name", "NO AUTO SELECTED");
         this.autoReadyDisplay = new LoggedDashboardBoolean("AutoChooser/Ready to run??", false);
-
-        autoMap
-            .putAuto(
-                Alliance.Red,
-                StartingLocation.CENTER,
-                () -> new RedBabyAuton(drive, field, superstructure, autoFactory, autoIntakeCommands, autoScoreCommands));
-
-        autoMap
-            .putAuto(
-                Alliance.Blue,
-                StartingLocation.CENTER,
-                () -> new BlueBabyAuton(drive, field, superstructure, autoFactory, autoIntakeCommands, autoScoreCommands));
     }
 
     private void reset() {

@@ -4,12 +4,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.frogforce503.lib.util.ErrorUtil;
+import org.frogforce503.robot2025.Constants;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -18,7 +19,6 @@ import edu.wpi.first.wpilibj.Filesystem;
 
 public class FieldConfig {
     // Field Variables
-    public Translation2d FIELD_DIMENSIONS;
     public final double FIELD_X = Units.feetToMeters(57) + Units.inchesToMeters(6) + Units.inchesToMeters(7.0 / 8.0);
     public final double FIELD_Y = Units.feetToMeters(26) + Units.inchesToMeters(5);
 
@@ -116,7 +116,19 @@ public class FieldConfig {
     // AprilTag Layout on Field
     public AprilTagFieldLayout fieldLayout;
 
-    private void loadConstants(String file, AprilTagFieldLayout aprilTagFieldLayout) throws FileNotFoundException, IOException, ParseException {
+    public FieldConfig() {
+        // Loads constants from selected venue
+        try {
+            loadField(Constants.fieldVenue.filePath);
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+
+        // Load AprilTag field layout
+        fieldLayout = Constants.fieldVenue.aprilTagFieldLayout;
+    }
+
+    private void loadField(String file) throws FileNotFoundException, IOException, ParseException {
         JSONObject field =
             (JSONObject) new JSONParser()
                 .parse(
@@ -248,50 +260,21 @@ public class FieldConfig {
 
         RedLeftStation = new Translation2d(FIELD_X - Units.inchesToMeters(65)/2, Units.inchesToMeters(47)/2);
         RedRightStation = new Translation2d(FIELD_X - Units.inchesToMeters(65)/2, FIELD_Y - Units.inchesToMeters(47)/2);
-
-        // Field Dimensions
-        FIELD_DIMENSIONS = new Translation2d(FIELD_X, FIELD_Y);
-
-        // Field Layout
-        fieldLayout = aprilTagFieldLayout;
     }
 
     private double convertJsonEntryToDouble(JSONObject map, String key) {
-        return
-            Units.inchesToMeters(
-                Double.parseDouble(
-                    map
-                        .get(key)
-                        .toString()));
+        return Units.inchesToMeters(Double.parseDouble(map.get(key).toString()));
     }
 
-    // Override if field is measured otherwise
     public Translation2d getFieldDimensions() {
         return new Translation2d(FIELD_X, FIELD_Y);
     }
 
     public Pose2d getTagById(int id) {
-        var t = fieldLayout.getTagPose(id);
-        return t.isPresent() ? t.get().toPose2d() : null;
-    }
-
-    public void setVenue(Venue venue) {
-        try {
-            loadConstants(venue.filePath, venue.aprilTagFieldLayout);
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public enum Venue {
-        Shop("Shop.json", AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded));
-
-        public String filePath;
-        public AprilTagFieldLayout aprilTagFieldLayout;
-
-        private Venue(String filePath, AprilTagFieldLayout aprilTagFieldLayout) {
-            this.filePath = filePath;
-            this.aprilTagFieldLayout = aprilTagFieldLayout;
-        }
+        return
+            fieldLayout
+                .getTagPose(id)
+                .orElseThrow(() -> new IllegalArgumentException("No tag with ID " + id + " found in layout" + ErrorUtil.attachJavaClassName(FieldConfig.class)))
+                .toPose2d();
     }
 }

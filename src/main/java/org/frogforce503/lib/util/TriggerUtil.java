@@ -1,7 +1,5 @@
 package org.frogforce503.lib.util;
 
-import java.util.function.Supplier;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -11,13 +9,13 @@ public class TriggerUtil {
   private TriggerUtil() {}
 
   /** Maps the left stick of an Xbox Controller to the left paddle. */
-  public static Supplier<Trigger> leftPaddle(CommandXboxController controller) {
-    return controller::leftStick;
+  public static Trigger leftPaddle(CommandXboxController controller) {
+    return controller.leftStick();
   }
 
   /** Maps the right stick of an Xbox Controller to the right paddle. */
-  public static Supplier<Trigger> rightPaddle(CommandXboxController controller) {
-    return controller::rightStick;
+  public static Trigger rightPaddle(CommandXboxController controller) {
+    return controller.rightStick();
   }
 
   /**

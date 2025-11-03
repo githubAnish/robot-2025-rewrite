@@ -1,6 +1,12 @@
 package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
+import lombok.Getter;
+
 public enum ElevatorGoal {
+    START(0),
+
+    NONE(0),
+
     DOWN(0),
 
     PRESCORE_L1(0),
@@ -26,9 +32,9 @@ public enum ElevatorGoal {
 
     SWITCH_MODE(20);
     
-    public double position;
+    @Getter private double height;
 
-    private ElevatorGoal(double position) {
-        this.position = position;
+    private ElevatorGoal(double height) {
+        this.height = height;
     }
 }

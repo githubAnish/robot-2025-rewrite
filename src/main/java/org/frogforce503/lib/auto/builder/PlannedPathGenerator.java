@@ -7,7 +7,7 @@ import java.util.List;
 import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.lib.planning.planned_path.Waypoint;
 import org.frogforce503.lib.util.ErrorUtil;
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
@@ -26,7 +26,7 @@ public class PlannedPathGenerator {
     public static TrajectoryConfig config(double vMax, double aMax, double vInitial, double vFinal) {
         return
             new TrajectoryConfig(vMax, aMax)
-                .setKinematics(Constants.bot.kinematics)
+                .setKinematics(DriveConstants.kinematics)
                 .setStartVelocity(vInitial)
                 .setEndVelocity(vFinal);
     }

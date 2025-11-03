@@ -4,9 +4,9 @@ import java.util.function.Supplier;
 
 import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.lib.swerve.SwervePathFollower;
-import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
+import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,7 +21,7 @@ public class DrivePlannedPath extends Command {
     private final Drive drive;
     private final FieldInfo field;
 
-    private final SwervePathFollower controller = Constants.bot.swervePathFollower;
+    private final SwervePathFollower controller = DriveConstants.pathFollower;
     private final Timer timer;
 
     private final Supplier<PlannedPath> dynamicPath;

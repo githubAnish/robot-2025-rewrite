@@ -1,15 +1,17 @@
 package org.frogforce503.robot2025.constants;
 
-import org.frogforce503.robot2025.constants.subsystem.ArmConfig;
-import org.frogforce503.robot2025.constants.subsystem.ClawConfig;
-import org.frogforce503.robot2025.constants.subsystem.ClimberConfig;
-import org.frogforce503.robot2025.constants.subsystem.DriveConfig;
-import org.frogforce503.robot2025.constants.subsystem.ElevatorConfig;
-import org.frogforce503.robot2025.constants.subsystem.IntakeConfig;
-import org.frogforce503.robot2025.constants.subsystem.LedsConfig;
-import org.frogforce503.robot2025.constants.subsystem.SensorConfig;
-import org.frogforce503.robot2025.constants.subsystem.VisionConfig;
-import org.frogforce503.robot2025.constants.subsystem.WristConfig;
+import org.frogforce503.robot2025.constants.configs.ArmConfig;
+import org.frogforce503.robot2025.constants.configs.ClawConfig;
+import org.frogforce503.robot2025.constants.configs.ClimberConfig;
+import org.frogforce503.robot2025.constants.configs.DriveConfig;
+import org.frogforce503.robot2025.constants.configs.ElevatorConfig;
+import org.frogforce503.robot2025.constants.configs.IntakeConfig;
+import org.frogforce503.robot2025.constants.configs.LedsConfig;
+import org.frogforce503.robot2025.constants.configs.PathFollowingConfig;
+import org.frogforce503.robot2025.constants.configs.SensorConfig;
+import org.frogforce503.robot2025.constants.configs.VisionConfig;
+import org.frogforce503.robot2025.constants.configs.WristConfig;
+import org.frogforce503.robot2025.constants.tunerconstants.TunerConstantsProgrammingBot;
 
 public class RobotHardwareProgrammingBot implements RobotHardware {
 
@@ -69,7 +71,19 @@ public class RobotHardwareProgrammingBot implements RobotHardware {
 
     @Override
     public DriveConfig getDriveConfig() {
+        return
+            DriveConfig.builder()
+                .drivetrainConstants(TunerConstantsProgrammingBot.DrivetrainConstants)
+                .frontLeft(TunerConstantsProgrammingBot.FrontLeft)
+                .frontRight(TunerConstantsProgrammingBot.FrontRight)
+                .backLeft(TunerConstantsProgrammingBot.BackLeft)
+                .backRight(TunerConstantsProgrammingBot.BackRight)
+                .build();
+    }
+
+    @Override
+    public PathFollowingConfig getPathFollowingConfig() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDriveConfig'");
+        throw new UnsupportedOperationException("Unimplemented method 'getPathFollowingConfig'");
     }
 }

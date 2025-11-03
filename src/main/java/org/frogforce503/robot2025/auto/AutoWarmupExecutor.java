@@ -1,25 +1,16 @@
 package org.frogforce503.robot2025.auto;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.frogforce503.lib.auto.builder.ChoreoFactoryBuilder;
 import org.frogforce503.lib.auto.builder.PlannedPathGenerator;
 import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.lib.planning.planned_path.Waypoint;
-import org.frogforce503.robot2025.FieldInfo;
-import org.frogforce503.robot2025.subsystems.drive.Drive;
-import org.frogforce503.robot2025.subsystems.drive.io.DriveIOPhoenix;
 
-import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 
 public class AutoWarmupExecutor {
     private final AutoChooser autoChooser;

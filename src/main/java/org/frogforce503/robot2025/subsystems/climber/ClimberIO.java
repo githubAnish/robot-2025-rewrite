@@ -26,7 +26,5 @@ public interface ClimberIO {
 
     default void stop() {}
 
-    default void setPID(double kP, double kI, double kD) {}
-
     default void setBrakeMode(boolean enabled) {}
 }

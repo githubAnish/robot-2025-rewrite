@@ -25,7 +25,7 @@ public class DriveToPose extends Command {
     private final PIDFConfig drivePID = new PIDFConfig(4.0, 0.0, 0.0);
     private final PIDFConfig thetaPID = new PIDFConfig(4.0, 0.0, 0.0);
     private final Constraints driveConstraints = new Constraints(3.8, 3.0);
-    private final Constraints thetaConstraints = new Constraints(DriveConstants.FAST_ROTATION_RADIANS_PER_SECOND, DriveConstants.FAST_ROTATION_RADIANS_PER_SECOND * 0.7);
+    private final Constraints thetaConstraints = new Constraints(DriveConstants.maxOmega, DriveConstants.maxOmega * 0.7);
     private final double driveTolerance = 0.01;
     private final double thetaTolerance = Units.degreesToRadians(1.0);
     private final double ffMinRadius = 0.01;
@@ -34,7 +34,6 @@ public class DriveToPose extends Command {
     private final Drive drive;
     private final FieldInfo field;
 
-    private final Supplier<Pose2d> robotPose;
     private final Supplier<Pose2d> target;
 
     private final ProfiledPIDController driveController =
@@ -56,10 +55,9 @@ public class DriveToPose extends Command {
     private Supplier<Translation2d> linearFF = () -> Translation2d.kZero;
     private DoubleSupplier omegaFF = () -> 0.0;
 
-    public DriveToPose(Drive drive, FieldInfo field, Supplier<Pose2d> robotPose, Supplier<Pose2d> target) {
+    public DriveToPose(Drive drive, FieldInfo field, Supplier<Pose2d> target) {
         this.drive = drive;
         this.field = field;
-        this.robotPose = robotPose;
         this.target = target;
 
         driveController.setPID(drivePID.kP(), drivePID.kI(), drivePID.kD());
@@ -79,12 +77,11 @@ public class DriveToPose extends Command {
     public DriveToPose(
         Drive drive,
         FieldInfo field,
-        Supplier<Pose2d> robotPose,
         Supplier<Pose2d> target,
         Supplier<Translation2d> linearFF,
         DoubleSupplier omegaFF
     ) {
-        this(drive, field, robotPose, target);
+        this(drive, field, target);
         this.linearFF = linearFF;
         this.omegaFF = omegaFF;
     }
@@ -92,27 +89,22 @@ public class DriveToPose extends Command {
     public DriveToPose(
         Drive drive,
         FieldInfo field,
-        Supplier<Pose2d> robotPose,
         Supplier<Pose2d> target,
         JoystickInputs inputs
     ) {
         this(
             drive,
             field,
-            robotPose,
             target,
             () ->
-                DriveCommands
-                    .getLinearVelocityFromJoysticks(
-                        inputs.xSupplier().getAsDouble(),
-                        inputs.ySupplier().getAsDouble())
+                inputs.getLinearVelocityFromJoysticks()
                     .times(field.onRedAlliance() ? -1.0 : 1.0),
-            () -> DriveCommands.getOmegaFromJoysticks(inputs.omegaSupplier().getAsDouble()));
+            () -> inputs.getOmegaFromJoysticks());
     }
 
     @Override
     public void initialize() {
-        Pose2d currentPose = robotPose.get();
+        Pose2d currentPose = drive.getCurrentPose();
         ChassisSpeeds currentVel = drive.getFieldVelocity();
         Translation2d linearFieldVelocity =
             new Translation2d(currentVel.vxMetersPerSecond, currentVel.vyMetersPerSecond);
@@ -141,7 +133,7 @@ public class DriveToPose extends Command {
 
     @Override
     public void execute() {
-        Pose2d currentPose = robotPose.get();
+        Pose2d currentPose = drive.getCurrentPose();
         Pose2d targetPose = target.get();
 
         double currentDistance =
@@ -219,13 +211,13 @@ public class DriveToPose extends Command {
                 .interpolate(
                     linearFF
                         .get()
-                        .times(DriveConstants.FAST_TRANSLATION_METERS_PER_SECOND),
+                        .times(DriveConstants.maxLinearSpeed),
                     linearS);
 
         thetaVelocity =
             MathUtil.interpolate(
                 thetaVelocity,
-                omegaFF.getAsDouble() * DriveConstants.FAST_ROTATION_RADIANS_PER_SECOND,
+                omegaFF.getAsDouble() * DriveConstants.maxOmega,
                 thetaS);
 
         // Apply speeds

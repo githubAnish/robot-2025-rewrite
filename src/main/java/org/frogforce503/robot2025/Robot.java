@@ -129,8 +129,7 @@ public class Robot extends LoggedRobot {
     // Log NT client list
     NTClientLogger.log();
 
-    // Update visualizers
-    robotContainer.updateVisualizers();
+    robotContainer.robotPeriodic();
 
     // Record cycle time
     LoggedTracer.record("RobotPeriodic");

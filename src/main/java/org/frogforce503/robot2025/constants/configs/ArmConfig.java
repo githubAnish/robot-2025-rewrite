@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.constants.subsystem;
+package org.frogforce503.robot2025.constants.configs;
 
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;

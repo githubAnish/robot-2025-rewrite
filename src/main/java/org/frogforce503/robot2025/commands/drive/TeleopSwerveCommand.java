@@ -38,15 +38,13 @@ public class TeleopSwerveCommand extends Command {
     public TeleopSwerveCommand(
         Drive drive,
         FieldInfo field,
-        JoystickInputs inputs,
-        BooleanSupplier robotRelative,
-        BooleanSupplier slowMode
+        JoystickInputs inputs
     ) {
         this.drive = drive;
         this.field = field;
         this.inputs = inputs;
-        this.robotRelative = robotRelative;
-        this.slowMode = slowMode;
+        this.robotRelative = drive::isRobotRelative;
+        this.slowMode = drive::isSlowMode;
 
         manualHeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -70,13 +68,13 @@ public class TeleopSwerveCommand extends Command {
         // Determine max velocities based on slow mode
         double maxLinearVelocity =
             slowMode.getAsBoolean()
-                ? DriveConstants.SLOW_TRANSLATION_METERS_PER_SECOND
-                : DriveConstants.FAST_TRANSLATION_METERS_PER_SECOND;
+                ? DriveConstants.slowModeLinearSpeed
+                : DriveConstants.maxLinearSpeed;
 
         double maxOmega =
             slowMode.getAsBoolean()
-                ? DriveConstants.SLOW_ROTATION_RADIANS_PER_SECOND
-                : DriveConstants.FAST_ROTATION_RADIANS_PER_SECOND;
+                ? DriveConstants.slowModeOmega
+                : DriveConstants.maxOmega;
 
         // Apply rate limiting
         double xVelocity = xLimiter.calculate(driverLinearVelocity.getX()) * maxLinearVelocity;
@@ -120,12 +118,12 @@ public class TeleopSwerveCommand extends Command {
     }
 
     @Override
-    public void end(boolean interrupted) {
-        drive.stop();
+    public boolean isFinished() {
+        return false;
     }
 
     @Override
-    public boolean isFinished() {
-        return false;
+    public void end(boolean interrupted) {
+        drive.stop();
     }
 }

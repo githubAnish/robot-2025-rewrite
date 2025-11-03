@@ -17,7 +17,7 @@ public enum LedsGoal {
     GOT_ALGAE(io -> io.runAnimation(Animations.FLASH_GREEN.getAnimation())),
     SCORE_ALGAE(io -> io.runAnimation(Animations.FLASH_GREEN.getAnimation())),
 
-    GLOBAL_POSE_USED(io -> io.runAnimation(Animations.FLASH_RED.getAnimation())),
+    USING_GLOBAL_POSE(io -> io.runAnimation(Animations.FLASH_RED.getAnimation())),
     CAMERA_DISCONNECTED(io -> io.runAnimation(Animations.FLASH_RED.getAnimation()));
 
     @Getter private Consumer<LedsIO> action;

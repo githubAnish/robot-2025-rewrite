@@ -1,6 +1,11 @@
 package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
+import lombok.Getter;
+
 public enum WristGoal {
+    START(0.0),
+    PARALLEL_TO_GROUND(90.0),
+
     TOZERO(24),
     TO90(90),
 
@@ -33,9 +38,9 @@ public enum WristGoal {
 
     NET_RELEASE(230);
     
-    public double position;
+    @Getter private double angle;
 
     private WristGoal(double position) {
-        this.position = position;
+        this.angle = position;
     }
 }

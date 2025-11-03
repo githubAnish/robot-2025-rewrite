@@ -2,9 +2,9 @@ package org.frogforce503.robot2025.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class IntakeAlgaeFromGround extends Command {
-    public IntakeAlgaeFromGround() {
-
+public class IntakeAlgaeFromHandoff extends Command {
+    public IntakeAlgaeFromHandoff() {
+        
     }
 
     @Override

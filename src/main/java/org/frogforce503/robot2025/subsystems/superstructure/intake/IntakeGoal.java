@@ -1,6 +1,12 @@
 package org.frogforce503.robot2025.subsystems.superstructure.intake;
 
+import lombok.Getter;
+
 public enum IntakeGoal {
+    START(0.0, 0.0),
+
+    NONE(0),
+
     INTAKE_CLEARANCE(187),
     SCORE_CLEARANCE(137),
 
@@ -30,15 +36,15 @@ public enum IntakeGoal {
     UP_PIVOT(-0.2), // pct, volts
     DOWN_PIVOT(0.7); // pct volts
     
-    public double pivotPosition, rollerVolts;
+    @Getter private double pivotAngle, rollerVolts;
     
-    private IntakeGoal(double pivotPosition, double rollerVolts) {
-        this.pivotPosition = pivotPosition;
+    private IntakeGoal(double pivotAngle, double rollerVolts) {
+        this.pivotAngle = pivotAngle;
         this.rollerVolts = rollerVolts;
     }
 
-    private IntakeGoal(double pivotPosition) {
-        this.pivotPosition = pivotPosition;
+    private IntakeGoal(double pivotAngle) {
+        this.pivotAngle = pivotAngle;
         this.rollerVolts = 0.0;
     }
 }

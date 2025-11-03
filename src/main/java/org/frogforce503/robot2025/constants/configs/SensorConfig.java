@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.constants.subsystem;
+package org.frogforce503.robot2025.constants.configs;
 import lombok.Builder;
 
 @Builder
