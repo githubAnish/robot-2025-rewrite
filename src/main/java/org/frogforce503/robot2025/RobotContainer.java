@@ -4,8 +4,10 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.eclipse.jetty.util.MathUtils;
 import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.reefscape.Branch;
+import org.frogforce503.lib.reefscape.Gamepiece;
 import org.frogforce503.lib.util.DoublePressTracker;
 import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.lib.util.FFSelectCommand;
@@ -74,14 +76,18 @@ import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagI
 import org.frogforce503.robot2025.subsystems.vision.object_detection.ObjectDetectionIO;
 import org.frogforce503.robot2025.visualization.GameVisualizer;
 import org.frogforce503.test.UnitTest;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.ExtensionMethod;
 
 @ExtensionMethod({DoublePressTracker.class, TriggerUtil.class})
@@ -103,6 +109,11 @@ public class RobotContainer implements UnitTest {
     // Simulation
     private final GameVisualizer gameVisualizer;
     private final VisionSimulator visionVisualizer = new VisionSimulator();
+    @Getter private final SuperstructureVisualizer visualizer;
+
+    // Robot Mode
+    @Setter @Getter private SuperstructureMode currentMode = SuperstructureMode.CORAL_INTAKE;
+    @Getter private Gamepiece currentPiece = Gamepiece.CORAL;
 
     // Controllers
     private final CommandXboxController driver = new CommandXboxController(0);
@@ -120,6 +131,9 @@ public class RobotContainer implements UnitTest {
     // Overrides
     private final LoggedNetworkBoolean autoDrivingEnabled =
         new LoggedNetworkBoolean("Auto Driving Enabled", true);
+
+    private LoggedNetworkBoolean superstructureCoastOverride =
+        new LoggedNetworkBoolean("Coast Mode/Superstructure", false);
     
     public RobotContainer() {
         Elevator elevator = null;
@@ -230,6 +244,8 @@ public class RobotContainer implements UnitTest {
                 intakeRoller,
                 new CoralSensorIOBeamBreak(),
                 drive::getCurrentPose);
+
+        this.visualizer = new SuperstructureVisualizer(robotPoseSupplier);
     
         // Create offset manager
         offsetManager =
@@ -338,6 +354,43 @@ public class RobotContainer implements UnitTest {
     public void robotPeriodic() {
         if (RobotBase.isSimulation()) {
             visionVisualizer.update(drive.getCurrentPose());
+        }
+
+        setCoastMode(
+            DriverStation.isDisabled() &&
+            superstructureCoastOverride.get());
+
+        currentPiece = currentMode.getGamepiece();
+
+        // Update visualizers
+        if (RobotBase.isSimulation()) {
+            visualizer.update(
+                elevator.getHeight(),
+                arm.getAngle(),
+                wrist.getRelativeAngle(),
+                intakePivot.getAngle());
+        }
+
+        Logger.recordOutput("Superstructure/Current Gamepiece", currentPiece);
+        Logger.recordOutput("Superstructure/Mode", currentMode);
+    }
+
+    public void setCoastMode(boolean enabled) {
+        elevator.getCoastOverride().set(enabled);
+        arm.getCoastOverride().set(enabled);
+        wrist.getCoastOverride().set(enabled);
+        claw.getCoastOverride().set(enabled);
+        intakePivot.getCoastOverride().set(enabled);
+        intakeRoller.getCoastOverride().set(enabled);
+    }
+
+    public void seedWristPosition() {
+        if (RobotBase.isReal() &&
+            MathUtils.inRange(arm.getAngle(), 0, 30) &&
+            MathUtils.inRange(wrist.getAbsoluteAngle(), 0, 180)
+        ) {
+            wrist.setEncoderPosition(
+                arm.getAngle() + wrist.getAbsoluteAngle());
         }
     }
 

@@ -88,7 +88,7 @@ public class Claw extends FFSubsystemBase {
         Logger.recordOutput("Claw/LeftCurrentVelocity", getLeftVelocity());
         Logger.recordOutput("Claw/RightCurrentVelocity", getRightVelocity());
 
-        Logger.recordOutput("Claw/Claw/HasCoral", hasCoral);
+        Logger.recordOutput("Claw/HasCoral", hasCoral);
         Logger.recordOutput("Claw/HasAlgae", hasAlgae);
 
         // Record cycle time
@@ -96,7 +96,7 @@ public class Claw extends FFSubsystemBase {
     }
 
     @Override
-    public BooleanConsumer tuningExecutor() {
+    protected BooleanConsumer tuningExecutor() {
         return tuningEnabled -> {
             pidfTuningService.setTuning(tuningEnabled);
             
@@ -119,11 +119,11 @@ public class Claw extends FFSubsystemBase {
         return clawInputs.rightMotorData.velocity();
     }
 
-    public boolean upperSensorTriggered() {
+    public boolean upperSensorTripped() {
         return coralSensorInputs.data.upperTripped();
     }
 
-    public boolean lowerSensorTriggered() {
+    public boolean lowerSensorTripped() {
         return coralSensorInputs.data.lowerTripped();
     }
 

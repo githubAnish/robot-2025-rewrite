@@ -8,10 +8,9 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.RobotBase;
 
-import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
 
-public class IntakeRoller extends FFSubsystemBase {
+public class IntakeRoller {
     private final RollerIO io;
     private final RollerIOInputsAutoLogged inputs = new RollerIOInputsAutoLogged();
 
@@ -29,10 +28,7 @@ public class IntakeRoller extends FFSubsystemBase {
         this.io = io;
     }
 
-    @Override
     public void periodic() {
-        super.periodic();
-        
         io.updateInputs(inputs);
         Logger.processInputs("IntakeRoller", inputs);
 
@@ -61,19 +57,17 @@ public class IntakeRoller extends FFSubsystemBase {
         return inputs.data.appliedVolts();
     }
 
-    @Override
     public void setBrakeMode(boolean enabled) {
         io.setBrakeMode(enabled);
     }
 
-    @Override
     public void stop() {
         io.stop();
     }
 
-    public void runOpenLoop(double pivotOutput, double rollerOutput) {
+    public void runOpenLoop(double output) {
         shouldRunVolts = false;
-        io.runOpenLoop(rollerOutput);
+        io.runOpenLoop(output);
     }
 
     public boolean isRollerAtVoltage(double setpointVolts, double tolerance) {

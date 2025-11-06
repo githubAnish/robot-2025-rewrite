@@ -36,7 +36,7 @@ public abstract class FFSubsystemBase extends SubsystemBase {
         return tuningEnabled -> {};
     };
 
-    public abstract void stop();
-
     protected abstract void setBrakeMode(boolean enabled);
+
+    public abstract void stop();
 }

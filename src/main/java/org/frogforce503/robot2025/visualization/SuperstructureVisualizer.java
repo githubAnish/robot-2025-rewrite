@@ -15,7 +15,6 @@ import edu.wpi.first.math.util.Units;
 
 public class SuperstructureVisualizer {
     private final String name = "Superstructure";
-    private final Superstructure superstructure;
     private final Supplier<Pose2d> robotPoseSupplier;
 
     private Pose3d armPose, intakePose, movingStagePose, gearboxPose;
@@ -26,8 +25,7 @@ public class SuperstructureVisualizer {
     private LoggedNetworkBoolean hasAlgaeInClaw;
     private LoggedNetworkBoolean hasCoral;
     
-    public SuperstructureVisualizer(Superstructure superstructure, Supplier<Pose2d> robotPoseSupplier) {
-        this.superstructure = superstructure;
+    public SuperstructureVisualizer(Supplier<Pose2d> robotPoseSupplier) {
         this.robotPoseSupplier = robotPoseSupplier;
 
         hasAlgaeInClaw = new LoggedNetworkBoolean("Simulation/" + name + "/Simulation Has Algae");

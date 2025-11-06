@@ -19,10 +19,9 @@ import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.motorcontrol.tuning.speed.SpeedConstraintsTuningService;
 import org.frogforce503.lib.math.Range;
-import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
 
-public class IntakePivot extends FFSubsystemBase {
+public class IntakePivot {
     private final PivotIO io;
     private final PivotIOInputsAutoLogged inputs = new PivotIOInputsAutoLogged();
 
@@ -58,10 +57,7 @@ public class IntakePivot extends FFSubsystemBase {
                 Robot.bot.getIntakeConfig().pivotConstraints());
     }
 
-    @Override
     public void periodic() {
-        super.periodic();
-
         io.updateInputs(inputs);
         Logger.processInputs("IntakePivot", inputs);
 
@@ -119,8 +115,7 @@ public class IntakePivot extends FFSubsystemBase {
         LoggedTracer.record("IntakePivot");
     }
 
-    @Override
-    public BooleanConsumer tuningExecutor() {
+    protected BooleanConsumer tuningExecutor() {
         return tuningEnabled -> {
             pidfTuningService.setTuning(tuningEnabled);
             speedTuningService.setTuning(tuningEnabled);
@@ -149,19 +144,17 @@ public class IntakePivot extends FFSubsystemBase {
         return inputs.data.position();
     }
 
-    @Override
     public void setBrakeMode(boolean enabled) {
         io.setBrakeMode(enabled);
     }
 
-    @Override
     public void stop() {
         io.stop();
     }
 
-    public void runOpenLoop(double pivotOutput, double rollerOutput) {
+    public void runOpenLoop(double output) {
         shouldRunProfile = false;
-        io.runOpenLoop(pivotOutput);
+        io.runOpenLoop(output);
     }
 
     public boolean isPivotAtAngle(double setpointAngle, double tolerance) {

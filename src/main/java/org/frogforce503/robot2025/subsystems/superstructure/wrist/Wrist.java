@@ -82,7 +82,7 @@ public class Wrist extends FFSubsystemBase {
     }
 
     @Override
-    public BooleanConsumer tuningExecutor() {
+    protected BooleanConsumer tuningExecutor() {
         return tuningEnabled -> {
             pidfTuningService.setTuning(tuningEnabled);
             

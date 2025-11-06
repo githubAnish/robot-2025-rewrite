@@ -132,7 +132,7 @@ public class Elevator extends FFSubsystemBase {
     }
 
     @Override
-    public BooleanConsumer tuningExecutor() {
+    protected BooleanConsumer tuningExecutor() {
         return tuningEnabled -> {
             pidfTuningService.setTuning(tuningEnabled);
             speedTuningService.setTuning(tuningEnabled);
