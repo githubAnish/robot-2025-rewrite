@@ -1,8 +1,8 @@
 package org.frogforce503.robot2025.subsystems.vision.apriltag_detection;
 
-import java.util.Set;
 import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -11,10 +11,10 @@ import org.frogforce503.lib.vision.VisionUtils;
 import org.frogforce503.lib.vision.apriltag_detection.PoseObservation;
 import org.frogforce503.lib.vision.apriltag_detection.PoseObservationType;
 import org.frogforce503.lib.vision.apriltag_detection.TrackedAprilTag;
-import org.frogforce503.robot2025.subsystems.vision.Vision.CameraName;
+import org.frogforce503.robot2025.subsystems.vision.VisionConstants;
+import org.frogforce503.robot2025.subsystems.vision.VisionConstants.CameraName;
 
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -48,10 +48,10 @@ public enum AprilTagGoal {
             if (aprilTagIO instanceof AprilTagIOPhotonVision || aprilTagIO instanceof AprilTagIOPhotonSim) {
                 aprilTagIO.setPoseObservationType(PoseObservationType.MULTI_TAG_PNP_ON_COPROCESSOR);
             } 
-            aprilTagIO.setIgnoredAprilTags(Set.of(4, 5, 14, 15)); //Barge Tags
+            aprilTagIO.setIgnoredAprilTags(VisionConstants.BARGE_TAGS);
         },
 
-        (poseObservation) -> VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(30)), // Standard deviations for the pose observation
+        (poseObservation) -> VisionConstants.DEFAULT_STANDARD_DEVIATIONS,
 
         Optional.empty()
     ),
@@ -78,10 +78,50 @@ public enum AprilTagGoal {
             if (aprilTagIO instanceof AprilTagIOPhotonVision || aprilTagIO instanceof AprilTagIOPhotonSim) {
                 aprilTagIO.setPoseObservationType(PoseObservationType.PNP_DISTANCE_TRIG_SOLVE);
             }
-            aprilTagIO.setIgnoredAprilTags(Set.of(4, 5, 14, 15)); // Barge Tags
+
+            Set<Integer> ignoredTags = VisionConstants.BARGE_TAGS;
+            ignoredTags.addAll(VisionConstants.CORAL_STATION_TAGS);
+            ignoredTags.addAll(VisionConstants.PROCESSOR_TAGS);
+
+            aprilTagIO.setIgnoredAprilTags(ignoredTags);
         },
 
-        (poseObservation) -> VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(30)), // Standard deviations for the pose observation
+        (poseObservation) -> VisionConstants.DEFAULT_STANDARD_DEVIATIONS,
+
+        Optional.of(GLOBAL_LOCALIZATION)
+    ),
+
+    /**
+     * Uses available coral-station-facing cameras and trigonometric solving to localize the robot with coral station AprilTags.
+     * Biased at far distances; should only be used when aligning with the reef.
+     * Backup goal for coral station alignment is global localization.
+     */
+    CORAL_STATION_ALIGNMENT(
+        EnumSet.of(CameraName.ELEVATOR_BACK),
+
+        poseObservation -> {
+            TrackedAprilTag[] tags = poseObservation.usedAprilTags();
+
+            double distance = VisionUtils.getLowestDistanceToCamera(tags);
+
+            double maxDistance = Units.feetToMeters(8);
+
+            return distance <= maxDistance;
+        },
+
+        aprilTagIO -> {
+            if (aprilTagIO instanceof AprilTagIOPhotonVision || aprilTagIO instanceof AprilTagIOPhotonSim) {
+                aprilTagIO.setPoseObservationType(PoseObservationType.PNP_DISTANCE_TRIG_SOLVE);
+            }
+
+            Set<Integer> ignoredTags = VisionConstants.BARGE_TAGS;
+            ignoredTags.addAll(VisionConstants.REEF_TAGS);
+            ignoredTags.addAll(VisionConstants.PROCESSOR_TAGS);
+
+            aprilTagIO.setIgnoredAprilTags(ignoredTags);
+        },
+
+        (poseObservation) -> VisionConstants.DEFAULT_STANDARD_DEVIATIONS,
 
         Optional.of(GLOBAL_LOCALIZATION)
     );

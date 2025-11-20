@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.math.GeomUtil;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
+import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
@@ -22,8 +22,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class DriveToPose extends Command {
-    private final PIDFConfig drivePID = new PIDFConfig(4.0, 0.0, 0.0);
-    private final PIDFConfig thetaPID = new PIDFConfig(4.0, 0.0, 0.0);
+    private final PIDConfig drivePID = new PIDConfig(4.0, 0.0, 0.0);
+    private final PIDConfig thetaPID = new PIDConfig(4.0, 0.0, 0.0);
     private final Constraints driveConstraints = new Constraints(3.8, 3.0);
     private final Constraints thetaConstraints = new Constraints(DriveConstants.maxOmega, DriveConstants.maxOmega * 0.7);
     private final double driveTolerance = 0.01;

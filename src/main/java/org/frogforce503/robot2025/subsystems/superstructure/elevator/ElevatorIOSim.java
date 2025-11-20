@@ -1,13 +1,13 @@
 package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
 import org.frogforce503.lib.motorcontrol.MotorControlMode;
-import org.frogforce503.lib.motorcontrol.MotorSim;
+import org.frogforce503.lib.motorcontrol.SimpleMotorSim;
 
 public class ElevatorIOSim implements ElevatorIO {
-    private MotorSim sim;
+    private SimpleMotorSim sim;
 
     public ElevatorIOSim() {
-        sim = new MotorSim(3.25,360.0);
+        sim = new SimpleMotorSim(3.25,360.0);
     }
 
     @Override

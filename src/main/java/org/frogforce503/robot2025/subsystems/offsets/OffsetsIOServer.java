@@ -82,8 +82,7 @@ public class OffsetsIOServer implements OffsetsIO {
         // Start web server
         WebServer.start(
             5801,
-            Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "reefcontrols")
-                .toString());
+            Paths.get(Filesystem.getDeployDirectory().getAbsolutePath().toString(), "reefcontrols").toString());
     }
 
     @Override

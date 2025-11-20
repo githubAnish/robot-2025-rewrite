@@ -1,13 +1,13 @@
 package org.frogforce503.robot2025.subsystems.climber;
 
 import org.frogforce503.lib.motorcontrol.MotorControlMode;
-import org.frogforce503.lib.motorcontrol.MotorSim;
+import org.frogforce503.lib.motorcontrol.SimpleMotorSim;
 
 public class ClimberIOSim implements ClimberIO {
-    private MotorSim sim;
+    private SimpleMotorSim sim;
 
     public ClimberIOSim() {
-        sim = new MotorSim(3.25, 360);
+        sim = new SimpleMotorSim(3.25, 360);
     }
 
     @Override

@@ -4,10 +4,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.eclipse.jetty.util.MathUtils;
 import org.frogforce503.lib.io.JoystickInputs;
-import org.frogforce503.lib.reefscape.Branch;
-import org.frogforce503.lib.reefscape.Gamepiece;
 import org.frogforce503.lib.util.DoublePressTracker;
 import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.lib.util.FFSelectCommand;
@@ -22,6 +19,7 @@ import org.frogforce503.robot2025.commands.ScoreAlgaeInBarge;
 import org.frogforce503.robot2025.commands.ScoreAlgaeInProcessor;
 import org.frogforce503.robot2025.commands.ScoreCoralOnReef;
 import org.frogforce503.robot2025.commands.StowAndIntakeCoralFromStation;
+import org.frogforce503.robot2025.commands.drive.CharacterizationExecutor;
 import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
@@ -50,15 +48,13 @@ import org.frogforce503.robot2025.subsystems.superstructure.elevator.Elevator;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.ElevatorIO;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.ElevatorIOSim;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.ElevatorIOSpark;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.IntakePivot;
+import org.frogforce503.robot2025.subsystems.superstructure.intake.Intake;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.PivotIO;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.PivotIOSim;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.PivotIOSpark;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.IntakeRoller;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.RollerIO;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.RollerIOSim;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.RollerIOSpark;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIO;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIOBeamBreak;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIO;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIOClimber;
@@ -69,25 +65,22 @@ import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIOSim;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIOSpark;
 import org.frogforce503.robot2025.subsystems.vision.Vision;
 import org.frogforce503.robot2025.subsystems.vision.VisionSimulator;
-import org.frogforce503.robot2025.subsystems.vision.Vision.CameraName;
+import org.frogforce503.robot2025.subsystems.vision.VisionConstants.CameraName;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIO;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonSim;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonVision;
 import org.frogforce503.robot2025.subsystems.vision.object_detection.ObjectDetectionIO;
 import org.frogforce503.robot2025.visualization.GameVisualizer;
 import org.frogforce503.test.UnitTest;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.ExtensionMethod;
 
 @ExtensionMethod({DoublePressTracker.class, TriggerUtil.class})
@@ -109,11 +102,6 @@ public class RobotContainer implements UnitTest {
     // Simulation
     private final GameVisualizer gameVisualizer;
     private final VisionSimulator visionVisualizer = new VisionSimulator();
-    @Getter private final SuperstructureVisualizer visualizer;
-
-    // Robot Mode
-    @Setter @Getter private SuperstructureMode currentMode = SuperstructureMode.CORAL_INTAKE;
-    @Getter private Gamepiece currentPiece = Gamepiece.CORAL;
 
     // Controllers
     private final CommandXboxController driver = new CommandXboxController(0);
@@ -125,23 +113,19 @@ public class RobotContainer implements UnitTest {
 
     // Vision Estimate Acceptor
     private final Consumer<VisionMeasurement> visionEstimateConsumer =
-        visionMeasurement ->    
+        visionMeasurement ->
             drive.acceptVisionMeasurement(visionMeasurement);
 
     // Overrides
     private final LoggedNetworkBoolean autoDrivingEnabled =
         new LoggedNetworkBoolean("Auto Driving Enabled", true);
-
-    private LoggedNetworkBoolean superstructureCoastOverride =
-        new LoggedNetworkBoolean("Coast Mode/Superstructure", false);
     
     public RobotContainer() {
         Elevator elevator = null;
         Arm arm = null;
         Wrist wrist = null;
         Claw claw = null;
-        IntakePivot intakePivot = null;
-        IntakeRoller intakeRoller = null;
+        Intake intake = null;
 
         // Initialize subsystems based on robot type
         switch (Constants.getRobot()) {
@@ -161,9 +145,8 @@ public class RobotContainer implements UnitTest {
                 elevator = new Elevator(new ElevatorIOSpark(), new LimitSwitchIOElevator());
                 arm = new Arm(new ArmIOSpark());
                 wrist = new Wrist(new WristIOSpark());
-                claw = new Claw(new ClawIOSpark(), new CoralSensorIOBeamBreak());
-                intakePivot = new IntakePivot(new PivotIOSpark());
-                intakeRoller = new IntakeRoller(new RollerIOSpark());
+                claw = new Claw(new ClawIOSpark());
+                intake = new Intake(new PivotIOSpark(), new RollerIOSpark());
                 climber = new Climber(new ClimberIOSpark(), new LimitSwitchIOClimber());
                 leds = new Leds(new LedsIOCANdle());
             }
@@ -183,9 +166,8 @@ public class RobotContainer implements UnitTest {
                 elevator = new Elevator(new ElevatorIOSpark(), new LimitSwitchIOElevator());
                 arm = new Arm(new ArmIOSpark());
                 wrist = new Wrist(new WristIOSpark());
-                claw = new Claw(new ClawIOSpark(), new CoralSensorIOBeamBreak());
-                intakePivot = new IntakePivot(new PivotIOSpark());
-                intakeRoller = new IntakeRoller(new RollerIOSpark());
+                claw = new Claw(new ClawIOSpark());
+                intake = new Intake(new PivotIOSpark(), new RollerIOSpark());
                 climber = new Climber(new ClimberIOSpark(), new LimitSwitchIO() {});
                 leds = new Leds(new LedsIOCANdle());
             }
@@ -205,9 +187,8 @@ public class RobotContainer implements UnitTest {
                 elevator = new Elevator(new ElevatorIOSim(), new LimitSwitchIO() {});
                 arm = new Arm(new ArmIOSim());
                 wrist = new Wrist(new WristIOSim());
-                claw = new Claw(new ClawIOSim(), new CoralSensorIOBeamBreak());
-                intakePivot = new IntakePivot(new PivotIOSim());
-                intakeRoller = new IntakeRoller(new RollerIOSim());
+                claw = new Claw(new ClawIOSim());
+                intake = new Intake(new PivotIOSim(), new RollerIOSim());
                 climber = new Climber(new ClimberIOSim(), new LimitSwitchIO() {});
                 leds = new Leds(new LedsIO() {});
             }
@@ -222,9 +203,8 @@ public class RobotContainer implements UnitTest {
                 elevator = new Elevator(new ElevatorIO() {}, new LimitSwitchIO() {});
                 arm = new Arm(new ArmIO() {});
                 wrist = new Wrist(new WristIO() {});
-                claw = new Claw(new ClawIO() {}, new CoralSensorIO() {});
-                intakePivot = new IntakePivot(new PivotIO() {});
-                intakeRoller = new IntakeRoller(new RollerIO() {});
+                claw = new Claw(new ClawIO() {});
+                intake = new Intake(new PivotIO() {}, new RollerIO() {});
                 climber = new Climber(new ClimberIO() {}, new LimitSwitchIO() {});
                 leds = new Leds(new LedsIO() {});
             }
@@ -240,12 +220,9 @@ public class RobotContainer implements UnitTest {
                 arm,
                 wrist,
                 claw,
-                intakePivot,
-                intakeRoller,
+                intake,
                 new CoralSensorIOBeamBreak(),
                 drive::getCurrentPose);
-
-        this.visualizer = new SuperstructureVisualizer(robotPoseSupplier);
     
         // Create offset manager
         offsetManager =
@@ -284,7 +261,7 @@ public class RobotContainer implements UnitTest {
         driver.leftTrigger().whileTrue(
             new FFSelectCommand<>(
                 Map.of(
-                    SuperstructureMode.CORAL_INTAKE, new StowAndIntakeCoralFromStation(),
+                    SuperstructureMode.CORAL_INTAKE, new StowAndIntakeCoralFromStation(drive, field, superstructure, leds),
                     SuperstructureMode.ALGAE_GROUND, new IntakeAlgaeFromGround(),
                     SuperstructureMode.ALGAE_HANDOFF, new IntakeAlgaeFromHandoff(),
                     SuperstructureMode.ALGAE_PLUCK_HIGH, new IntakeAlgaeFromReef(true),
@@ -292,8 +269,8 @@ public class RobotContainer implements UnitTest {
                 ),
                 superstructure::getCurrentMode));
 
-        driver.leftBumper().whileTrue(new ScoreCoralOnReef(drive, field, offsetManager, () -> Branch.LEFT, autoDrivingEnabled::get));
-        driver.rightBumper().whileTrue(new ScoreCoralOnReef(drive, field, offsetManager, () -> Branch.RIGHT, autoDrivingEnabled::get));
+        driver.leftBumper().whileTrue(new ScoreCoralOnReef());
+        driver.rightBumper().whileTrue(new ScoreCoralOnReef());
 
         driver.rightTrigger().whileTrue(
             new FFSelectCommand<>(
@@ -355,43 +332,6 @@ public class RobotContainer implements UnitTest {
         if (RobotBase.isSimulation()) {
             visionVisualizer.update(drive.getCurrentPose());
         }
-
-        setCoastMode(
-            DriverStation.isDisabled() &&
-            superstructureCoastOverride.get());
-
-        currentPiece = currentMode.getGamepiece();
-
-        // Update visualizers
-        if (RobotBase.isSimulation()) {
-            visualizer.update(
-                elevator.getHeight(),
-                arm.getAngle(),
-                wrist.getRelativeAngle(),
-                intakePivot.getAngle());
-        }
-
-        Logger.recordOutput("Superstructure/Current Gamepiece", currentPiece);
-        Logger.recordOutput("Superstructure/Mode", currentMode);
-    }
-
-    public void setCoastMode(boolean enabled) {
-        elevator.getCoastOverride().set(enabled);
-        arm.getCoastOverride().set(enabled);
-        wrist.getCoastOverride().set(enabled);
-        claw.getCoastOverride().set(enabled);
-        intakePivot.getCoastOverride().set(enabled);
-        intakeRoller.getCoastOverride().set(enabled);
-    }
-
-    public void seedWristPosition() {
-        if (RobotBase.isReal() &&
-            MathUtils.inRange(arm.getAngle(), 0, 30) &&
-            MathUtils.inRange(wrist.getAbsoluteAngle(), 0, 180)
-        ) {
-            wrist.setEncoderPosition(
-                arm.getAngle() + wrist.getAbsoluteAngle());
-        }
     }
 
     public void autonomousInit() {
@@ -417,9 +357,11 @@ public class RobotContainer implements UnitTest {
     @Override
     public void test() {
         // // Uncomment to test (Waits 5 sec, auto aligns to nearest branch & does reef alignment, waits 1 sec after finished, and then homes & goes to global localization)
+        // CharacterizationExecutor executor = new CharacterizationExecutor(drive);
+        
         // RobotModeTriggers.teleop().onTrue(
         //     Commands.sequence(
-
+        //         executor.wheelRadiusCharacterization().withTimeout(20)
         //     )
         // );
     }

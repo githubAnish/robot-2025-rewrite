@@ -14,7 +14,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
 public class SuperstructureVisualizer {
-    private final String name = "Superstructure";
+    private final Superstructure superstructure;
     private final Supplier<Pose2d> robotPoseSupplier;
 
     private Pose3d armPose, intakePose, movingStagePose, gearboxPose;
@@ -25,11 +25,12 @@ public class SuperstructureVisualizer {
     private LoggedNetworkBoolean hasAlgaeInClaw;
     private LoggedNetworkBoolean hasCoral;
     
-    public SuperstructureVisualizer(Supplier<Pose2d> robotPoseSupplier) {
+    public SuperstructureVisualizer(Superstructure superstructure, Supplier<Pose2d> robotPoseSupplier) {
+        this.superstructure = superstructure;
         this.robotPoseSupplier = robotPoseSupplier;
 
-        hasAlgaeInClaw = new LoggedNetworkBoolean("Simulation/" + name + "/Simulation Has Algae");
-        hasCoral = new LoggedNetworkBoolean("Simulation/" + name + "/Simulation Has Coral");
+        hasAlgaeInClaw = new LoggedNetworkBoolean("Simulation/Superstructure/Simulation Has Algae");
+        hasCoral = new LoggedNetworkBoolean("Simulation/Superstructure/Simulation Has Coral");
         
         armPose = new Pose3d();
         intakePose = new Pose3d();
@@ -72,7 +73,7 @@ public class SuperstructureVisualizer {
 
         intakePose = new Pose3d(intakePos, intakeRoot);
 
-        Logger.recordOutput("Simulation/" + name + "/Mechanism", armPose, clawPose, intakePose, stagePose, gearboxPose);
+        Logger.recordOutput("Simulation/Superstructure/Mechanism", armPose, clawPose, intakePose, stagePose, gearboxPose);
 
         // Gamepiece Held
         hasCoral.set(superstructure.isHasCoral());
@@ -90,7 +91,7 @@ public class SuperstructureVisualizer {
                                         new Rotation3d(0.0, clawPose.getRotation().getX(), 0.0))),
                             new Rotation3d()));
 
-            Logger.recordOutput("Simulation/" + name + "/HeldAlgae", heldAlgaePose);
+            Logger.recordOutput("Simulation/Superstructure/HeldAlgae", heldAlgaePose);
         }
 
         if (hasCoral.get()) {
@@ -101,7 +102,7 @@ public class SuperstructureVisualizer {
                             clawPose.getTranslation(),
                             new Rotation3d(0.0, clawPose.getRotation().getX() + Math.PI/2, 0.0)));
 
-            Logger.recordOutput("Simulation/" + name + "/HeldCoral", heldCoralPose);
+            Logger.recordOutput("Simulation/Superstructure/HeldCoral", heldCoralPose);
         }
     }
 

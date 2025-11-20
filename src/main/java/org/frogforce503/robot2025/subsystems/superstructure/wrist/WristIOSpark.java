@@ -1,7 +1,6 @@
 package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
 import org.frogforce503.robot2025.Robot;
 
 import com.revrobotics.REVLibError;
@@ -28,9 +27,6 @@ public class WristIOSpark implements WristIO {
     private SparkClosedLoopController pidController;
 
     // Config
-    private PIDFConfig currentPidConfig = Robot.bot.getWristConfig().kPIDF(); // Buffer variable to avoid calling configAccessor
-    private IdleMode currentIdleMode = IdleMode.kBrake; // Buffer variable to avoid calling configAccessor
-
     private SparkMaxConfig config = new SparkMaxConfig();
     private final int STATOR_CURRENT_LIMIT = 40;
     private final double ABSOLUTE_CONVERSION_FACTOR = 360.0;
@@ -61,15 +57,15 @@ public class WristIOSpark implements WristIO {
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pid(
-                    currentPidConfig.kP(),
-                    currentPidConfig.kI(),
-                    currentPidConfig.kD(),
+                    Robot.bot.getWristConfig().kPID().kP(),
+                    Robot.bot.getWristConfig().kPID().kI(),
+                    Robot.bot.getWristConfig().kPID().kD(),
                     ClosedLoopSlot.kSlot0);
 
         config.inverted(Robot.bot.getWristConfig().wristInverted());
         config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
         config.voltageCompensation(12);
-        config.idleMode(currentIdleMode);
+        config.idleMode(IdleMode.kBrake);
 
         motor.clearFaults();
 
@@ -112,24 +108,14 @@ public class WristIOSpark implements WristIO {
 
     @Override
     public void setPID(double kP, double kI, double kD) {
-        if (currentPidConfig.kP() != kP || currentPidConfig.kI() != kI || currentPidConfig.kD() != kD) {
-            config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
-            SparkUtil.configure(motor, config, false);
-            
-            currentPidConfig = new PIDFConfig(kP, kI, kD);
-        }
+        config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
+        SparkUtil.configure(motor, config, false);
     }
 
     @Override
     public void setBrakeMode(boolean enabled) {
-        IdleMode request = enabled ? IdleMode.kBrake : IdleMode.kCoast;
-
-        if (request != currentIdleMode) { // Doesn't set brake mode if it's already set
-            config.idleMode(request);
-            SparkUtil.configure(motor, config, false);
-            
-            currentIdleMode = request;
-        }
+        config.idleMode(enabled ? IdleMode.kBrake : IdleMode.kCoast);
+        SparkUtil.configure(motor, config, false);
     }
 
     @Override

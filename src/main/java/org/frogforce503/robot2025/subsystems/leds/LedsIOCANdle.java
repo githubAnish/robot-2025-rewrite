@@ -22,7 +22,7 @@ public class LedsIOCANdle implements LedsIO {
         leds.configFactoryDefault();
         leds.clearStickyFaults();
 
-        leds.setStatusFramePeriod(CANdleStatusFrame.CANdleStatusFrame_Status_1_General, 250);
+        leds.setStatusFramePeriod(CANdleStatusFrame.CANdleStatusFrame_Status_1_General, 500); // Update twice a second
 
         leds.configAllSettings(config);
     }

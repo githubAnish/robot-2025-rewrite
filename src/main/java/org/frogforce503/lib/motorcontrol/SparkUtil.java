@@ -29,7 +29,7 @@ public final class SparkUtil {
     }
 
     /** Optimizes motor signals to limit unnecessary data over CAN. */
-    public static SignalsConfig signalsOptimized() {
+    public static SignalsConfig getOptimizedSignals() {
         return
             new SignalsConfig()
                 .analogPositionAlwaysOn(false)

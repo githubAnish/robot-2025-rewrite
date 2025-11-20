@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025;
 
 import org.frogforce503.lib.math.Polygon2d;
-import org.frogforce503.robot2025.constants.field.FieldConfig;
+import org.frogforce503.robot2025.config.field.FieldConfig;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -58,8 +58,7 @@ public class FieldInfo extends Field2d {
     public Polygon2d getRedReef() {
         return
             new Polygon2d(
-                config.Red_Algae_AB
-                    .interpolate(config.Red_Algae_GH, 0.5),
+                config.Red_Algae_AB.interpolate(config.Red_Algae_GH, 0.5),
                 config.RedReefSideLength + config.RedReefInnerToOuter,
                 6,
                 Rotation2d.fromDegrees(30));
@@ -68,8 +67,7 @@ public class FieldInfo extends Field2d {
     public Polygon2d getBlueReef() {
         return
             new Polygon2d(
-                config.Blue_Algae_AB
-                    .interpolate(config.Blue_Algae_GH, 0.5),
+                config.Blue_Algae_AB.interpolate(config.Blue_Algae_GH, 0.5),
                 config.BlueReefSideLength + config.BlueReefInnerToOuter,
                 6,
                 Rotation2d.fromDegrees(30));

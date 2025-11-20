@@ -1,9 +1,5 @@
 package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
-import org.frogforce503.lib.motorcontrol.tuning.TuningService;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
-import org.frogforce503.lib.motorcontrol.tuning.speed.SpeedConstraintsTuningService;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
@@ -12,15 +8,14 @@ import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIO;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
-import edu.wpi.first.util.function.BooleanConsumer;
 import lombok.Getter;
+import lombok.Setter;
 
 public class Elevator extends FFSubsystemBase {
     private final ElevatorIO elevatorIO;
@@ -31,26 +26,16 @@ public class Elevator extends FFSubsystemBase {
 
     // Constants
     private final Range range = Robot.bot.getElevatorConfig().range();
-    private ElevatorFeedforward feedforward = Robot.bot.getElevatorConfig().kPIDF().toElevatorFF();
-    private final double tolerance = 0.5;
+    @Setter private ElevatorFeedforward feedforward = Robot.bot.getElevatorConfig().kFF().getElevatorFF();
+    @Setter private Constraints constraints = Robot.bot.getElevatorConfig().kConstraints();
     
     // Control
-    private double targetHeight = ElevatorGoal.START.getHeight();
+    private double targetHeight = ElevatorConstants.START;
 
     private boolean shouldRunProfile = false;
     private TrapezoidProfile profile;
     @Getter private State setpoint = new State();
     private boolean atGoal = false;
-
-    // Tuning
-    private LoggedNetworkBoolean tuningEnabled =
-        new LoggedNetworkBoolean("Tuning/Elevator/Tuning?", false);
-
-    private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Elevator", Robot.bot.getElevatorConfig().kPIDF());
-
-    private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Elevator", Robot.bot.getElevatorConfig().kConstraints());
 
     public Elevator(ElevatorIO elevatorIO, LimitSwitchIO limitSwitchIO) {
         this.elevatorIO = elevatorIO;
@@ -70,9 +55,6 @@ public class Elevator extends FFSubsystemBase {
 
         limitSwitchIO.updateInputs(limitSwitchInputs);
         Logger.processInputs("Elevator/LimitSwitch", limitSwitchInputs);
-
-        // Update tunable numbers
-        tuningExecutor().accept(tuningEnabled.get());
 
         // Reset encoder if limit switch pressed & elevator is going down
         if (limitSwitchInputs.data.pressed() && elevatorInputs.data.position() > setpoint.position) {
@@ -100,7 +82,7 @@ public class Elevator extends FFSubsystemBase {
                         0.0);
             }
 
-            atGoal = isAtHeight(goalState.position);
+            atGoal = isAtHeight(goalState.position, ElevatorConstants.kTolerance);
 
             if (atGoal) {
                 stop();
@@ -131,34 +113,12 @@ public class Elevator extends FFSubsystemBase {
         LoggedTracer.record("Elevator");
     }
 
-    @Override
-    protected BooleanConsumer tuningExecutor() {
-        return tuningEnabled -> {
-            pidfTuningService.setTuning(tuningEnabled);
-            speedTuningService.setTuning(tuningEnabled);
-            
-            if (tuningEnabled) {
-                PIDFConfig newPIDFConfig = pidfTuningService.getUpdatedConfig();
-                Constraints newSpeedConfig = speedTuningService.getUpdatedConfig();
-
-                elevatorIO.setPID(
-                    newPIDFConfig.kP(),
-                    newPIDFConfig.kI(),
-                    newPIDFConfig.kD());
-
-                feedforward = newPIDFConfig.toElevatorFF();
-
-                profile =
-                    new TrapezoidProfile(
-                        new Constraints(
-                            newSpeedConfig.maxVelocity,
-                            newSpeedConfig.maxAcceleration));
-            }
-        };
-    }
-
     public double getHeight() {
         return elevatorInputs.data.position();
+    }
+
+    public void setPID(double kP, double kI, double kD) {
+        elevatorIO.setPID(kP, kI, kD);
     }
 
     @Override
@@ -176,16 +136,12 @@ public class Elevator extends FFSubsystemBase {
         elevatorIO.runOpenLoop(output);
     }
 
+    public void setHeight(double height) {
+        this.shouldRunProfile = true;
+        this.targetHeight = height;
+    }
+
     public boolean isAtHeight(double setpointHeight, double tolerance) {
         return MathUtil.isNear(setpointHeight, getHeight(), tolerance);
-    }
-
-    public boolean isAtHeight(double setpointHeight) {
-        return isAtHeight(setpointHeight, tolerance);
-    }
-
-    public void setGoal(ElevatorGoal goal) {
-        this.shouldRunProfile = true;
-        this.targetHeight = goal.getHeight();
     }
 }

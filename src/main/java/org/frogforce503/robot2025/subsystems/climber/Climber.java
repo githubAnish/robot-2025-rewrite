@@ -57,12 +57,15 @@ public class Climber extends FFSubsystemBase {
         switch (currentState) {
             case IDLE:
                 break;
+
             case SLOW_WIND:
                 climberIO.runVolts(0.05);
                 break;
+
             case FAST_WIND:
                 climberIO.runVolts(1.0);
                 break;
+
             case HOLD:
                 climberIO.runVolts(0.3);
                 break;

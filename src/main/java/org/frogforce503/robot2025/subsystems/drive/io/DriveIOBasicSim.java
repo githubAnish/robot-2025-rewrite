@@ -16,6 +16,10 @@ import lombok.Setter;
 public class DriveIOBasicSim implements DriveIO {
     private final SwerveDriveKinematics kinematics;
 
+    // Constants
+    private final double theoreticalWheelRadiusInches = 2.00; // Inches
+
+    // State
     private SwerveModuleState[] states =
         new SwerveModuleState[] {
             new SwerveModuleState(),
@@ -28,6 +32,10 @@ public class DriveIOBasicSim implements DriveIO {
 
     private double lastUpdate = -1.0;
     private double dt = 0;
+
+    // Characterization Data
+    private double[] wheelPositionRad = new double[4];
+    private double[] wheelVelocityRadPerSec = new double[4];
 
     public DriveIOBasicSim() {
         this.kinematics = DriveConstants.kinematics;
@@ -72,6 +80,17 @@ public class DriveIOBasicSim implements DriveIO {
         runVelocity(speeds); // Ignore module force feedforwards in simulation
     }
 
+    public CharacterizationIOData getCharacterizationData(int moduleIndex) {
+        return
+            new CharacterizationIOData(
+                wheelPositionRad[moduleIndex],
+                wheelVelocityRadPerSec[moduleIndex]);
+    }
+
+    public Rotation2d getGyroYaw() {
+        return currentPose.getRotation();
+    }
+
     public void update() {
         double t = Timer.getFPGATimestamp();
 
@@ -87,9 +106,11 @@ public class DriveIOBasicSim implements DriveIO {
         }
         
         lastUpdate = t;
+
+        calculateCharacterizationData();
     }
 
-    public SwerveDriveState getCurrentState(Pose2d currentPose) {
+    private SwerveDriveState getCurrentState(Pose2d currentPose) {
         SwerveDriveState currentState = new SwerveDriveState();
         
         currentState.SuccessfulDaqs = 0;
@@ -100,4 +121,13 @@ public class DriveIOBasicSim implements DriveIO {
 
         return currentState;
     }
+
+    private void calculateCharacterizationData() {
+        for (int i = 0; i < 4; i++) {
+            double wheelSpeedMetersPerSec = this.states[i].speedMetersPerSecond;
+            wheelVelocityRadPerSec[i] = wheelSpeedMetersPerSec / theoreticalWheelRadiusInches;
+
+            wheelPositionRad[i] += wheelVelocityRadPerSec[i] * dt;
+        }
+    }    
 }

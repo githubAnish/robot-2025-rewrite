@@ -1,15 +1,15 @@
 package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
 import org.frogforce503.lib.motorcontrol.MotorControlMode;
-import org.frogforce503.lib.motorcontrol.MotorSim;
+import org.frogforce503.lib.motorcontrol.SimpleMotorSim;
 
 public class ClawIOSim implements ClawIO {
-    private MotorSim leftSim;
-    private MotorSim rightSim;
+    private SimpleMotorSim leftSim;
+    private SimpleMotorSim rightSim;
 
     public ClawIOSim() {
-        leftSim = new MotorSim(3.25,360.0);
-        rightSim = new MotorSim(3.25,360.0);
+        leftSim = new SimpleMotorSim(3.25,360.0);
+        rightSim = new SimpleMotorSim(3.25,360.0);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class ClawIOSim implements ClawIO {
     }
 
     @Override
-    public void runVelocity(double velocityLeft, double velocityRight) {
+    public void runVelocity(double velocityLeft, double velocityRight, double feedforward) {
         leftSim.set(MotorControlMode.Velocity, velocityLeft);
         rightSim.set(MotorControlMode.Velocity, velocityRight);
     }

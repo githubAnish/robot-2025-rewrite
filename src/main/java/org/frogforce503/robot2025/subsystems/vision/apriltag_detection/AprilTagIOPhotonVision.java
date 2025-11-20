@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.frogforce503.robot2025.subsystems.vision.Vision.CameraName;
-
+import org.frogforce503.robot2025.subsystems.vision.VisionConstants.CameraName;
 import org.frogforce503.lib.vision.apriltag_detection.*;
 
 import org.photonvision.EstimatedRobotPose;
@@ -107,13 +106,14 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
         }
     }
 
-    //AprilTagIO
+    // AprilTagIO
     @Override
     public void updateInputs(AprilTagInputs inputs) {
         inputs.connected = camera.isConnected();
 
-        if (latestResult != null && Timer.getFPGATimestamp() - latestResult.getTimestampSeconds() > 0.1) { // Persist previous results for up to 100 ms
-            //Default values for inputs
+        // Persist old results for up to 100 ms
+        if (latestResult != null && Timer.getFPGATimestamp() - latestResult.getTimestampSeconds() > 0.1) { 
+            // Default values for inputs when reset
             inputs.persistingOldResults = false;
             latestResult = null;
             allTrackedAprilTags = null;
@@ -161,32 +161,6 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
     }
 
     @Override
-    public void setPoseObservationType(PoseObservationType poseObservationType) {
-        switch (poseObservationType) {
-            case MEGATAG1:
-                System.out.println("Not valid for PhotonVision");
-                break;
-            case MEGATAG2:
-                System.out.println("Not valid for PhotonVision");
-                break;
-            case MULTI_TAG_PNP_ON_COPROCESSOR: //PhotonVision PoseObservationType that requires a multi-tag fallback
-                poseEstimator.setPrimaryStrategy(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
-                poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE); //default fallback strategy
-
-                primaryPoseObservationType = poseObservationType;
-                secondaryPoseObservationType = PoseObservationType.CLOSEST_TO_REFERENCE_POSE; //Set the secondary pose observation type to the fallback strategy
-                break;
-            default:
-                poseEstimator.setPrimaryStrategy(PoseStrategy.valueOf(poseObservationType.name()));
-                poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.valueOf(poseObservationType.name()));
-
-                primaryPoseObservationType = poseObservationType;
-                secondaryPoseObservationType = poseObservationType;
-                break;
-        }
-    }
-
-    @Override
     public PoseObservation estimateRobotPose() {
         PoseObservation poseObservation = new PoseObservation();
 
@@ -222,6 +196,32 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
         }
 
         return poseObservation;
+    }
+
+    @Override
+    public void setPoseObservationType(PoseObservationType poseObservationType) {
+        switch (poseObservationType) {
+            case MEGATAG1:
+                System.out.println("Not valid for PhotonVision");
+                break;
+            case MEGATAG2:
+                System.out.println("Not valid for PhotonVision");
+                break;
+            case MULTI_TAG_PNP_ON_COPROCESSOR: //PhotonVision PoseObservationType that requires a multi-tag fallback
+                poseEstimator.setPrimaryStrategy(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+                poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_POSE); //default fallback strategy
+
+                primaryPoseObservationType = poseObservationType;
+                secondaryPoseObservationType = PoseObservationType.CLOSEST_TO_REFERENCE_POSE; //Set the secondary pose observation type to the fallback strategy
+                break;
+            default:
+                poseEstimator.setPrimaryStrategy(PoseStrategy.valueOf(poseObservationType.name()));
+                poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.valueOf(poseObservationType.name()));
+
+                primaryPoseObservationType = poseObservationType;
+                secondaryPoseObservationType = poseObservationType;
+                break;
+        }
     }
 
     @Override

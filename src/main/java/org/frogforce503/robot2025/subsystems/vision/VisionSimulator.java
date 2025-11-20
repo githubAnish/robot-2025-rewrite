@@ -17,9 +17,7 @@ import lombok.Getter;
 public class VisionSimulator {
     //AprilTag Detection
     private VisionSystemSim aprilTagDetectionSimulator;
-
     @Getter private AprilTagFieldLayout aprilTagFieldLayout;
-
 
     //Object Detection
     private VisionSystemSim objectDetectionSimulator;

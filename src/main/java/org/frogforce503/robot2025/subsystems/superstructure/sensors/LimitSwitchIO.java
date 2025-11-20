@@ -4,11 +4,11 @@ import org.littletonrobotics.junction.AutoLog;
 
 public interface LimitSwitchIO {
     @AutoLog
-    class DigitalIOInputs {
-        public DigitalIOData data = new DigitalIOData(false);
+    class LimitSwitchIOInputs {
+        public LimitSwitchIOData data = new LimitSwitchIOData(false);
     }   
 
-    record DigitalIOData(boolean pressed) {}
+    record LimitSwitchIOData(boolean pressed) {}
 
-    default void updateInputs(DigitalIOInputs inputs) {}
+    default void updateInputs(LimitSwitchIOInputs inputs) {}
 }

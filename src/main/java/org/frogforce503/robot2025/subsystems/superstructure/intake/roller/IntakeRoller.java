@@ -1,12 +1,15 @@
 package org.frogforce503.robot2025.subsystems.superstructure.intake.roller;
 
-import org.frogforce503.robot2025.subsystems.superstructure.intake.IntakeGoal;
+import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.subsystems.superstructure.intake.IntakeConstants;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.RobotBase;
+import lombok.Setter;
 
 import org.frogforce503.lib.util.LoggedTracer;
 
@@ -15,13 +18,13 @@ public class IntakeRoller {
     private final RollerIOInputsAutoLogged inputs = new RollerIOInputsAutoLogged();
 
     // Constants
-    private final double tolerance = 0.5;
+    @Setter private SimpleMotorFeedforward feedforward = Robot.bot.getIntakeConfig().rollerFF().getSimpleMotorFF();
     private final Debouncer algaeIntakeDebouncer = new Debouncer(0.5, DebounceType.kRising);
 
     // Control
-    private double targetRollerVolts = IntakeGoal.START.getRollerVolts();
+    private double targetVelocity = IntakeConstants.START.rollerVelocity();
 
-    private boolean shouldRunVolts = false;
+    private boolean shouldRunVelocity = false;
     private boolean atGoal = false;
 
     public IntakeRoller(RollerIO io) {
@@ -33,28 +36,33 @@ public class IntakeRoller {
         Logger.processInputs("IntakeRoller", inputs);
 
         // Update profile
-        if (shouldRunVolts) {
-            atGoal = isRollerAtVoltage(targetRollerVolts);
-            io.runVolts(targetRollerVolts);
+        if (shouldRunVelocity) {
+            atGoal = isAtVelocity(targetVelocity, IntakeConstants.kRollerTolerance);
+            io.runVelocity(targetVelocity, feedforward.calculate(targetVelocity));
 
             // Log state
+            Logger.recordOutput("IntakeRoller/SetpointVelocity", targetVelocity);
             Logger.recordOutput("IntakeRoller/AtGoal", atGoal);
         } else {
             // Reset setpoint
-            targetRollerVolts = 0.0;
+            targetVelocity = 0.0;
       
             // Clear logs
             Logger.recordOutput("IntakeRoller/AtGoal", true);
         }
 
-        Logger.recordOutput("IntakeRoller/CurrentVolts", getVolts());
+        Logger.recordOutput("IntakeRoller/CurrentVelocity", getVelocity());
 
         // Record cycle time
         LoggedTracer.record("IntakeRoller");
     }
 
-    public double getVolts() {
-        return inputs.data.appliedVolts();
+    public double getVelocity() {
+        return inputs.data.velocity();
+    }
+
+    public void setPID(double kP, double kI, double kD) {
+        io.setPID(kP, kI, kD);
     }
 
     public void setBrakeMode(boolean enabled) {
@@ -66,21 +74,17 @@ public class IntakeRoller {
     }
 
     public void runOpenLoop(double output) {
-        shouldRunVolts = false;
+        shouldRunVelocity = false;
         io.runOpenLoop(output);
     }
 
-    public boolean isRollerAtVoltage(double setpointVolts, double tolerance) {
-        return MathUtil.isNear(setpointVolts, getVolts(), tolerance);
+    public void setVelocity(double velocity) {
+        shouldRunVelocity = true;
+        this.targetVelocity = velocity;
     }
 
-    public boolean isRollerAtVoltage(double setpointVolts) {
-        return isRollerAtVoltage(setpointVolts, tolerance);
-    }
-
-    public void setGoal(IntakeGoal goal) {
-        shouldRunVolts = true;
-        this.targetRollerVolts = goal.getRollerVolts();
+    public boolean isAtVelocity(double velocity, double tolerance) {
+        return MathUtil.isNear(velocity, getVelocity(), tolerance);
     }
 
     public boolean algaeCurrentThresholdForHoldMet() {

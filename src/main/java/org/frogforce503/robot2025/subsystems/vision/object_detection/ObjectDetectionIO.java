@@ -14,6 +14,7 @@ public interface ObjectDetectionIO extends VisionIO {
     /**
      * Class to hold the inputs for object detection.
      * 
+     * @param persistingOldResults Boolean indicating if old results are being persisted.
      * @param connected A boolean indicating if the camera is connected.
      * @param hasTargets A boolean indicating if targets are detected.
      * @param trackedObjects An array of tracked objects detected by the camera.

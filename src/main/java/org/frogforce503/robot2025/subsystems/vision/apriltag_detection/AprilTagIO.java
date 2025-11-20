@@ -18,6 +18,7 @@ public interface AprilTagIO extends VisionIO {
     /**
      * Class to hold the inputs for AprilTag detection.
      * 
+     * @param persistingOldResults Boolean indicating if old results are being persisted.
      * @param connected Boolean indicating if the camera is connected.
      * @param hasTargets Boolean indicating if there are targets detected.
      * @param trackedAprilTags Array of tracked AprilTags.
@@ -38,14 +39,6 @@ public interface AprilTagIO extends VisionIO {
      */
     void updateInputs(AprilTagInputs inputs);
 
-
-    /**
-     * Sets the primary pose observation type for pose estimation.
-     * 
-     * @param poseObservationType The type of pose observation to use for pose estimation.
-     */
-    void setPoseObservationType(PoseObservationType poseObservationType);
-
     /**
      * Estimates the robot's pose based on the latest AprilTag detections.
      * Make sure to update the inputs before calling this method.
@@ -53,6 +46,13 @@ public interface AprilTagIO extends VisionIO {
      * @return The pose observation containing the timestamp, estimated robot pose, the april tags used, and the pose observation type.
      */
     PoseObservation estimateRobotPose();
+
+    /**
+     * Sets the primary pose observation type for pose estimation.
+     * 
+     * @param poseObservationType The type of pose observation to use for pose estimation.
+     */
+    void setPoseObservationType(PoseObservationType poseObservationType);
 
     /**
      * Sets a multi-tag fallback pose observation type if the primary pose observation type requires multiple tags.

@@ -40,7 +40,7 @@ public final class DriveConstants {
 
     public static final SwervePathFollower pathFollower =
         new SwervePathFollower(
-            Robot.bot.getPathFollowingConfig().xPID().toPIDController(),
-            Robot.bot.getPathFollowingConfig().yPID().toPIDController(),
-            Robot.bot.getPathFollowingConfig().thetaPID().toPIDController());
+            Robot.bot.xPID.toPIDController(),
+            Robot.bot.yPID.toPIDController(),
+            Robot.bot.thetaPID.toPIDController());
 }

@@ -1,12 +1,12 @@
 package org.frogforce503.robot2025;
 
-import org.frogforce503.robot2025.constants.field.FieldVenue;
+import org.frogforce503.robot2025.config.field.FieldVenue;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotBase;
 
-/** This class contains global configuration describing the current robot and runtime mode. Contains robot constants as well. */
+/** This class contains global configuration describing the current robot and runtime mode. */
 public final class Constants {
   public static final double loopPeriodSecs = 0.02;
 

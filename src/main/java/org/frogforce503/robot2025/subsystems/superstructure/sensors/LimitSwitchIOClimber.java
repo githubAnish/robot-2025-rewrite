@@ -12,8 +12,8 @@ public class LimitSwitchIOClimber implements LimitSwitchIO {
     }
 
     @Override
-    public void updateInputs(DigitalIOInputs inputs) {
+    public void updateInputs(LimitSwitchIOInputs inputs) {
         inputs.data =
-            new DigitalIOData(!zeroSwitch.get());
+            new LimitSwitchIOData(!zeroSwitch.get());
     }
 }

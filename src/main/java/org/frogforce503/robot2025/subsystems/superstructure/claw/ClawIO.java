@@ -23,7 +23,7 @@ public interface ClawIO {
 
     default void runVolts(double voltsLeft, double voltsRight) {}
 
-    default void runVelocity(double velocityLeft, double velocityRight) {}
+    default void runVelocity(double velocityLeft, double velocityRight, double feedforward) {}
 
     default void stop() {}
 

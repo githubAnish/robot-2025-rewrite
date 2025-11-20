@@ -1,76 +1,48 @@
 package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
-import org.frogforce503.lib.motorcontrol.tuning.TuningService;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIO;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.RobotBase;
-import lombok.Getter;
 import lombok.Setter;
 
 public class Claw extends FFSubsystemBase {
-    private final ClawIO clawIO;
-    private final ClawIOInputsAutoLogged clawInputs = new ClawIOInputsAutoLogged();
-
-    private final CoralSensorIO coralSensorIO;
-    private final CoralSensorIOInputsAutoLogged coralSensorInputs = new CoralSensorIOInputsAutoLogged();
+    private final ClawIO io;
+    private final ClawIOInputsAutoLogged inputs = new ClawIOInputsAutoLogged();
 
     // Constants
-    private final double tolerance = 25.0;
+    @Setter private SimpleMotorFeedforward feedforward = Robot.bot.getClawConfig().kFF().getSimpleMotorFF();
     private final Debouncer coralFilter = new Debouncer(0.1);
     private final Debouncer algaeFilter = new Debouncer(0.25, DebounceType.kRising);
 
     // Control
-    private double targetLeftVelocity = ClawGoal.START.getLeftVelocity();
-    private double targetRightVelocity = ClawGoal.START.getRightVelocity();
+    private double targetLeftVelocity = ClawConstants.START;
+    private double targetRightVelocity = ClawConstants.START;
 
     private boolean shouldRunVelocity = false;
     private boolean atGoal = false;
 
-    // Storage
-    @Setter @Getter private boolean hasCoral = false;
-    @Setter @Getter private boolean hasAlgae = false;
-
-    // Tuning
-    private LoggedNetworkBoolean tuningEnabled =
-        new LoggedNetworkBoolean("Tuning/Claw/Tuning?", false);
-
-    private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Claw", Robot.bot.getClawConfig().kPIDF());
-
-    public Claw(ClawIO clawIO, CoralSensorIO coralSensorIO) {
-        this.clawIO = clawIO;
-        this.coralSensorIO = coralSensorIO;
+    public Claw(ClawIO io) {
+        this.io = io;
     }
 
     @Override
     public void periodic() {
         super.periodic();
 
-        clawIO.updateInputs(clawInputs);
-        Logger.processInputs("Claw", clawInputs);
-
-        coralSensorIO.updateInputs(coralSensorInputs);
-        Logger.processInputs("CoralSensors", coralSensorInputs);
-
-        // Update tunable numbers
-        tuningExecutor().accept(tuningEnabled.get());
+        io.updateInputs(inputs);
+        Logger.processInputs("Claw", inputs);
 
         // Run velocity mode unless requested to stop
         if (shouldRunVelocity) {
-            atGoal = isAtVelocity(targetLeftVelocity, targetRightVelocity);
-            clawIO.runVolts(targetLeftVelocity, targetRightVelocity);
+            atGoal = isAtVelocity(targetLeftVelocity, targetRightVelocity, ClawConstants.kTolerance);
+            io.runVelocity(targetLeftVelocity, targetRightVelocity, feedforward.calculate(targetLeftVelocity));
 
             // Log state
             Logger.recordOutput("Claw/LeftSetpointVelocity", targetLeftVelocity);
@@ -88,74 +60,51 @@ public class Claw extends FFSubsystemBase {
         Logger.recordOutput("Claw/LeftCurrentVelocity", getLeftVelocity());
         Logger.recordOutput("Claw/RightCurrentVelocity", getRightVelocity());
 
-        Logger.recordOutput("Claw/HasCoral", hasCoral);
-        Logger.recordOutput("Claw/HasAlgae", hasAlgae);
-
         // Record cycle time
         LoggedTracer.record("Claw");
     }
 
-    @Override
-    protected BooleanConsumer tuningExecutor() {
-        return tuningEnabled -> {
-            pidfTuningService.setTuning(tuningEnabled);
-            
-            if (tuningEnabled) {
-                PIDFConfig newPIDFConfig = pidfTuningService.getUpdatedConfig();
-
-                clawIO.setPID(
-                    newPIDFConfig.kP(),
-                    newPIDFConfig.kI(),
-                    newPIDFConfig.kD());
-            }
-        };
-    }
-
     public double getLeftVelocity() {
-        return clawInputs.leftMotorData.velocity();
+        return inputs.leftMotorData.velocity();
     }
 
     public double getRightVelocity() {
-        return clawInputs.rightMotorData.velocity();
+        return inputs.rightMotorData.velocity();
     }
 
-    public boolean upperSensorTripped() {
-        return coralSensorInputs.data.upperTripped();
-    }
-
-    public boolean lowerSensorTripped() {
-        return coralSensorInputs.data.lowerTripped();
+    public void setPID(double kP, double kI, double kD) {
+        io.setPID(kP, kI, kD);
     }
 
     @Override
     public void setBrakeMode(boolean enabled) {
-        clawIO.setBrakeMode(enabled);
+        io.setBrakeMode(enabled);
     }
 
     @Override
     public void stop() {
-        clawIO.stop();
+        io.stop();
     }
 
     public void runOpenLoop(double leftOutput, double rightOutput) {
-        shouldRunVelocity = false;
-        clawIO.runOpenLoop(leftOutput, rightOutput);
+        this.shouldRunVelocity = false;
+        io.runOpenLoop(leftOutput, rightOutput);
     }
 
-    public boolean isAtVelocity(double leftSetpointVelocity, double rightSetpointVelocity, double tolerance) {
-        return
-            MathUtil.isNear(leftSetpointVelocity, getLeftVelocity(), tolerance) &&
-            MathUtil.isNear(rightSetpointVelocity, getRightVelocity(), tolerance);
-    }
-
-    public boolean isAtVelocity(double leftSetpointVelocity, double rightSetpointVelocity) {
-        return isAtVelocity(leftSetpointVelocity, rightSetpointVelocity, tolerance);
-    }
-
-    public void setGoal(ClawGoal goal) {
+    public void setVelocity(double leftVelocity, double rightVelocity) {
         this.shouldRunVelocity = true;
-        this.targetLeftVelocity = goal.getLeftVelocity();
-        this.targetRightVelocity = goal.getRightVelocity();
+        this.targetLeftVelocity = leftVelocity;
+        this.targetRightVelocity = rightVelocity;
+    }
+
+    public void setVelocity(double velocity) {
+        setVelocity(velocity, velocity);
+    }
+
+    public boolean isAtVelocity(double leftVelocity, double rightVelocity, double tolerance) {
+        return
+            MathUtil.isNear(leftVelocity, getLeftVelocity(), tolerance) &&
+            MathUtil.isNear(rightVelocity, getRightVelocity(), tolerance);
     }
 
     public boolean coralCurrentThresholdForIntookMet() {
@@ -165,8 +114,8 @@ public class Claw extends FFSubsystemBase {
 
         return
             coralFilter.calculate(
-                clawInputs.leftMotorData.statorCurrentAmps() > 10 ||
-                clawInputs.rightMotorData.statorCurrentAmps() > 10);
+                inputs.leftMotorData.statorCurrentAmps() > 10 ||
+                inputs.rightMotorData.statorCurrentAmps() > 10);
     }
 
     public boolean algaeCurrentThresholdForHoldMet() {
@@ -176,7 +125,7 @@ public class Claw extends FFSubsystemBase {
 
         return
             algaeFilter.calculate(
-                clawInputs.leftMotorData.statorCurrentAmps() > 15 ||
-                clawInputs.rightMotorData.statorCurrentAmps() > 15);
+                inputs.leftMotorData.statorCurrentAmps() > 15 ||
+                inputs.rightMotorData.statorCurrentAmps() > 15);
     }
 }

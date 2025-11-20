@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.frogforce503.lib.vision.object_detection.TrackedObject;
-import org.frogforce503.robot2025.subsystems.vision.Vision.CameraName;
+import org.frogforce503.robot2025.subsystems.vision.VisionConstants.CameraName;
 import org.frogforce503.robot2025.subsystems.vision.VisionSimulator;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
@@ -69,8 +69,11 @@ public class ObjectDetectionIOPhotonSim extends ObjectDetectionIOPhotonVision {
     public void updateInputs(ObjectDetectionInputs inputs) {
         super.updateInputs(inputs);
 
-        // PhotonSim automatically sets the class id for simulated targets to -1, they only update the fiducial id
-        // so we need to set the class id to the correct value for the simulated targets using the fiducial id
+        /*
+        PhotonSim automatically sets the class id for simulated targets to -1, they only use the fiducial id.
+        In the VisionSimulator class, we set the fiducial id to be the class id for simulated targets.
+        When updating the list of TrackedObjects in the inputs, we map the fiducial id to the class id.
+        */
         if (super.getLatestResult() != null && inputs.trackedObjects.length > 0) {
             List<PhotonTrackedTarget> objects = super.getLatestResult().getTargets();
 

@@ -1,13 +1,13 @@
 package org.frogforce503.robot2025.subsystems.superstructure.intake.roller;
 
 import org.frogforce503.lib.motorcontrol.MotorControlMode;
-import org.frogforce503.lib.motorcontrol.MotorSim;
+import org.frogforce503.lib.motorcontrol.SimpleMotorSim;
 
 public class RollerIOSim implements RollerIO {
-    private MotorSim sim;
+    private SimpleMotorSim sim;
 
     public RollerIOSim() {
-        sim = new MotorSim(1.0, 360.0);
+        sim = new SimpleMotorSim(1.0, 360.0);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class RollerIOSim implements RollerIO {
     }
 
     @Override
-    public void runVelocity(double velocity) {
+    public void runVelocity(double velocity, double feedforward) {
         sim.set(MotorControlMode.Position, velocity);
     }
 

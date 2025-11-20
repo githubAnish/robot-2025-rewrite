@@ -2,40 +2,27 @@ package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.util.function.BooleanConsumer;
 
 import org.frogforce503.lib.math.Range;
-import org.frogforce503.lib.motorcontrol.tuning.TuningService;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.Robot;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 public class Wrist extends FFSubsystemBase {
     private final WristIO io;
     private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
     // Constants
-    private final double parallelToGroundAngle = 90;
+    private final double horizontalAngle = Robot.bot.getWristConfig().horizontalAngle();
     private final Range range = Robot.bot.getWristConfig().range();
-    private ArmFeedforward feedforward = Robot.bot.getWristConfig().kPIDF().toArmFF();
-    private final double tolerance = 1.0;
+    private ArmFeedforward feedforward = Robot.bot.getWristConfig().kFF().getArmFF();
 
     // Control
-    private double targetAngle = WristGoal.START.getAngle();
+    private double targetAngle = WristConstants.START;
     
     private boolean shouldRunPosition = false;
     private boolean atGoal = false;
-
-    // Tuning
-    private LoggedNetworkBoolean tuningEnabled =
-        new LoggedNetworkBoolean("Tuning/Wrist/Tuning?", false);
-
-    private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Wrist", Robot.bot.getWristConfig().kPIDF());
 
     public Wrist(WristIO io) {
         this.io = io;
@@ -48,19 +35,16 @@ public class Wrist extends FFSubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Wrist", inputs);
 
-        // Update tunable numbers
-        tuningExecutor().accept(tuningEnabled.get());
-
         // Run position mode unless requested to stop
         if (shouldRunPosition) {
             var goalState = range.clamp(targetAngle);
 
-            atGoal = isAtAngle(goalState);
+            atGoal = isAtAngle(goalState, WristConstants.kTolerance);
 
             if (atGoal) {
                 stop();
             } else {
-                io.runPosition(goalState, feedforward.calculate(Math.toRadians(goalState - parallelToGroundAngle), 0.0));
+                io.runPosition(goalState, feedforward.calculate(Math.toRadians(goalState - horizontalAngle), 0.0));
             }
 
             // Log state
@@ -81,24 +65,6 @@ public class Wrist extends FFSubsystemBase {
         LoggedTracer.record("Wrist");
     }
 
-    @Override
-    protected BooleanConsumer tuningExecutor() {
-        return tuningEnabled -> {
-            pidfTuningService.setTuning(tuningEnabled);
-            
-            if (tuningEnabled) {
-                PIDFConfig newPIDFConfig = pidfTuningService.getUpdatedConfig();
-
-                io.setPID(
-                    newPIDFConfig.kP(),
-                    newPIDFConfig.kI(),
-                    newPIDFConfig.kD());
-
-                feedforward = newPIDFConfig.toArmFF();
-            }
-        };
-    }
-
     public double getRelativeAngle() {
         return inputs.data.relativePosition();
     }
@@ -109,6 +75,10 @@ public class Wrist extends FFSubsystemBase {
 
     public void setEncoderPosition(double position) {
         io.setEncoderPosition(position);
+    }
+
+    public void setPID(double kP, double kI, double kD) {
+        io.setPID(kP, kI, kD);
     }
 
     @Override
@@ -126,16 +96,12 @@ public class Wrist extends FFSubsystemBase {
         io.runOpenLoop(output);
     }
 
+    public void setAngle(double angle) {
+        this.shouldRunPosition = true;
+        this.targetAngle = angle;
+    }
+
     public boolean isAtAngle(double setpointAngle, double tolerance) {
         return MathUtil.isNear(setpointAngle, getRelativeAngle(), tolerance);
-    }
-
-    public boolean isAtAngle(double setpointAngle) {
-        return isAtAngle(setpointAngle, tolerance);
-    }
-
-    public void setGoal(WristGoal goal) {
-        this.shouldRunPosition = true;
-        this.targetAngle = goal.getAngle();
     }
 }

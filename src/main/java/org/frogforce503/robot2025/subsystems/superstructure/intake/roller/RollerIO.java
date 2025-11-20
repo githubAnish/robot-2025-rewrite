@@ -22,7 +22,7 @@ public interface RollerIO {
 
     default void runVolts(double volts) {}
 
-    default void runVelocity(double velocity) {}
+    default void runVelocity(double velocity, double feedforward) {}
 
     default void stop() {}
 

@@ -1,13 +1,13 @@
 package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
 import org.frogforce503.lib.motorcontrol.MotorControlMode;
-import org.frogforce503.lib.motorcontrol.MotorSim;
+import org.frogforce503.lib.motorcontrol.SimpleMotorSim;
 
 public class ArmIOSim implements ArmIO {
-    private MotorSim sim;
+    private SimpleMotorSim sim;
 
     public ArmIOSim() {
-        sim = new MotorSim(1.0, 360.0);
+        sim = new SimpleMotorSim(1.0, 360.0);
     }
 
     @Override

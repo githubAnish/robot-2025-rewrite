@@ -2,20 +2,15 @@ package org.frogforce503.robot2025.subsystems.superstructure.intake;
 
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
+import org.frogforce503.robot2025.subsystems.superstructure.intake.IntakeConstants.IntakeGoal;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.IntakePivot;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.PivotIO;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.IntakeRoller;
 import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.RollerIO;
-import org.littletonrobotics.junction.Logger;
-
-import lombok.Getter;
-import lombok.Setter;
 
 public class Intake extends FFSubsystemBase {
     private final IntakePivot pivot;
     private final IntakeRoller roller;
-
-    @Setter @Getter private boolean hasAlgae = false;
 
     public Intake(PivotIO pivotIO, RollerIO rollerIO) {
         this.pivot = new IntakePivot(pivotIO);
@@ -28,8 +23,6 @@ public class Intake extends FFSubsystemBase {
 
         pivot.periodic();
         roller.periodic();
-
-        Logger.recordOutput("Claw/HasAlgae", hasAlgae);
         
         // Record cycle time
         LoggedTracer.record("Intake");
@@ -39,8 +32,8 @@ public class Intake extends FFSubsystemBase {
         return pivot.getAngle();
     }
 
-    public double getRollerVolts() {
-        return roller.getVolts();
+    public double getRollerVelocity() {
+        return roller.getVelocity();
     }
 
     @Override
@@ -60,25 +53,17 @@ public class Intake extends FFSubsystemBase {
         roller.runOpenLoop(rollerOutput);
     }
 
-    public boolean isPivotAtAngle(double setpointAngle, double tolerance) {
-        return pivot.isPivotAtAngle(setpointAngle, tolerance);
+    public void setGoal(IntakeGoal goal) {
+        pivot.setAngle(goal.pivotAngle());
+        roller.setVelocity(goal.rollerVelocity());
     }
 
-    public boolean isPivotAtAngle(double setpointAngle) {
-        return pivot.isPivotAtAngle(setpointAngle);
+    public boolean isPivotAtAngle(double setpointAngle, double tolerance) {
+        return pivot.isAtAngle(setpointAngle, tolerance);
     }
 
     public boolean isRollerAtVoltage(double setpointVolts, double tolerance) {
-        return roller.isRollerAtVoltage(setpointVolts, tolerance);
-    }
-
-    public boolean isRollerAtVoltage(double setpointVolts) {
-        return roller.isRollerAtVoltage(setpointVolts);
-    }
-
-    public void setGoal(IntakeGoal goal) {
-        pivot.setGoal(goal);
-        roller.setGoal(goal);
+        return roller.isAtVelocity(setpointVolts, tolerance);
     }
 
     public boolean algaeCurrentThresholdForHoldMet() {
