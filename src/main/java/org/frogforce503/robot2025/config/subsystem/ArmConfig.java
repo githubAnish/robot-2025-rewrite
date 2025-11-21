@@ -4,6 +4,7 @@ import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import lombok.Builder;
 
@@ -16,4 +17,4 @@ public record ArmConfig(
     FFConfig kFF,
     Constraints kConstraints,
     Range range,
-    double horizontalAngle) {}
+    Rotation2d horizontalAngle) {}

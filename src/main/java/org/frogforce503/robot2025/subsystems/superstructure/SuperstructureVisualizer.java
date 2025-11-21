@@ -1,8 +1,7 @@
-package org.frogforce503.robot2025.visualization;
+package org.frogforce503.robot2025.subsystems.superstructure;
 
 import java.util.function.Supplier;
 
-import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 

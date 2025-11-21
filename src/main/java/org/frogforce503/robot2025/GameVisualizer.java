@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.visualization;
+package org.frogforce503.robot2025;
 
 import java.util.ArrayList;
 import java.util.Arrays;

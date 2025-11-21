@@ -11,7 +11,6 @@ import org.frogforce503.robot2025.subsystems.superstructure.intake.Intake;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIO;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIOInputsAutoLogged;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
-import org.frogforce503.robot2025.visualization.SuperstructureVisualizer;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 

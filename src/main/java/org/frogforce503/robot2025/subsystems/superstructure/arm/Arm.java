@@ -6,6 +6,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
@@ -21,13 +22,13 @@ public class Arm extends FFSubsystemBase {
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
     // Constants
-    private final double horizontalAngle = Robot.bot.getArmConfig().horizontalAngle();
+    private final Rotation2d horizontalAngle = Robot.bot.getArmConfig().horizontalAngle();
     private final Range range = Robot.bot.getArmConfig().range();
     @Setter private ArmFeedforward feedforward = Robot.bot.getArmConfig().kFF().getArmFF();
     @Setter private Constraints constraints = Robot.bot.getArmConfig().kConstraints();
 
     // Control
-    private double targetAngle = ArmConstants.START;
+    private Rotation2d targetAngle = ArmConstants.START;
 
     private boolean shouldRunProfile = false;
     private TrapezoidProfile profile;
@@ -50,7 +51,7 @@ public class Arm extends FFSubsystemBase {
         if (shouldRunProfile) {
             var goalState =
                 new State(
-                    range.clamp(targetAngle),
+                    range.clamp(targetAngle.getRadians()),
                     0.0);
 
             double previousVelocity = setpoint.velocity;
@@ -72,7 +73,7 @@ public class Arm extends FFSubsystemBase {
                 stop();
             } else {
                 double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
-                io.runPosition(setpoint.position, feedforward.calculate(Math.toRadians(setpoint.position - horizontalAngle), setpoint.velocity, accel));
+                io.runPosition(setpoint.position, feedforward.calculate(Math.toRadians(setpoint.position - horizontalAngle.getDegrees()), setpoint.velocity, accel));
             }
 
             // Log state
@@ -97,7 +98,7 @@ public class Arm extends FFSubsystemBase {
         LoggedTracer.record("Arm");
     }
 
-    public double getAngle() {
+    public Rotation2d getAngle() {
         return inputs.data.position();
     }
 

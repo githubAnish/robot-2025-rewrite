@@ -15,6 +15,8 @@ import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 
 public class ArmIOSpark implements ArmIO {
     // Hardware
@@ -27,7 +29,6 @@ public class ArmIOSpark implements ArmIO {
     // Config
     private SparkMaxConfig config = new SparkMaxConfig();
     private final int STATOR_CURRENT_LIMIT = 30;
-    private final double ABSOLUTE_CONVERSION_FACTOR = 360.0;
 
     // Connected Debouncers
     private final Debouncer connectedDebouncer = new Debouncer(.5);
@@ -42,7 +43,8 @@ public class ArmIOSpark implements ArmIO {
         config
             .absoluteEncoder
                 .zeroOffset(Robot.bot.getArmConfig().armOffset())
-                .positionConversionFactor(ABSOLUTE_CONVERSION_FACTOR)
+                .positionConversionFactor(2 * Math.PI) // convert rotations to radians
+                .velocityConversionFactor(2 * Math.PI / 60) // convert RPM to rad/sec
                 .setSparkMaxDataPortConfig();
 
         config
@@ -75,9 +77,9 @@ public class ArmIOSpark implements ArmIO {
         inputs.data =
             new ArmIOData(
                 connectedDebouncer.calculate(motor.getLastError() == REVLibError.kOk),
-                encoder.getPosition(),
-                encoder.getVelocity(),
-                motor.getBusVoltage() * motor.getAppliedOutput(),
+                Rotation2d.fromRotations(encoder.getPosition()),
+                Units.rotationsToRadians(encoder.getVelocity()),
+                motor.getAppliedOutput() * motor.getBusVoltage(),
                 motor.getOutputCurrent(),
                 motor.getMotorTemperature());
     }
@@ -93,8 +95,8 @@ public class ArmIOSpark implements ArmIO {
     }
 
     @Override
-    public void runPosition(double position, double feedforward) {
-        pidController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
+    public void runPosition(Rotation2d position, double feedforward) {
+        pidController.setReference(position.getRotations(), ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
     }
 
     @Override
