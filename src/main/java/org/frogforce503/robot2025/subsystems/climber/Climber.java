@@ -59,15 +59,15 @@ public class Climber extends FFSubsystemBase {
                 break;
 
             case SLOW_WIND:
-                climberIO.runVolts(0.05);
+                climberIO.runOpenLoop(0.05);
                 break;
 
             case FAST_WIND:
-                climberIO.runVolts(1.0);
+                climberIO.runOpenLoop(1.0);
                 break;
 
             case HOLD:
-                climberIO.runVolts(0.3);
+                climberIO.runOpenLoop(0.3);
                 break;
         }
 
@@ -77,6 +77,12 @@ public class Climber extends FFSubsystemBase {
         LoggedTracer.record("Climber");
     }
 
+    private boolean currentThresholdForHoldMet() {
+        return currentHoldDebouncer.calculate(
+            climberInputs.data.statorCurrentAmps() > 63);
+    }
+
+    // Actions
     @Override
     public void setBrakeMode(boolean enabled) {
         climberIO.setBrakeMode(enabled);
@@ -85,16 +91,5 @@ public class Climber extends FFSubsystemBase {
     @Override
     public void stop() {
         climberIO.stop();
-    }
-
-    public void runOpenLoop(double output) {
-        currentState = ClimberState.IDLE;
-        climberIO.runOpenLoop(output);
-    }
-
-    private boolean currentThresholdForHoldMet() {
-        return
-            currentHoldDebouncer.calculate(
-                climberInputs.data.statorCurrentAmps() > 63);
     }
 }

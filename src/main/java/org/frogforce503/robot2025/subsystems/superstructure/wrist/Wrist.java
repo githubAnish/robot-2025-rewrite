@@ -2,6 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import lombok.Setter;
 
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
@@ -14,12 +15,11 @@ public class Wrist extends FFSubsystemBase {
     private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
     // Constants
-    private final double horizontalAngle = Robot.bot.getWristConfig().horizontalAngle();
-    private final Range range = Robot.bot.getWristConfig().range();
-    private ArmFeedforward feedforward = Robot.bot.getWristConfig().kFF().getArmFF();
+    private final Range motionRange = Robot.bot.getWristConfig().motionRange();
+    @Setter private ArmFeedforward feedforward = Robot.bot.getWristConfig().kFF().getArmFF();
 
     // Control
-    private double targetAngle = WristConstants.START;
+    private double targetAngleRad = WristConstants.START;
     
     private boolean shouldRunPosition = false;
     private boolean atGoal = false;
@@ -37,44 +37,46 @@ public class Wrist extends FFSubsystemBase {
 
         // Run position mode unless requested to stop
         if (shouldRunPosition) {
-            var goalState = range.clamp(targetAngle);
+            var goalState = motionRange.clamp(targetAngleRad);
 
             atGoal = isAtAngle(goalState, WristConstants.kTolerance);
 
             if (atGoal) {
                 stop();
             } else {
-                io.runPosition(goalState, feedforward.calculate(Math.toRadians(goalState - horizontalAngle), 0.0));
+                io.runPosition(goalState, feedforward.calculate(goalState, 0.0));
             }
 
             // Log state
-            Logger.recordOutput("Wrist/GoalPosition", goalState);
+            Logger.recordOutput("Wrist/GoalPositionRad", goalState);
             Logger.recordOutput("Wrist/AtGoal", atGoal);
         } else {
             // Reset setpoint
-            targetAngle = 0.0;
+            targetAngleRad = 0.0;
       
             // Clear logs
-            Logger.recordOutput("Wrist/GoalPosition", 0.0);
+            Logger.recordOutput("Wrist/GoalPositionRad", 0.0);
             Logger.recordOutput("Wrist/AtGoal", true);
         }
 
-        Logger.recordOutput("Wrist/CurrentPosition", getRelativeAngle());
+        Logger.recordOutput("Wrist/CurrentPositionRad", getRelativeAngleRad());
+        Logger.recordOutput("Wrist/AbsolutePositionRad", getAbsoluteAngleRad());
 
         // Record cycle time
         LoggedTracer.record("Wrist");
     }
 
-    public double getRelativeAngle() {
-        return inputs.data.relativePosition();
+    public double getRelativeAngleRad() {
+        return inputs.data.relativePositionRad();
     }
 
-    public double getAbsoluteAngle() {
-        return inputs.data.absolutePosition();
+    public double getAbsoluteAngleRad() {
+        return inputs.data.absolutePositionRad();
     }
 
+    // Actions
     public void setEncoderPosition(double position) {
-        io.setEncoderPosition(position);
+        io.setRelativeEncoderPosition(position);
     }
 
     public void setPID(double kP, double kI, double kD) {
@@ -96,12 +98,12 @@ public class Wrist extends FFSubsystemBase {
         io.runOpenLoop(output);
     }
 
-    public void setAngle(double angle) {
+    public void setAngle(double angleRad) {
         this.shouldRunPosition = true;
-        this.targetAngle = angle;
+        this.targetAngleRad = angleRad;
     }
 
-    public boolean isAtAngle(double setpointAngle, double tolerance) {
-        return MathUtil.isNear(setpointAngle, getRelativeAngle(), tolerance);
+    public boolean isAtAngle(double angleRad, double tolerance) {
+        return MathUtil.isNear(angleRad, getRelativeAngleRad(), tolerance);
     }
 }

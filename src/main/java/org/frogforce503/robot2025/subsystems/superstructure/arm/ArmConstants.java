@@ -1,11 +1,11 @@
 package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 
 public final class ArmConstants {
-    public static final double kTolerance = 0.5;
+    public static final double kTolerance = Units.degreesToRadians(0.5);
 
-    public static final Rotation2d START = new Rotation2d(0.0);
+    public static final double START = Units.degreesToRadians(-89);
 
     public static final double NONE = 0;
 

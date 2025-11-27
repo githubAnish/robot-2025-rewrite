@@ -2,6 +2,7 @@ package org.frogforce503.robot2025;
 
 import org.frogforce503.lib.math.Polygon2d;
 import org.frogforce503.robot2025.config.field.FieldConfig;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,27 +15,24 @@ import lombok.Getter;
 
 /** Wrapper class for all field-related information. */
 public class FieldInfo extends Field2d {
-    private Alliance allianceColor = Alliance.Red;
-    private boolean allianceColorBeenOverriden = false;
+    // Config
+    @Getter private FieldConfig config = new FieldConfig();
 
-    @Getter private FieldConfig config;
+    // Selectors
+    private final LoggedDashboardChooser<Alliance> allianceSelector = new LoggedDashboardChooser<>("Alliance Color");
 
     public FieldInfo() {
-        this.config = new FieldConfig();
-
         SmartDashboard.putData("Field", this);
-    }
 
-    public void setAlliance(Alliance color) {
-        allianceColorBeenOverriden = true;
-        this.allianceColor = color;
+        this.allianceSelector.addDefaultOption("Red", Alliance.Red);
+        this.allianceSelector.addOption("Blue", Alliance.Blue);
     }
 
     public Alliance getAlliance() {
-        return 
-            allianceColorBeenOverriden || DriverStation.getAlliance().isEmpty()
-                ? this.allianceColor
-                : DriverStation.getAlliance().get();
+        return
+            DriverStation
+                .getAlliance()
+                .orElse(allianceSelector.get());
     }
 
     public boolean onRedAlliance() {

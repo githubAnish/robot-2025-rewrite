@@ -4,9 +4,11 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.config.subsystem.ElevatorConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.Elevator;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -29,9 +31,11 @@ public class TuneElevator extends Command {
         this.elevator = elevator;
 
         // Get initial values from config
-        final PIDConfig initialPID = Robot.bot.getElevatorConfig().kPID();
-        final FFConfig initialFF = Robot.bot.getElevatorConfig().kFF();
-        final Constraints initialConstraints = Robot.bot.getElevatorConfig().kConstraints();
+        final ElevatorConfig elevatorConfig = Robot.bot.getElevatorConfig();
+
+        final PIDConfig initialPID = elevatorConfig.kPID();
+        final FFConfig initialFF = elevatorConfig.kFF();
+        final Constraints initialConstraints = elevatorConfig.kConstraints();
 
         // Create tunable numbers
         this.kP = new LoggedTunableNumber("Elevator/kP", initialPID.kP());
@@ -45,7 +49,7 @@ public class TuneElevator extends Command {
         this.maxVel = new LoggedTunableNumber("Elevator/MaxVelocityMetersPerSec", initialConstraints.maxVelocity);
         this.maxAcc = new LoggedTunableNumber("Elevator/MaxAccelerationMetersPerSec2", initialConstraints.maxAcceleration);
 
-        this.setpointHeight = new LoggedTunableNumber("Elevator/Setpoint", elevator.getHeight());
+        this.setpointHeight = new LoggedTunableNumber("Elevator/SetpointMeters", elevator.getHeightMeters());
 
         addRequirements(elevator);
     }
@@ -78,16 +82,17 @@ public class TuneElevator extends Command {
             () -> elevator.setFeedforward(new ElevatorFeedforward(kS.get(), kG.get(), kV.get(), kA.get())),
             kS, kG, kV, kA);
 
-        // Update constraints only if changed
+        // Update trapezoid profile only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> elevator.setConstraints(new Constraints(maxVel.get(), maxAcc.get())),
+            () -> elevator.setProfile(new TrapezoidProfile(new Constraints(maxVel.get(), maxAcc.get()))),
             maxVel, maxAcc);
 
         // Update setpoint only if changed
-        if (setpointHeight.hasChanged(hashCode())) {
-            elevator.setHeight(setpointHeight.get());
-        }
+        LoggedTunableNumber.ifChanged(
+            hashCode(),
+            () -> elevator.setHeight(setpointHeight.get()),
+            setpointHeight);
     }
 
     @Override

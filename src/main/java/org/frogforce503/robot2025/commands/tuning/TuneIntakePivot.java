@@ -4,14 +4,16 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
+import org.frogforce503.robot2025.config.subsystem.IntakePivotConfig;
+import org.frogforce503.robot2025.subsystems.superstructure.intakepivot.IntakePivot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class TuneIntakePivot extends Command {
-    private final Arm arm;
+    private final IntakePivot intakePivot;
 
     private final LoggedTunableNumber kP;
     private final LoggedTunableNumber kI;
@@ -23,31 +25,33 @@ public class TuneIntakePivot extends Command {
     private final LoggedTunableNumber maxVel;
     private final LoggedTunableNumber maxAcc;
 
-    private final LoggedTunableNumber setpoint;
+    private final LoggedTunableNumber setpointAngle;
 
-    public TuneIntakePivot(Arm arm) {
-        this.arm = arm;
+    public TuneIntakePivot(IntakePivot intakePivot) {
+        this.intakePivot = intakePivot;
 
         // Get initial values from config
-        final PIDConfig initialPID = Robot.bot.getArmConfig().kPID();
-        final FFConfig initialFF = Robot.bot.getArmConfig().kFF();
-        final Constraints initialConstraints = Robot.bot.getArmConfig().kConstraints();
+        final IntakePivotConfig intakePivotConfig = Robot.bot.getIntakePivotConfig();
+
+        final PIDConfig initialPID = intakePivotConfig.kPID();
+        final FFConfig initialFF = intakePivotConfig.kFF();
+        final Constraints initialConstraints = intakePivotConfig.kConstraints();
 
         // Create tunable numbers
-        this.kP = new LoggedTunableNumber("Arm/kP", initialPID.kP());
-        this.kI = new LoggedTunableNumber("Arm/kI", initialPID.kI());
-        this.kD = new LoggedTunableNumber("Arm/kD", initialPID.kD());
-        this.kS = new LoggedTunableNumber("Arm/kS", initialFF.kS());
-        this.kG = new LoggedTunableNumber("Arm/kG", initialFF.kG());
-        this.kV = new LoggedTunableNumber("Arm/kV", initialFF.kV());
-        this.kA = new LoggedTunableNumber("Arm/kA", initialFF.kA());
+        this.kP = new LoggedTunableNumber("IntakePivot/kP", initialPID.kP());
+        this.kI = new LoggedTunableNumber("IntakePivot/kI", initialPID.kI());
+        this.kD = new LoggedTunableNumber("IntakePivot/kD", initialPID.kD());
+        this.kS = new LoggedTunableNumber("IntakePivot/kS", initialFF.kS());
+        this.kG = new LoggedTunableNumber("IntakePivot/kG", initialFF.kG());
+        this.kV = new LoggedTunableNumber("IntakePivot/kV", initialFF.kV());
+        this.kA = new LoggedTunableNumber("IntakePivot/kA", initialFF.kA());
 
-        this.maxVel = new LoggedTunableNumber("Arm/MaxVelocityMetersPerSec", initialConstraints.maxVelocity);
-        this.maxAcc = new LoggedTunableNumber("Arm/MaxAccelerationMetersPerSec2", initialConstraints.maxAcceleration);
+        this.maxVel = new LoggedTunableNumber("IntakePivot/MaxVelocityRadPerSec", initialConstraints.maxVelocity);
+        this.maxAcc = new LoggedTunableNumber("IntakePivot/MaxAccelerationRadPerSec2", initialConstraints.maxAcceleration);
 
-        this.setpoint = new LoggedTunableNumber("Arm/Setpoint", arm.getAngle());
+        this.setpointAngle = new LoggedTunableNumber("IntakePivot/SetpointRad", intakePivot.getAngleRad());
 
-        addRequirements(arm);
+        addRequirements(intakePivot);
     }
 
     @Override
@@ -69,25 +73,26 @@ public class TuneIntakePivot extends Command {
         // Update PID only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> arm.setPID(kP.get(), kI.get(), kD.get()),
+            () -> intakePivot.setPID(kP.get(), kI.get(), kD.get()),
             kP, kI, kD);
         
         // Update FF only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> arm.setFeedforward(new ArmFeedforward(kS.get(), kG.get(), kV.get(), kA.get())),
+            () -> intakePivot.setFeedforward(new ArmFeedforward(kS.get(), kG.get(), kV.get(), kA.get())),
             kS, kG, kV, kA);
 
-        // Update constraints only if changed
+        // Update trapezoid profile only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> arm.setConstraints(new Constraints(maxVel.get(), maxAcc.get())),
+            () -> intakePivot.setProfile(new TrapezoidProfile(new Constraints(maxVel.get(), maxAcc.get()))),
             maxVel, maxAcc);
 
         // Update setpoint only if changed
-        if (setpoint.hasChanged(hashCode())) {
-            arm.setAngle(setpoint.get());
-        }
+        LoggedTunableNumber.ifChanged(
+            hashCode(),
+            () -> intakePivot.setAngle(setpointAngle.get()),
+            setpointAngle);
     }
 
     @Override
@@ -97,6 +102,6 @@ public class TuneIntakePivot extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        arm.stop();
+        intakePivot.stop();
     }
 }

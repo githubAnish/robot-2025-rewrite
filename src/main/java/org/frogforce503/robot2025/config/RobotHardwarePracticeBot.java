@@ -1,7 +1,6 @@
 package org.frogforce503.robot2025.config;
 
 import org.frogforce503.robot2025.config.subsystem.*;
-import org.frogforce503.robot2025.config.tunerconstants.TunerConstantsPracticeBot;
 
 public class RobotHardwarePracticeBot extends RobotHardware {
     public RobotHardwarePracticeBot() {
@@ -33,9 +32,15 @@ public class RobotHardwarePracticeBot extends RobotHardware {
     }
 
     @Override
-    public IntakeConfig getIntakeConfig() {
+    public IntakePivotConfig getIntakePivotConfig() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getIntakeConfig'");
+        throw new UnsupportedOperationException("Unimplemented method 'getIntakePivotConfig'");
+    }
+
+    @Override
+    public IntakeRollerConfig getIntakeRollerConfig() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getIntakeRollerConfig'");
     }
 
     @Override
@@ -64,13 +69,7 @@ public class RobotHardwarePracticeBot extends RobotHardware {
 
     @Override
     public DriveConfig getDriveConfig() {
-        return
-            DriveConfig.builder()
-                .drivetrainConstants(TunerConstantsPracticeBot.DrivetrainConstants)
-                .frontLeft(TunerConstantsPracticeBot.FrontLeft)
-                .frontRight(TunerConstantsPracticeBot.FrontRight)
-                .backLeft(TunerConstantsPracticeBot.BackLeft)
-                .backRight(TunerConstantsPracticeBot.BackRight)
-                .build();
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDriveConfig'");
     }
 }

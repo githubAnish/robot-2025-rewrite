@@ -5,13 +5,16 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import lombok.Builder;
 
-@Builder
 public record ElevatorConfig(
-    int elevatorID,
-    boolean elevatorInverted,
+    int id,
+    double mechanismRatio,
+    double sprocketPitchDiameter,
+
+    boolean inverted,
+    int statorCurrentLimit,
+
     PIDConfig kPID,
     FFConfig kFF,
     Constraints kConstraints,
-    Range range) {}
+    Range motionRange) {}

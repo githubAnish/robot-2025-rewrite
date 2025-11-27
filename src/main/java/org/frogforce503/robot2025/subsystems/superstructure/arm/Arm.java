@@ -6,10 +6,9 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.wpilibj.RobotState;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,22 +21,20 @@ public class Arm extends FFSubsystemBase {
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
     // Constants
-    private final Rotation2d horizontalAngle = Robot.bot.getArmConfig().horizontalAngle();
-    private final Range range = Robot.bot.getArmConfig().range();
+    private final Range motionRange = Robot.bot.getArmConfig().motionRange();
     @Setter private ArmFeedforward feedforward = Robot.bot.getArmConfig().kFF().getArmFF();
-    @Setter private Constraints constraints = Robot.bot.getArmConfig().kConstraints();
 
     // Control
-    private Rotation2d targetAngle = ArmConstants.START;
+    private double targetAngleRad = ArmConstants.START;
 
     private boolean shouldRunProfile = false;
-    private TrapezoidProfile profile;
+    @Setter private TrapezoidProfile profile;
     @Getter private State setpoint = new State();
     private boolean atGoal = false;
 
     public Arm(ArmIO io) {
         this.io = io;
-        profile = new TrapezoidProfile(constraints);
+        profile = new TrapezoidProfile(Robot.bot.getArmConfig().kConstraints());
     }
 
     @Override
@@ -48,10 +45,10 @@ public class Arm extends FFSubsystemBase {
         Logger.processInputs("Arm", inputs);
 
         // Update profile
-        if (shouldRunProfile) {
+        if (shouldRunProfile && RobotState.isEnabled()) {
             var goalState =
                 new State(
-                    range.clamp(targetAngle.getRadians()),
+                    motionRange.clamp(targetAngleRad),
                     0.0);
 
             double previousVelocity = setpoint.velocity;
@@ -60,10 +57,10 @@ public class Arm extends FFSubsystemBase {
                 profile
                     .calculate(Constants.loopPeriodSecs, setpoint, goalState);
 
-            if (!range.contains(setpoint.position)) {
+            if (!motionRange.contains(setpoint.position)) {
                 setpoint =
                     new State(
-                        range.clamp(setpoint.position),
+                        motionRange.clamp(setpoint.position),
                         0.0);
             }
 
@@ -73,35 +70,36 @@ public class Arm extends FFSubsystemBase {
                 stop();
             } else {
                 double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
-                io.runPosition(setpoint.position, feedforward.calculate(Math.toRadians(setpoint.position - horizontalAngle.getDegrees()), setpoint.velocity, accel));
+                io.runPosition(setpoint.position, feedforward.calculate(setpoint.position, setpoint.velocity, accel));
             }
 
             // Log state
-            Logger.recordOutput("Arm/Profile/SetpointPosition", setpoint.position);
-            Logger.recordOutput("Arm/Profile/SetpointVelocity", setpoint.velocity);
-            Logger.recordOutput("Arm/Profile/GoalPosition", goalState.position);
+            Logger.recordOutput("Arm/Profile/SetpointPositionRad", setpoint.position);
+            Logger.recordOutput("Arm/Profile/SetpointVelocityRadPerSec", setpoint.velocity);
+            Logger.recordOutput("Arm/Profile/GoalPositionRad", goalState.position);
             Logger.recordOutput("Arm/AtGoal", atGoal);
         } else {
             // Reset setpoint
-            setpoint = new State(getAngle(), 0.0);
+            setpoint = new State(getAngleRad(), 0.0);
       
             // Clear logs
-            Logger.recordOutput("Arm/Profile/SetpointPosition", 0.0);
-            Logger.recordOutput("Arm/Profile/SetpointVelocity", 0.0);
-            Logger.recordOutput("Arm/Profile/GoalPosition", 0.0);
+            Logger.recordOutput("Arm/Profile/SetpointPositionRad", 0.0);
+            Logger.recordOutput("Arm/Profile/SetpointVelocityRadPerSec", 0.0);
+            Logger.recordOutput("Arm/Profile/GoalPositionRad", 0.0);
             Logger.recordOutput("Arm/AtGoal", true);
         }
 
-        Logger.recordOutput("Arm/CurrentPosition", getAngle());
+        Logger.recordOutput("Arm/CurrentPositionRad", getAngleRad());
 
         // Record cycle time
         LoggedTracer.record("Arm");
     }
 
-    public Rotation2d getAngle() {
-        return inputs.data.position();
+    public double getAngleRad() {
+        return inputs.data.positionRad();
     }
 
+    // Actions
     public void setPID(double kP, double kI, double kD) {
         io.setPID(kP, kI, kD);
     }
@@ -121,12 +119,12 @@ public class Arm extends FFSubsystemBase {
         io.runOpenLoop(output);
     }
 
-    public void setAngle(double angle) {
+    public void setAngle(double angleRad) {
         this.shouldRunProfile = true;
-        this.targetAngle = angle;
+        this.targetAngleRad = angleRad;
     }
 
-    public boolean isAtAngle(double angle, double tolerance) {
-        return MathUtil.isNear(angle, getAngle(), tolerance);
+    public boolean isAtAngle(double angleRad, double tolerance) {
+        return MathUtil.isNear(angleRad, getAngleRad(), tolerance);
     }
 }

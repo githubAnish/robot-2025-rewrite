@@ -2,17 +2,15 @@ package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-
 public interface ArmIO {
     @AutoLog
     class ArmIOInputs {
-        public ArmIOData data = new ArmIOData(false, Rotation2d.kZero, 0.0, 0.0, 0.0, 0.0);
+        public ArmIOData data = new ArmIOData(false, 0.0, 0.0, 0.0, 0.0, 0.0);
     }
 
     record ArmIOData(
         boolean motorConnected,
-        Rotation2d positionRad,
+        double positionRad,
         double velocityRadPerSec,
         double appliedVolts,
         double statorCurrentAmps,
@@ -24,7 +22,7 @@ public interface ArmIO {
 
     default void runVolts(double volts) {}
 
-    default void runPosition(Rotation2d position, double feedforward) {}
+    default void runPosition(double positionRad, double feedforward) {}
 
     default void stop() {}
 

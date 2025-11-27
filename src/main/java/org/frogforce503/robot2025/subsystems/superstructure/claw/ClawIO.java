@@ -5,14 +5,13 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ClawIO {
     @AutoLog
     class ClawIOInputs {
-        public ClawIOData leftMotorData = new ClawIOData(false, 0.0, 0.0, 0.0, 0.0, 0.0);
-        public ClawIOData rightMotorData = new ClawIOData(false, 0.0, 0.0, 0.0, 0.0, 0.0);
+        public ClawIOData leftMotorData = new ClawIOData(false, 0.0, 0.0, 0.0, 0.0);
+        public ClawIOData rightMotorData = new ClawIOData(false, 0.0, 0.0, 0.0, 0.0);
     }
 
     record ClawIOData(
         boolean motorConnected,
-        double position,
-        double velocity,
+        double velocityRPM,
         double appliedVolts,
         double statorCurrentAmps,
         double tempCelsius) {}

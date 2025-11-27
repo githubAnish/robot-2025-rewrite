@@ -1,46 +1,59 @@
 package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
-import org.frogforce503.lib.motorcontrol.MotorControlMode;
-import org.frogforce503.lib.motorcontrol.SimpleMotorSim;
+import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.config.subsystem.ElevatorConfig;
 
-public class ElevatorIOSim implements ElevatorIO {
-    private SimpleMotorSim sim;
+import com.revrobotics.sim.SparkMaxSim;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+
+public class ElevatorIOSim extends ElevatorIOSpark {
+    // Control
+    private final SparkMaxSim motorSim;
+    private final ElevatorSim elevatorSim;
+
+    // Constants
+    private final DCMotor motorModel = DCMotor.getNEO(1);
+    private final double simCarriageMass = Units.lbsToKilograms(20.163);
 
     public ElevatorIOSim() {
-        sim = new SimpleMotorSim(3.25,360.0);
+        final ElevatorConfig elevatorConfig = Robot.bot.getElevatorConfig();
+
+        motorSim = new SparkMaxSim(super.getMotor(), motorModel);
+        elevatorSim =
+            new ElevatorSim(
+                motorModel,
+                elevatorConfig.mechanismRatio(),
+                simCarriageMass,
+                elevatorConfig.sprocketPitchDiameter() / 2,
+                elevatorConfig.motionRange().min(),
+                elevatorConfig.motionRange().max(),
+                true,
+                ElevatorConstants.START);
     }
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
+        double appliedVolts = motorSim.getAppliedOutput() * RobotController.getBatteryVoltage();
+        
+        // Apply physics
+        elevatorSim.setInputVoltage(appliedVolts);
+        elevatorSim.update(Constants.loopPeriodSecs);
+
+        // Update motor simulation
+        motorSim.iterate(elevatorSim.getVelocityMetersPerSecond(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+
         inputs.data =
             new ElevatorIOData(
                 true,
-                sim.getPosition(),
-                sim.getVelocity(),
-                0.0,
-                0.0,
+                motorSim.getPosition(),
+                motorSim.getVelocity(),
+                appliedVolts,
+                motorSim.getMotorCurrent(),
                 24.0);
-        
-        sim.update();
-    }
-
-    @Override
-    public void runOpenLoop(double output) {
-        sim.set(MotorControlMode.DutyCycle, output);
-    }
-
-    @Override
-    public void runVolts(double volts) {
-        sim.set(MotorControlMode.Voltage, volts);
-    }
-
-    @Override
-    public void runPosition(double position, double feedforward) {
-        sim.set(MotorControlMode.Position, position);
-    }
-
-    @Override
-    public void stop() {
-        sim.set(MotorControlMode.DutyCycle, 0);
     }
 }

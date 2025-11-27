@@ -4,17 +4,17 @@ import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import lombok.Builder;
 
-@Builder
 public record ArmConfig(
-    int armID,
-    boolean armInverted,
-    double armOffset,
+    int id,
+    double mechanismRatio,
+
+    boolean inverted,
+    int statorCurrentLimit,
+    double zeroOffset,
+
     PIDConfig kPID,
     FFConfig kFF,
     Constraints kConstraints,
-    Range range,
-    Rotation2d horizontalAngle) {}
+    Range motionRange) {}

@@ -4,14 +4,14 @@ import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 
-import lombok.Builder;
-
-@Builder
 public record WristConfig(
-    int wristID,
-    boolean wristInverted,
-    double wristOffset,
+    int id,
+    double mechanismRatio,
+
+    boolean inverted,
+    int statorCurrentLimit,
+    double zeroOffset,
+
     PIDConfig kPID,
     FFConfig kFF,
-    Range range,
-    double horizontalAngle) {}
+    Range motionRange) {}

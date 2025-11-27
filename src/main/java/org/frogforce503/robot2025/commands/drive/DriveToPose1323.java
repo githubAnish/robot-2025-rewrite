@@ -102,9 +102,7 @@ public class DriveToPose1323 extends Command {
             drive,
             field,
             target,
-            () ->
-                inputs.getLinearVelocityFromJoysticks()
-                    .times(field.onRedAlliance() ? -1.0 : 1.0),
+            () -> inputs.getLinearVelocityFromJoysticks().times(field.onRedAlliance() ? -1.0 : 1.0),
             () -> inputs.getOmegaFromJoysticks());
     }
 

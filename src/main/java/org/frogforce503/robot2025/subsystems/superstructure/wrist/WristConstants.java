@@ -1,9 +1,11 @@
 package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
+import edu.wpi.first.math.util.Units;
+
 public final class WristConstants {
     public static final double kTolerance = 1.0;
     
-    public static final double START = 0.0;
+    public static final double START = Units.degreesToRadians(0.0); // straight horizontally
     public static final double PARALLEL_TO_GROUND = 90.0;
 
     public static final double TOZERO = 24;

@@ -2,6 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.config.subsystem.ClawConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -15,61 +16,66 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.filter.Debouncer;
+import lombok.Getter;
 
 public class ClawIOSpark implements ClawIO {
     // Hardware
-    private SparkMax leftMotor;
-    private SparkMax rightMotor;
-    
-    private RelativeEncoder leftEncoder;
-    private RelativeEncoder rightEncoder;
+    @Getter private final SparkMax leftMotor;
+    @Getter private final SparkMax rightMotor;
+
+    private final RelativeEncoder leftEncoder;
+    private final RelativeEncoder rightEncoder;
 
     // Control
-    private SparkClosedLoopController leftPidController;
-    private SparkClosedLoopController rightPidController;
+    private final SparkClosedLoopController leftController;
+    private final SparkClosedLoopController rightController;
 
     // Config
     private SparkMaxConfig leftConfig = new SparkMaxConfig();
     private SparkMaxConfig rightConfig = new SparkMaxConfig();
-    private final int STATOR_CURRENT_LIMIT = 35;
 
     // Connected Debouncers
     private final Debouncer connectedDebouncer = new Debouncer(.5);
     
     public ClawIOSpark() {
-        leftMotor = new SparkMax(Robot.bot.getClawConfig().leftMotorID(), MotorType.kBrushless);
+        final ClawConfig clawConfig = Robot.bot.getClawConfig();
+
+        leftMotor = new SparkMax(clawConfig.leftId(), MotorType.kBrushless);
         leftEncoder = leftMotor.getEncoder();
 
-        rightMotor = new SparkMax(Robot.bot.getClawConfig().rightMotorID(), MotorType.kBrushless);
+        rightMotor = new SparkMax(clawConfig.rightId(), MotorType.kBrushless);
         rightEncoder = rightMotor.getEncoder();
 
-        leftPidController = leftMotor.getClosedLoopController();
-        rightPidController = rightMotor.getClosedLoopController();
+        leftController = leftMotor.getClosedLoopController();
+        rightController = rightMotor.getClosedLoopController();
 
         // Configure motor
+        leftConfig.inverted(clawConfig.leftInverted());
+        leftConfig.idleMode(IdleMode.kBrake);
+        leftConfig.smartCurrentLimit(clawConfig.statorCurrentLimit());
+        leftConfig.voltageCompensation(12.0);
+
+        leftConfig
+            .encoder
+                .positionConversionFactor(1 / clawConfig.mechanismRatio())
+                .velocityConversionFactor(1 / clawConfig.mechanismRatio())
+                .uvwMeasurementPeriod(10)
+                .uvwAverageDepth(2);
+
         leftConfig
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .pid(
-                    Robot.bot.getClawConfig().kPID().kP(),
-                    Robot.bot.getClawConfig().kPID().kI(),
-                    Robot.bot.getClawConfig().kPID().kD(),
-                    ClosedLoopSlot.kSlot0);
-
-        leftConfig.inverted(Robot.bot.getClawConfig().leftMotorInverted());
-        leftConfig.smartCurrentLimit(STATOR_CURRENT_LIMIT);
-        leftConfig.voltageCompensation(12);
-        leftConfig.idleMode(IdleMode.kBrake);
+                .pid(clawConfig.kPID().kP(), clawConfig.kPID().kI(), clawConfig.kPID().kD());
 
         rightConfig
             .apply(leftConfig)
-            .inverted(Robot.bot.getClawConfig().rightMotorInverted());
+            .inverted(clawConfig.rightInverted());
+
+        SparkUtil.optimizeSignals(leftConfig, false, false);
+        SparkUtil.optimizeSignals(rightConfig, false, false);
 
         leftMotor.clearFaults();
         rightMotor.clearFaults();
-        
-        leftEncoder.setPosition(0.0);
-        rightEncoder.setPosition(0.0);
 
         // Apply configuration
         SparkUtil.configure(leftMotor, leftConfig, true);
@@ -81,18 +87,16 @@ public class ClawIOSpark implements ClawIO {
         inputs.leftMotorData =
             new ClawIOData(
                 connectedDebouncer.calculate(leftMotor.getLastError() == REVLibError.kOk),
-                leftEncoder.getPosition(),
                 leftEncoder.getVelocity(),
-                leftMotor.getBusVoltage() * leftMotor.getAppliedOutput(),
+                leftMotor.getAppliedOutput() * leftMotor.getBusVoltage(),
                 leftMotor.getOutputCurrent(),
                 leftMotor.getMotorTemperature());
 
         inputs.rightMotorData =
             new ClawIOData(
                 connectedDebouncer.calculate(rightMotor.getLastError() == REVLibError.kOk),
-                rightEncoder.getPosition(),
                 rightEncoder.getVelocity(),
-                rightMotor.getBusVoltage() * rightMotor.getAppliedOutput(),
+                rightMotor.getAppliedOutput() * rightMotor.getBusVoltage(),
                 rightMotor.getOutputCurrent(),
                 rightMotor.getMotorTemperature());
     }
@@ -111,8 +115,8 @@ public class ClawIOSpark implements ClawIO {
 
     @Override
     public void runVelocity(double velocityLeft, double velocityRight, double feedforward) {
-        leftPidController.setReference(velocityLeft, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
-        rightPidController.setReference(velocityRight, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
+        leftController.setReference(velocityLeft, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
+        rightController.setReference(velocityRight, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
     }
 
     @Override
@@ -123,8 +127,8 @@ public class ClawIOSpark implements ClawIO {
 
     @Override
     public void setPID(double kP, double kI, double kD) {
-        leftConfig.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
-        rightConfig.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
+        leftConfig.closedLoop.pid(kP, kI, kD);
+        rightConfig.closedLoop.pid(kP, kI, kD);
 
         SparkUtil.configure(leftMotor, leftConfig, false);
         SparkUtil.configure(rightMotor, rightConfig, false);

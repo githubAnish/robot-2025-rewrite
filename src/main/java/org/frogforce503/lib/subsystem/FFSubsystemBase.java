@@ -4,8 +4,8 @@ import org.frogforce503.lib.logging.LoggerUtil;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lombok.Getter;
 
@@ -24,14 +24,14 @@ public abstract class FFSubsystemBase extends SubsystemBase {
         LoggerUtil.recordCurrentCommand(this);
 
         // Set coast mode only when disabled and there is a change in the override
-        if (DriverStation.isDisabled() && coastOverride.get() != inCoast) {
+        if (RobotState.isDisabled() && coastOverride.get() != inCoast) {
             setBrakeMode(!coastOverride.get());
             System.out.println("SETTING COAST MODE FOR " + this.getName() + " TO " + coastOverride.get()); // debug print, TODO remove
             inCoast = coastOverride.get();
         }
 
         coastModeWhileRunning
-            .set(coastOverride.get() && !DriverStation.isDisabled());
+            .set(coastOverride.get() && !RobotState.isDisabled());
     };
 
     protected abstract void setBrakeMode(boolean enabled);

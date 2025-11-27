@@ -118,4 +118,12 @@ public class SimpleMotorSim {
             }
         }
     }
+
+    public enum MotorControlMode {
+        DutyCycle,
+        Voltage,
+        Current,
+        Position,
+        Velocity
+    }
 }

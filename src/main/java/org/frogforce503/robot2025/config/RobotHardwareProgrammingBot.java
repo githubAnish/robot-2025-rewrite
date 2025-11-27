@@ -1,20 +1,10 @@
 package org.frogforce503.robot2025.config;
 
-import org.frogforce503.robot2025.config.subsystem.ArmConfig;
-import org.frogforce503.robot2025.config.subsystem.ClawConfig;
-import org.frogforce503.robot2025.config.subsystem.ClimberConfig;
-import org.frogforce503.robot2025.config.subsystem.DriveConfig;
-import org.frogforce503.robot2025.config.subsystem.ElevatorConfig;
-import org.frogforce503.robot2025.config.subsystem.IntakeConfig;
-import org.frogforce503.robot2025.config.subsystem.LedsConfig;
-import org.frogforce503.robot2025.config.subsystem.SensorConfig;
-import org.frogforce503.robot2025.config.subsystem.VisionConfig;
-import org.frogforce503.robot2025.config.subsystem.WristConfig;
-import org.frogforce503.robot2025.config.tunerconstants.TunerConstantsProgrammingBot;
+import org.frogforce503.robot2025.config.subsystem.*;
 
 public class RobotHardwareProgrammingBot extends RobotHardware {
     public RobotHardwareProgrammingBot() {
-
+        
     }
 
     @Override
@@ -42,9 +32,15 @@ public class RobotHardwareProgrammingBot extends RobotHardware {
     }
 
     @Override
-    public IntakeConfig getIntakeConfig() {
+    public IntakePivotConfig getIntakePivotConfig() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getIntakeConfig'");
+        throw new UnsupportedOperationException("Unimplemented method 'getIntakePivotConfig'");
+    }
+
+    @Override
+    public IntakeRollerConfig getIntakeRollerConfig() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getIntakeRollerConfig'");
     }
 
     @Override
@@ -73,13 +69,7 @@ public class RobotHardwareProgrammingBot extends RobotHardware {
 
     @Override
     public DriveConfig getDriveConfig() {
-        return
-            DriveConfig.builder()
-                .drivetrainConstants(TunerConstantsProgrammingBot.DrivetrainConstants)
-                .frontLeft(TunerConstantsProgrammingBot.FrontLeft)
-                .frontRight(TunerConstantsProgrammingBot.FrontRight)
-                .backLeft(TunerConstantsProgrammingBot.BackLeft)
-                .backRight(TunerConstantsProgrammingBot.BackRight)
-                .build();
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDriveConfig'");
     }
 }

@@ -10,9 +10,9 @@ public interface WristIO {
 
     record WristIOData(
         boolean motorConnected,
-        double relativePosition,
-        double absolutePosition,
-        double velocity,
+        double relativePositionRad,
+        double absolutePositionRad,
+        double velocityRadPerSec,
         double appliedVolts,
         double statorCurrentAmps,
         double tempCelsius) {}
@@ -23,7 +23,7 @@ public interface WristIO {
 
     default void runVolts(double volts) {}
 
-    default void runPosition(double position, double feedforward) {}
+    default void runPosition(double positionRad, double feedforward) {}
 
     default void stop() {}
 
@@ -31,5 +31,7 @@ public interface WristIO {
 
     default void setBrakeMode(boolean enabled) {}
 
-    default void setEncoderPosition(double position) {}
+    default void setRelativeEncoderPosition(double position) {}
+
+    default void setAbsoluteEncoderPosition(double position) {}
 }

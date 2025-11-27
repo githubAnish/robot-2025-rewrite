@@ -10,6 +10,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotState;
 import lombok.Setter;
 
 public class Claw extends FFSubsystemBase {
@@ -22,8 +23,8 @@ public class Claw extends FFSubsystemBase {
     private final Debouncer algaeFilter = new Debouncer(0.25, DebounceType.kRising);
 
     // Control
-    private double targetLeftVelocity = ClawConstants.START;
-    private double targetRightVelocity = ClawConstants.START;
+    private double targetLeftVelocityRPM = ClawConstants.START;
+    private double targetRightVelocityRPM = ClawConstants.START;
 
     private boolean shouldRunVelocity = false;
     private boolean atGoal = false;
@@ -40,38 +41,61 @@ public class Claw extends FFSubsystemBase {
         Logger.processInputs("Claw", inputs);
 
         // Run velocity mode unless requested to stop
-        if (shouldRunVelocity) {
-            atGoal = isAtVelocity(targetLeftVelocity, targetRightVelocity, ClawConstants.kTolerance);
-            io.runVelocity(targetLeftVelocity, targetRightVelocity, feedforward.calculate(targetLeftVelocity));
+        if (shouldRunVelocity && RobotState.isEnabled()) {
+            atGoal = isAtVelocity(targetLeftVelocityRPM, targetRightVelocityRPM, ClawConstants.kTolerance);
+            io.runVelocity(targetLeftVelocityRPM, targetRightVelocityRPM, feedforward.calculate((targetLeftVelocityRPM + targetRightVelocityRPM) / 2.0));
 
             // Log state
-            Logger.recordOutput("Claw/LeftSetpointVelocity", targetLeftVelocity);
-            Logger.recordOutput("Claw/RightSetpointVelocity", targetRightVelocity);
+            Logger.recordOutput("Claw/LeftSetpointVelocityRPM", targetLeftVelocityRPM);
+            Logger.recordOutput("Claw/RightSetpointVelocityRPM", targetRightVelocityRPM);
             Logger.recordOutput("Claw/AtGoal", atGoal);
         } else {
             // Reset setpoint
-            targetLeftVelocity = 0.0;
-            targetRightVelocity = 0.0;
+            targetLeftVelocityRPM = 0.0;
+            targetRightVelocityRPM = 0.0;
 
             // Clear logs
+            Logger.recordOutput("Claw/LeftSetpointVelocityRPM", 0.0);
+            Logger.recordOutput("Claw/RightSetpointVelocityRPM", 0.0);
             Logger.recordOutput("Claw/AtGoal", true);
         }
 
-        Logger.recordOutput("Claw/LeftCurrentVelocity", getLeftVelocity());
-        Logger.recordOutput("Claw/RightCurrentVelocity", getRightVelocity());
+        Logger.recordOutput("Claw/LeftCurrentVelocityRPM", getLeftVelocityRPM());
+        Logger.recordOutput("Claw/RightCurrentVelocityRPM", getRightVelocityRPM());
 
         // Record cycle time
         LoggedTracer.record("Claw");
     }
 
-    public double getLeftVelocity() {
-        return inputs.leftMotorData.velocity();
+    public double getLeftVelocityRPM() {
+        return inputs.leftMotorData.velocityRPM();
     }
 
-    public double getRightVelocity() {
-        return inputs.rightMotorData.velocity();
+    public double getRightVelocityRPM() {
+        return inputs.rightMotorData.velocityRPM();
     }
 
+    public boolean coralCurrentThresholdForIntookMet() {
+        if (RobotBase.isSimulation()) {
+            return true;
+        }
+
+        return coralFilter.calculate(
+            inputs.leftMotorData.statorCurrentAmps() > 10 ||
+            inputs.rightMotorData.statorCurrentAmps() > 10);
+    }
+
+    public boolean algaeCurrentThresholdForHoldMet() {
+        if (RobotBase.isSimulation()) {
+            return true;
+        }
+
+        return algaeFilter.calculate(
+            inputs.leftMotorData.statorCurrentAmps() > 15 ||
+            inputs.rightMotorData.statorCurrentAmps() > 15);
+    }
+
+    // Actions
     public void setPID(double kP, double kI, double kD) {
         io.setPID(kP, kI, kD);
     }
@@ -91,41 +115,19 @@ public class Claw extends FFSubsystemBase {
         io.runOpenLoop(leftOutput, rightOutput);
     }
 
-    public void setVelocity(double leftVelocity, double rightVelocity) {
+    public void setVelocity(double leftVelocityRPM, double rightVelocityRPM) {
         this.shouldRunVelocity = true;
-        this.targetLeftVelocity = leftVelocity;
-        this.targetRightVelocity = rightVelocity;
+        this.targetLeftVelocityRPM = leftVelocityRPM;
+        this.targetRightVelocityRPM = rightVelocityRPM;
     }
 
-    public void setVelocity(double velocity) {
-        setVelocity(velocity, velocity);
+    public void setVelocity(double velocityRPM) {
+        setVelocity(velocityRPM, velocityRPM);
     }
 
-    public boolean isAtVelocity(double leftVelocity, double rightVelocity, double tolerance) {
+    public boolean isAtVelocity(double leftVelocityRPM, double rightVelocityRPM, double tolerance) {
         return
-            MathUtil.isNear(leftVelocity, getLeftVelocity(), tolerance) &&
-            MathUtil.isNear(rightVelocity, getRightVelocity(), tolerance);
-    }
-
-    public boolean coralCurrentThresholdForIntookMet() {
-        if (RobotBase.isSimulation()) {
-            return true;
-        }
-
-        return
-            coralFilter.calculate(
-                inputs.leftMotorData.statorCurrentAmps() > 10 ||
-                inputs.rightMotorData.statorCurrentAmps() > 10);
-    }
-
-    public boolean algaeCurrentThresholdForHoldMet() {
-        if (RobotBase.isSimulation()) {
-            return true;
-        }
-
-        return
-            algaeFilter.calculate(
-                inputs.leftMotorData.statorCurrentAmps() > 15 ||
-                inputs.rightMotorData.statorCurrentAmps() > 15);
+            MathUtil.isNear(leftVelocityRPM, getLeftVelocityRPM(), tolerance) &&
+            MathUtil.isNear(rightVelocityRPM, getRightVelocityRPM(), tolerance);
     }
 }

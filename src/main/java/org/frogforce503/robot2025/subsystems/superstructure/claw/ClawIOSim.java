@@ -1,62 +1,66 @@
 package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
-import org.frogforce503.lib.motorcontrol.MotorControlMode;
-import org.frogforce503.lib.motorcontrol.SimpleMotorSim;
+import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.config.subsystem.ClawConfig;
 
-public class ClawIOSim implements ClawIO {
-    private SimpleMotorSim leftSim;
-    private SimpleMotorSim rightSim;
+import com.revrobotics.sim.SparkMaxSim;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+
+public class ClawIOSim extends ClawIOSpark {
+    // Control
+    private final SparkMaxSim leftMotorSim;
+    private final SparkMaxSim rightMotorSim;
+
+    private final DCMotorSim leftRollerSim;
+    private final DCMotorSim rightRollerSim;
+    
+    // Constants
+    private final DCMotor motorModel = DCMotor.getNeo550(1);
+    private final double moi = 0.0001;
 
     public ClawIOSim() {
-        leftSim = new SimpleMotorSim(3.25,360.0);
-        rightSim = new SimpleMotorSim(3.25,360.0);
+        final ClawConfig clawConfig = Robot.bot.getClawConfig();
+
+        leftMotorSim = new SparkMaxSim(super.getLeftMotor(), motorModel);
+        rightMotorSim = new SparkMaxSim(super.getRightMotor(), motorModel);
+
+        leftRollerSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(motorModel, moi, clawConfig.mechanismRatio()), motorModel);
+        rightRollerSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(motorModel, moi, clawConfig.mechanismRatio()), motorModel);
     }
 
     @Override
     public void updateInputs(ClawIOInputs inputs) {
+        double appliedVolts = leftMotorSim.getAppliedOutput() * RobotController.getBatteryVoltage();
+        
+        // Apply physics
+        leftRollerSim.setInputVoltage(appliedVolts);
+        leftRollerSim.update(Constants.loopPeriodSecs);
+        rightRollerSim.setInputVoltage(appliedVolts);
+        rightRollerSim.update(Constants.loopPeriodSecs);
+
+        // Update motor simulation
+        leftMotorSim.iterate(leftRollerSim.getAngularVelocityRPM(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        rightMotorSim.iterate(rightRollerSim.getAngularVelocityRPM(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+
         inputs.leftMotorData =
             new ClawIOData(
                 true,
-                leftSim.getPosition(),
-                leftSim.getVelocity(),
-                0.0,
-                0.0,
+                leftMotorSim.getVelocity(),
+                appliedVolts,
+                leftMotorSim.getMotorCurrent(),
                 24.0);
 
         inputs.rightMotorData =
             new ClawIOData(
                 true,
-                leftSim.getPosition(),
-                leftSim.getVelocity(),
-                0.0,
-                0.0,
+                rightMotorSim.getVelocity(),
+                appliedVolts,
+                rightMotorSim.getMotorCurrent(),
                 24.0);
-        
-        leftSim.update();
-        rightSim.update();
-    }
-
-    @Override
-    public void runOpenLoop(double outputLeft, double outputRight) {
-        leftSim.set(MotorControlMode.DutyCycle, outputLeft);
-        rightSim.set(MotorControlMode.DutyCycle, outputRight);
-    }
-
-    @Override
-    public void runVolts(double voltsLeft, double voltsRight) {
-        leftSim.set(MotorControlMode.Voltage, voltsLeft);
-        rightSim.set(MotorControlMode.Voltage, voltsRight);
-    }
-
-    @Override
-    public void runVelocity(double velocityLeft, double velocityRight, double feedforward) {
-        leftSim.set(MotorControlMode.Velocity, velocityLeft);
-        rightSim.set(MotorControlMode.Velocity, velocityRight);
-    }
-
-    @Override
-    public void stop() {
-        leftSim.set(MotorControlMode.DutyCycle, 0.0);
-        rightSim.set(MotorControlMode.DutyCycle, 0.0);
     }
 }

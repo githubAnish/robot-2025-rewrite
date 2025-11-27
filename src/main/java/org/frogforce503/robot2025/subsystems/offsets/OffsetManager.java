@@ -14,7 +14,7 @@ public class OffsetManager extends VirtualSubsystem {
     private final OffsetsIO io;
     private final OffsetsIOInputsAutoLogged inputs = new OffsetsIOInputsAutoLogged();
 
-    @Getter private Map<String, Offset> offsetData;
+    @Getter private final Map<String, Offset> offsetData;
 
     public OffsetManager(String fileName, OffsetsIO io) {
         this.io = io;
@@ -27,7 +27,7 @@ public class OffsetManager extends VirtualSubsystem {
      * <p> For example, if the field config file path = "Shop.json," then the offsets file path should be "ShopOffsets.json". </p>
      */
     public OffsetManager(OffsetsIO io) {
-        this(Constants.fieldVenue.filePath.split(".json")[0] + "Offsets.json", io);
+        this(Constants.fieldVenue.getFilePath().split(".json")[0] + "Offsets.json", io);
     }
 
     @Override

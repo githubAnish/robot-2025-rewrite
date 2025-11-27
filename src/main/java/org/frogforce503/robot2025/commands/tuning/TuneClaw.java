@@ -4,6 +4,7 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.config.subsystem.ClawConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.claw.Claw;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -25,8 +26,10 @@ public class TuneClaw extends Command {
         this.claw = claw;
 
         // Get initial values from config
-        final PIDConfig initialPID = Robot.bot.getClawConfig().kPID();
-        final FFConfig initialFF = Robot.bot.getClawConfig().kFF();
+        final ClawConfig clawConfig = Robot.bot.getClawConfig();
+
+        final PIDConfig initialPID = clawConfig.kPID();
+        final FFConfig initialFF = clawConfig.kFF();
 
         // Create tunable numbers
         this.kP = new LoggedTunableNumber("Claw/kP", initialPID.kP());
@@ -36,7 +39,7 @@ public class TuneClaw extends Command {
         this.kV = new LoggedTunableNumber("Claw/kV", initialFF.kV());
         this.kA = new LoggedTunableNumber("Claw/kA", initialFF.kA());
 
-        this.setpointVelocity = new LoggedTunableNumber("Claw/Setpoint", claw.getLeftVelocity());
+        this.setpointVelocity = new LoggedTunableNumber("Claw/SetpointRPM", (claw.getLeftVelocityRPM() + claw.getRightVelocityRPM()) / 2.0);
 
         addRequirements(claw);
     }
@@ -67,9 +70,10 @@ public class TuneClaw extends Command {
             kS, kV, kA);
 
         // Update setpoint only if changed
-        if (setpointVelocity.hasChanged(hashCode())) {
-            claw.setVelocity(setpointVelocity.get());
-        }
+        LoggedTunableNumber.ifChanged(
+            hashCode(),
+            () -> claw.setVelocity(setpointVelocity.get()),
+            setpointVelocity);
     }
 
     @Override

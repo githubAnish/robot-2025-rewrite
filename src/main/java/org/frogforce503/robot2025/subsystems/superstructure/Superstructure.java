@@ -5,9 +5,11 @@ import java.util.function.Supplier;
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
+import org.frogforce503.robot2025.subsystems.superstructure.arm.ArmConstants;
 import org.frogforce503.robot2025.subsystems.superstructure.claw.Claw;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.Elevator;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.Intake;
+import org.frogforce503.robot2025.subsystems.superstructure.intakepivot.IntakePivot;
+import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRoller;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIO;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIOInputsAutoLogged;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
@@ -15,8 +17,9 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +31,8 @@ public class Superstructure extends SubsystemBase {
     @Getter private final Arm arm;
     @Getter private final Wrist wrist;
     @Getter private final Claw claw;
-    @Getter private final Intake intake;
+    @Getter private final IntakePivot intakePivot;
+    @Getter private final IntakeRoller intakeRoller;
 
     private final CoralSensorIO coralSensorIO;
     private final CoralSensorIOInputsAutoLogged coralSensorInputs = new CoralSensorIOInputsAutoLogged();
@@ -40,8 +44,8 @@ public class Superstructure extends SubsystemBase {
 
     @Setter @Getter private SuperstructureMode currentMode = SuperstructureMode.CORAL_INTAKE;
 
-    // Visualizer
-    @Getter private final SuperstructureVisualizer visualizer;
+    // Viz
+    @Getter private final SuperstructureViz viz;
 
     // Overrides
     private LoggedNetworkBoolean superstructureCoastOverride =
@@ -52,7 +56,8 @@ public class Superstructure extends SubsystemBase {
         Arm arm,
         Wrist wrist,
         Claw claw,
-        Intake intake,
+        IntakePivot intakePivot,
+        IntakeRoller intakeRoller,
         CoralSensorIO coralSensorIO,
         Supplier<Pose2d> robotPoseSupplier
     ) {
@@ -60,10 +65,11 @@ public class Superstructure extends SubsystemBase {
         this.arm = arm;
         this.wrist = wrist;
         this.claw = claw;
-        this.intake = intake;
+        this.intakePivot = intakePivot;
+        this.intakeRoller = intakeRoller;
         this.coralSensorIO = coralSensorIO;
 
-        this.visualizer = new SuperstructureVisualizer(this, robotPoseSupplier);
+        this.viz = new SuperstructureViz(this, robotPoseSupplier);
     }
 
     @Override
@@ -72,16 +78,17 @@ public class Superstructure extends SubsystemBase {
         Logger.processInputs("CoralSensors", coralSensorInputs);
 
         setCoastMode(
-            DriverStation.isDisabled() &&
+            RobotState.isDisabled() &&
             superstructureCoastOverride.get());
 
-        // Update visualizer
+        // Update viz
         if (RobotBase.isSimulation()) {
-            visualizer.update(
-                elevator.getHeight(),
-                arm.getAngle(),
-                wrist.getRelativeAngle(),
-                intake.getPivotAngle());
+            viz.setHasCoral(hasCoral);
+            viz.update(
+                elevator.getHeightMeters(),
+                arm.getAngleRad(),
+                wrist.getRelativeAngleRad(),
+                intakePivot.getAngleRad());
         }
 
         Logger.recordOutput("Superstructure/Inputs/Has Coral", hasCoral);
@@ -102,13 +109,12 @@ public class Superstructure extends SubsystemBase {
         return coralSensorInputs.data.lowerTriggered();
     }
 
-    public void seedWristPosition() {
+    public void seedWristPosition() { // Only works in real anyway, so doesn't affect sim
         if (RobotBase.isReal() &&
-            MathUtils.inRange(arm.getAngle(), 0, 30) &&
-            MathUtils.inRange(wrist.getAbsoluteAngle(), 0, 180)
+            MathUtils.inRange(arm.getAngleRad(), ArmConstants.START, Units.degreesToRadians(-60)) &&
+            MathUtils.inRange(wrist.getAbsoluteAngleRad(), Units.degreesToRadians(-90), Units.degreesToRadians(90))
         ) {
-            wrist.setEncoderPosition(
-                arm.getAngle() + wrist.getAbsoluteAngle());
+            wrist.setEncoderPosition((arm.getAngleRad() + Math.PI / 2) + wrist.getAbsoluteAngleRad()); // Look at math in robot-2025, it should make sense
         }
     }
 
@@ -117,7 +123,8 @@ public class Superstructure extends SubsystemBase {
         arm.getCoastOverride().set(enabled);
         wrist.getCoastOverride().set(enabled);
         claw.getCoastOverride().set(enabled);
-        intake.getCoastOverride().set(enabled);
+        intakePivot.getCoastOverride().set(enabled);
+        intakeRoller.getCoastOverride().set(enabled);
     }
 
     public void stop() {
@@ -125,6 +132,7 @@ public class Superstructure extends SubsystemBase {
         arm.stop();
         wrist.stop();
         claw.stop();
-        intake.stop();
+        intakePivot.stop();
+        intakeRoller.stop();
     }
 }

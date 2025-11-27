@@ -23,8 +23,6 @@ public class Drive extends SubsystemBase {
     private final FieldInfo field;
 
     // State
-    @Getter private Pose2d currentPose = Pose2d.kZero;
-    @Getter private ChassisSpeeds currentVelocity = new ChassisSpeeds();
     private ChassisSpeeds requestedSpeeds = new ChassisSpeeds();
 
     // Toggles
@@ -44,9 +42,6 @@ public class Drive extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Drive", inputs);
 
-        currentPose = inputs.data.poseMeters();
-        currentVelocity = inputs.data.velocityMeters();
-
         this.outputTelemetry();
 
         // Record cycle time
@@ -59,9 +54,9 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("Drive/Toggles/RobotRelative", robotRelative);
 
         // Inputs
-        Logger.recordOutput("Drive/Inputs/Pose", currentPose);
-        Logger.recordOutput("Drive/Inputs/Velocity", currentVelocity);
-        Logger.recordOutput("Drive/Inputs/Velocity/Magnitude", Math.hypot(currentVelocity.vxMetersPerSecond, currentVelocity.vyMetersPerSecond));
+        Logger.recordOutput("Drive/Inputs/Pose", getCurrentPose());
+        Logger.recordOutput("Drive/Inputs/Velocity", getCurrentVelocity());
+        Logger.recordOutput("Drive/Inputs/Velocity/Magnitude", Math.hypot(getCurrentVelocity().vxMetersPerSecond, getCurrentVelocity().vyMetersPerSecond));
 
         // Status
         Logger.recordOutput("Drive/State/AttainedWheelSpeed", Units.metersToFeet(inputs.data.state().ModuleStates[0].speedMetersPerSecond));
@@ -79,8 +74,16 @@ public class Drive extends SubsystemBase {
 
         // Field
         Logger.recordOutput("Alliance Color", field.getAlliance());
-        Logger.recordOutput("Current Global Pose", currentPose);
-        field.setRobotPose(currentPose);
+        Logger.recordOutput("Current Global Pose", getCurrentPose());
+        field.setRobotPose(getCurrentPose());
+    }
+
+    public Pose2d getCurrentPose() {
+        return inputs.data.poseMeters();
+    }
+
+    public ChassisSpeeds getCurrentVelocity() {
+        return inputs.data.velocityMeters();
     }
 
     // Toggles
@@ -118,11 +121,11 @@ public class Drive extends SubsystemBase {
 
     // Getters
     public Rotation2d getAngle() {
-        return currentPose.getRotation();
+        return getCurrentPose().getRotation();
     }
 
     public ChassisSpeeds getFieldVelocity() {
-        return ChassisSpeeds.fromRobotRelativeSpeeds(currentVelocity, getAngle());
+        return ChassisSpeeds.fromRobotRelativeSpeeds(getCurrentVelocity(), getAngle());
     }
 
     /** Returns the position of each module in radians. */

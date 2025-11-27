@@ -119,13 +119,13 @@ public class FieldConfig {
     public FieldConfig() {
         // Loads constants from selected venue
         try {
-            loadField(Constants.fieldVenue.filePath);
+            loadField(Constants.fieldVenue.getFilePath());
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
 
         // Load AprilTag field layout
-        fieldLayout = Constants.fieldVenue.aprilTagFieldLayout;
+        fieldLayout = Constants.fieldVenue.getAprilTagFieldLayout();
     }
 
     private void loadField(String file) throws FileNotFoundException, IOException, ParseException {

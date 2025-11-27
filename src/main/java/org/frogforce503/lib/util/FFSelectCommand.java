@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 
 /**
  * A command composition that runs one of a selection of commands using a selector and a key to
- * command mapping. However, it doesn't print out a default command when a key isn't found.
+ * command mapping. <b>However, it doesn't print out a default command when a key isn't found.</b>
  *
  * <p>The rules for command compositions apply: command instances that are passed to it cannot be
  * added to any other composition or scheduled individually, and the composition requires all

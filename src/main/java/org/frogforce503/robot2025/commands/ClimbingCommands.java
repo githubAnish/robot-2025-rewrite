@@ -11,11 +11,11 @@ public class ClimbingCommands {
     private ClimbingCommands() {}
 
     public static Command setPivotDown(Superstructure superstructure) { // Climb step 1
-        return Commands.runOnce(() -> superstructure.getIntake().runOpenLoop(-0.2, 0.0));
+        return Commands.runOnce(() -> superstructure.getIntakePivot().runOpenLoop(-0.2));
     }
 
     public static Command bringPivotUp(Superstructure superstructure) { // Climb step 2
-        return Commands.runOnce(() -> superstructure.getIntake().runOpenLoop(0.2, 0.0));
+        return Commands.runOnce(() -> superstructure.getIntakePivot().runOpenLoop(0.2));
     }
 
     public static Command fastWind(Climber climber) {

@@ -40,7 +40,7 @@ public final class MathUtils {
         return Math.round(num * scalar) / scalar;
     }
 
-    public static boolean isAnOption(double toCheckValue, double... options) {
+    public static boolean isIn(double toCheckValue, double... options) {
         return
             Arrays
                 .stream(options)

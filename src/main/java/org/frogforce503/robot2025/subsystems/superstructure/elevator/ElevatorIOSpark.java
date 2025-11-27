@@ -2,6 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.config.subsystem.ElevatorConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -15,42 +16,48 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.filter.Debouncer;
+import lombok.Getter;
 
 public class ElevatorIOSpark implements ElevatorIO {
     // Hardware
-    private SparkMax motor;
-    private RelativeEncoder encoder;
+    @Getter private final SparkMax motor;
+    private final RelativeEncoder encoder;
 
     // Control
-    private SparkClosedLoopController pidController;
+    private final SparkClosedLoopController pidController;
 
     // Config
     private SparkMaxConfig config = new SparkMaxConfig();
-    private final int STATOR_CURRENT_LIMIT = 80;
 
     // Connected Debouncers
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public ElevatorIOSpark() {
-        motor = new SparkMax(Robot.bot.getElevatorConfig().elevatorID(), MotorType.kBrushless);
-        encoder = motor.getEncoder();
+        final ElevatorConfig elevatorConfig = Robot.bot.getElevatorConfig(); 
 
+        motor = new SparkMax(elevatorConfig.id(), MotorType.kBrushless);
+        encoder = motor.getEncoder();
         pidController = motor.getClosedLoopController();
 
         // Configure motor
+        config.inverted(elevatorConfig.inverted());
+        config.idleMode(IdleMode.kBrake);
+        config.smartCurrentLimit(elevatorConfig.statorCurrentLimit());
+        config.voltageCompensation(12.0);
+
+        config
+            .encoder
+                .positionConversionFactor((1 / elevatorConfig.mechanismRatio()) * (Math.PI * elevatorConfig.sprocketPitchDiameter())) // convert rotations to meters
+                .velocityConversionFactor((1 / elevatorConfig.mechanismRatio()) * (Math.PI * elevatorConfig.sprocketPitchDiameter()) / 60) // convert RPM to meters/sec
+                .uvwMeasurementPeriod(10)
+                .uvwMeasurementPeriod(2);
+
         config
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .pid(
-                    Robot.bot.getElevatorConfig().kPID().kP(),
-                    Robot.bot.getElevatorConfig().kPID().kI(),
-                    Robot.bot.getElevatorConfig().kPID().kD(),
-                    ClosedLoopSlot.kSlot0);
+                .pid(elevatorConfig.kPID().kP(), elevatorConfig.kPID().kI(), elevatorConfig.kPID().kD());
 
-        config.inverted(Robot.bot.getElevatorConfig().elevatorInverted());
-        config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
-        config.voltageCompensation(12);
-        config.idleMode(IdleMode.kBrake);
+        SparkUtil.optimizeSignals(config, false, false);
 
         motor.clearFaults();
 
@@ -83,8 +90,8 @@ public class ElevatorIOSpark implements ElevatorIO {
     }
 
     @Override
-    public void runPosition(double position, double feedforward) {
-        pidController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
+    public void runPosition(double positionMeters, double feedforward) {
+        pidController.setReference(positionMeters, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
     }
 
     @Override
@@ -94,7 +101,7 @@ public class ElevatorIOSpark implements ElevatorIO {
 
     @Override
     public void setPID(double kP, double kI, double kD) {
-        config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
+        config.closedLoop.pid(kP, kI, kD);
         SparkUtil.configure(motor, config, false);
     }
 
