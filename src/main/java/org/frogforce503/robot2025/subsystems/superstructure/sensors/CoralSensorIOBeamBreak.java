@@ -12,8 +12,8 @@ public class CoralSensorIOBeamBreak implements CoralSensorIO {
     private Debouncer lowerDebouncer = new Debouncer(0.1);
 
     public CoralSensorIOBeamBreak() {
-        upperBeamBreak = new DigitalInput(Robot.bot.sensorConstants.upperBeamID());
-        lowerBeamBreak = new DigitalInput(Robot.bot.sensorConstants.lowerBeamID());
+        upperBeamBreak = new DigitalInput(Robot.bot.getSensorsConfig().upperBeamID());
+        lowerBeamBreak = new DigitalInput(Robot.bot.getSensorsConfig().lowerBeamID());
     }
 
     @Override

@@ -30,7 +30,7 @@ public class ChoreoRoute implements BaseRoute {
     }
 
     @Override
-    public Pose2d getInitialPose(Supplier<Pose2d> overridePoseSupplier) {
+    public Pose2d getInitialPoseOrElseGet(Supplier<Pose2d> overridePoseSupplier) {
         return
             paths
                 .get(0)

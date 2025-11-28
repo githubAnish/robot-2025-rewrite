@@ -11,6 +11,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public final class WaypointUtil {
+    private WaypointUtil() {}
+
     public static Pose2d flipHeading(Pose2d existing) {
         return new Pose2d(existing.getTranslation(), existing.getRotation().unaryMinus());
     }

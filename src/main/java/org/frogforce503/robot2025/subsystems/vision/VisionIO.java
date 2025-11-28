@@ -1,6 +1,6 @@
 package org.frogforce503.robot2025.subsystems.vision;
 
-import org.frogforce503.robot2025.subsystems.vision.Vision.CameraName;
+import org.frogforce503.robot2025.subsystems.vision.VisionConstants.CameraName;
 
 import edu.wpi.first.math.geometry.Transform3d;
 

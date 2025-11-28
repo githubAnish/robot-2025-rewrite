@@ -2,13 +2,12 @@ package org.frogforce503.lib.auto.builder;
 
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 import org.frogforce503.lib.swerve.SwervePathFollower;
 import org.frogforce503.robot2025.Constants;
-import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
+import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 
 public class ChoreoFactoryBuilder {
     private final Drive drive;
@@ -16,7 +15,7 @@ public class ChoreoFactoryBuilder {
 
     public ChoreoFactoryBuilder(Drive drive) {
         this.drive = drive;
-        this.pathFollower = Robot.bot.pathFollower;
+        this.pathFollower = DriveConstants.pathFollower;
     }
 
     public AutoFactory buildFactory() {
@@ -30,13 +29,10 @@ public class ChoreoFactoryBuilder {
     }
     
     private void followChoreoTrajectory(SwerveSample sample) {
-        // Get the current pose of the robot
-        Pose2d currentPose = drive.getCurrentPose();
-
-        // Generate the next field-relative speeds for the robot
+        // Generate the next robot-relative speeds for the robot
         ChassisSpeeds speeds =
             pathFollower.calculate(
-                currentPose,
+                drive.getCurrentPose(),
                 sample.getPose(),
                 sample.vx,
                 sample.vy,

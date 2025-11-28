@@ -1,46 +1,42 @@
 package org.frogforce503.robot2025;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.commands.RumbleCommand;
 import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.util.DoublePressTracker;
 import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.lib.util.FFSelectCommand;
-import org.frogforce503.lib.util.TriConsumer;
 import org.frogforce503.lib.util.TriggerUtil;
 import org.frogforce503.lib.vision.apriltag_detection.VisionMeasurement;
 import org.frogforce503.robot2025.auto.AutoChooser;
-import org.frogforce503.robot2025.commands.AutoIntakeCommands;
-import org.frogforce503.robot2025.commands.AutoScoreCommands;
-import org.frogforce503.robot2025.commands.DriveCommands;
-import org.frogforce503.robot2025.commands.coral_score_reef.Branch;
-import org.frogforce503.robot2025.commands.gamepiece_eject.WaitAfterAlgaeEject;
-import org.frogforce503.robot2025.commands.gamepiece_eject.WaitAfterCoralEject;
-import org.frogforce503.robot2025.fields.FieldInfo;
-import org.frogforce503.robot2025.fields.FieldConfig.Venue;
-import org.frogforce503.robot2025.offsets.OffsetManager;
-import org.frogforce503.robot2025.offsets.OffsetsIO;
-import org.frogforce503.robot2025.offsets.OffsetsIOServer;
+import org.frogforce503.robot2025.auto.WarmupExecutor;
+import org.frogforce503.robot2025.commands.ClimbingCommands;
+import org.frogforce503.robot2025.commands.IntakeAlgaeFromGround;
+import org.frogforce503.robot2025.commands.IntakeAlgaeFromHandoff;
+import org.frogforce503.robot2025.commands.IntakeAlgaeFromReef;
+import org.frogforce503.robot2025.commands.ScoreAlgaeInBarge;
+import org.frogforce503.robot2025.commands.ScoreAlgaeInProcessor;
+import org.frogforce503.robot2025.commands.ScoreCoralOnReef;
+import org.frogforce503.robot2025.commands.SafelyStowAndIntakeCoralFromStation;
+import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
+import org.frogforce503.robot2025.commands.tuning.TuneArm;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
-import org.frogforce503.robot2025.subsystems.climber.Climber.ClimberGoal;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSim;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSpark;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.drive.io.DriveIOPhoenix;
-import org.frogforce503.robot2025.subsystems.drive.io.DriveIOSim;
+import org.frogforce503.robot2025.subsystems.drive.io.DriveIOBasicSim;
 import org.frogforce503.robot2025.subsystems.leds.Leds;
 import org.frogforce503.robot2025.subsystems.leds.LedsIO;
 import org.frogforce503.robot2025.subsystems.leds.LedsIOCANdle;
+import org.frogforce503.robot2025.subsystems.offsets.OffsetManager;
+import org.frogforce503.robot2025.subsystems.offsets.OffsetsIO;
+import org.frogforce503.robot2025.subsystems.offsets.OffsetsIOServer;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
-import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Gamepiece;
-import org.frogforce503.robot2025.subsystems.superstructure.Superstructure.Mode;
+import org.frogforce503.robot2025.subsystems.superstructure.SuperstructureMode;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.ArmIO;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.ArmIOSim;
@@ -53,24 +49,25 @@ import org.frogforce503.robot2025.subsystems.superstructure.elevator.Elevator;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.ElevatorIO;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.ElevatorIOSim;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.ElevatorIOSpark;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.Intake;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.PivotIO;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.PivotIOSim;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.PivotIOSpark;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.RollerIO;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.RollerIOSim;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.roller.RollerIOSpark;
+import org.frogforce503.robot2025.subsystems.superstructure.intakepivot.IntakePivot;
+import org.frogforce503.robot2025.subsystems.superstructure.intakepivot.IntakePivotIO;
+import org.frogforce503.robot2025.subsystems.superstructure.intakepivot.IntakePivotIOSim;
+import org.frogforce503.robot2025.subsystems.superstructure.intakepivot.IntakePivotIOSpark;
+import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRoller;
+import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRollerIO;
+import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRollerIOSim;
+import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRollerIOSpark;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIOBeamBreak;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIO;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIOClimber;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIOElevator;
+import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIO;
+import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIOClimber;
+import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIOElevator;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIO;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIOSim;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIOSpark;
 import org.frogforce503.robot2025.subsystems.vision.Vision;
 import org.frogforce503.robot2025.subsystems.vision.VisionSimulator;
-import org.frogforce503.robot2025.subsystems.vision.Vision.CameraName;
+import org.frogforce503.robot2025.subsystems.vision.VisionConstants.CameraName;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIO;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonSim;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonVision;
@@ -78,11 +75,8 @@ import org.frogforce503.robot2025.subsystems.vision.object_detection.ObjectDetec
 import org.frogforce503.test.UnitTest;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.units.UnaryFunction;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -97,64 +91,45 @@ public class RobotContainer implements UnitTest {
     private final Superstructure superstructure;
     private Climber climber;
     private Leds leds;
-
-    // Field
-    private final FieldInfo field = new FieldInfo();
-
-    // Dashboard Inputs
-    private final AutoChooser autoChooser;
-
-    // Offset Manager
     private final OffsetManager offsetManager;
 
-    // Visualizer
-    private final GameVisualizer gameVisualizer;
-    private final VisionSimulator visionVisualizer = new VisionSimulator();
+    // Field Info
+    private final FieldInfo field = new FieldInfo();
+
+    // Auto
+    private final AutoChooser autoChooser;
+
+    // Sim
+    private final GameViz gameViz;
+    private final VisionSimulator visionViz = new VisionSimulator();
 
     // Controllers
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController operator = new CommandXboxController(1);
-    private final Supplier<Trigger> driverLeftPaddle = driver.leftPaddle();
-    private final Supplier<Trigger> driverRightPaddle = driver.rightPaddle();
-    
+    private final Trigger driverLeftPaddle = driver.leftPaddle();
+    private final Trigger driverRightPaddle = driver.rightPaddle();
     private final Supplier<JoystickInputs> driverInputs = () -> new JoystickInputs(driver);
 
-    // Triggers
-    private Trigger coralMode, algaeMode;
-    private Trigger manualControlEnabled, superstructureCoastEnabled;
-    private Trigger camerasConnected;
+    // Warmup Executor
+    private final WarmupExecutor warmupExecutor;
 
-    // Command Mappers
-    private Map<Mode, Command> intakeRunner;
-    private Map<Mode, Command> releaseIntakeRunner;
-    private Map<Mode, Command> scoreRunner;
-    private Map<Mode, Command> releaseScoreRunner;
-  
-    // Vision Estimate Acceptor
+    // Vision Estimate Consumer
     private final Consumer<VisionMeasurement> visionEstimateConsumer =
-        visionMeasurement ->    
+        visionMeasurement ->
             drive.acceptVisionMeasurement(visionMeasurement);
 
-    // Driver-Assisted Commands
-    private final LoggedNetworkBoolean autoDrivingEnabled =
-        new LoggedNetworkBoolean("AutoDrivingEnabled", true);
-
-    private final AutoIntakeCommands autoIntakeCommands;
-    private final AutoScoreCommands autoScoreCommands;
-    
     // Overrides
-    private LoggedNetworkBoolean superstructureCoastOverride =
-        new LoggedNetworkBoolean("Coast Mode/Superstructure", false);
+    private final LoggedNetworkBoolean autoDrivingEnabled =
+        new LoggedNetworkBoolean("Auto Driving Enabled", true);
     
-    public RobotContainer(final Venue venue) {
-        field.setVenue(venue);
-
+    public RobotContainer() {
         Elevator elevator = null;
         Arm arm = null;
         Wrist wrist = null;
         Claw claw = null;
-        Intake intake = null;
-    
+        IntakePivot intakePivot = null;
+        IntakeRoller intakeRoller = null;
+
         // Initialize subsystems based on robot type
         switch (Constants.getRobot()) {
             case CompBot -> {
@@ -164,18 +139,19 @@ public class RobotContainer implements UnitTest {
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
-                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Robot.bot.FRONT_LEFT_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Robot.bot.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.LOWER_FRONT_RIGHT, Robot.bot.LOWER_FRONT_RIGHT_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Robot.bot.ELEVATOR_BACK_CAMERA_TO_CENTER)
+                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Robot.bot.getVisionConfig().FRONT_LEFT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Robot.bot.getVisionConfig().FRONT_RIGHT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.LOWER_FRONT_RIGHT, Robot.bot.getVisionConfig().LOWER_FRONT_RIGHT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Robot.bot.getVisionConfig().ELEVATOR_BACK_CAMERA_TO_CENTER())
                         },
                         new ObjectDetectionIO[] {});
-                elevator = new Elevator(new ElevatorIOSpark(), new DigitalIOElevator());
+                elevator = new Elevator(new ElevatorIOSpark(), new LimitSwitchIOElevator());
                 arm = new Arm(new ArmIOSpark());
                 wrist = new Wrist(new WristIOSpark());
                 claw = new Claw(new ClawIOSpark());
-                intake = new Intake(new PivotIOSpark(), new RollerIOSpark());
-                climber = new Climber(new ClimberIOSpark(), new DigitalIOClimber());
+                intakePivot = new IntakePivot(new IntakePivotIOSpark());
+                intakeRoller = new IntakeRoller(new IntakeRollerIOSpark());
+                climber = new Climber(new ClimberIOSpark(), new LimitSwitchIOClimber());
                 leds = new Leds(new LedsIOCANdle());
             }
             case PracticeBot -> {
@@ -185,39 +161,41 @@ public class RobotContainer implements UnitTest {
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
-                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Robot.bot.FRONT_LEFT_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Robot.bot.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Robot.bot.ELEVATOR_BACK_CAMERA_TO_CENTER),
-                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_FRONT, Robot.bot.ELEVATOR_FRONT_CAMERA_TO_CENTER)
+                            new AprilTagIOPhotonVision(CameraName.FRONT_LEFT, Robot.bot.getVisionConfig().FRONT_LEFT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.UPPER_FRONT_RIGHT, Robot.bot.getVisionConfig().FRONT_RIGHT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.LOWER_FRONT_RIGHT, Robot.bot.getVisionConfig().LOWER_FRONT_RIGHT_CAMERA_TO_CENTER()),
+                            new AprilTagIOPhotonVision(CameraName.ELEVATOR_BACK, Robot.bot.getVisionConfig().ELEVATOR_BACK_CAMERA_TO_CENTER())
                         },
                         new ObjectDetectionIO[] {});
-                elevator = new Elevator(new ElevatorIOSpark(), new DigitalIOElevator());
+                elevator = new Elevator(new ElevatorIOSpark(), new LimitSwitchIOElevator());
                 arm = new Arm(new ArmIOSpark());
                 wrist = new Wrist(new WristIOSpark());
                 claw = new Claw(new ClawIOSpark());
-                intake = new Intake(new PivotIOSpark(), new RollerIOSpark());
-                climber = new Climber(new ClimberIOSpark(), new DigitalIO() {});
+                intakePivot = new IntakePivot(new IntakePivotIOSpark());
+                intakeRoller = new IntakeRoller(new IntakeRollerIOSpark());
+                climber = new Climber(new ClimberIOSpark(), new LimitSwitchIO() {});
                 leds = new Leds(new LedsIOCANdle());
             }
             case SimBot -> {
-                drive = new Drive(new DriveIOSim(), field);
+                drive = new Drive(new DriveIOBasicSim(), field);
                 vision =
                     new Vision(
                         visionEstimateConsumer,
                         drive::getCurrentPose,
                         new AprilTagIO[] {
-                            new AprilTagIOPhotonSim(CameraName.FRONT_LEFT, Robot.bot.FRONT_LEFT_CAMERA_TO_CENTER, visionVisualizer),
-                            new AprilTagIOPhotonSim(CameraName.UPPER_FRONT_RIGHT, Robot.bot.UPPER_FRONT_RIGHT_CAMERA_TO_CENTER, visionVisualizer),
-                            new AprilTagIOPhotonSim(CameraName.LOWER_FRONT_RIGHT, Robot.bot.LOWER_FRONT_RIGHT_CAMERA_TO_CENTER, visionVisualizer),
-                            new AprilTagIOPhotonSim(CameraName.ELEVATOR_BACK, Robot.bot.ELEVATOR_BACK_CAMERA_TO_CENTER, visionVisualizer)
+                            new AprilTagIOPhotonSim(CameraName.FRONT_LEFT, Robot.bot.getVisionConfig().FRONT_LEFT_CAMERA_TO_CENTER(), visionViz),
+                            new AprilTagIOPhotonSim(CameraName.UPPER_FRONT_RIGHT, Robot.bot.getVisionConfig().FRONT_RIGHT_CAMERA_TO_CENTER(), visionViz),
+                            new AprilTagIOPhotonSim(CameraName.LOWER_FRONT_RIGHT, Robot.bot.getVisionConfig().LOWER_FRONT_RIGHT_CAMERA_TO_CENTER(), visionViz),
+                            new AprilTagIOPhotonSim(CameraName.ELEVATOR_BACK, Robot.bot.getVisionConfig().ELEVATOR_BACK_CAMERA_TO_CENTER(), visionViz)
                         },
                         new ObjectDetectionIO[] {});
-                elevator = new Elevator(new ElevatorIOSim(), new DigitalIO() {});
+                elevator = new Elevator(new ElevatorIOSim(), new LimitSwitchIO() {});
                 arm = new Arm(new ArmIOSim());
                 wrist = new Wrist(new WristIOSim());
                 claw = new Claw(new ClawIOSim());
-                intake = new Intake(new PivotIOSim(), new RollerIOSim());
-                climber = new Climber(new ClimberIOSim(), new DigitalIO() {});
+                intakePivot = new IntakePivot(new IntakePivotIOSim());
+                intakeRoller = new IntakeRoller(new IntakeRollerIOSim());
+                climber = new Climber(new ClimberIOSim(), new LimitSwitchIO() {});
                 leds = new Leds(new LedsIO() {});
             }
             case ProgrammingBot -> {
@@ -228,19 +206,20 @@ public class RobotContainer implements UnitTest {
                         drive::getCurrentPose,
                         new AprilTagIO[] {},
                         new ObjectDetectionIO[] {});
-                elevator = new Elevator(new ElevatorIO() {}, new DigitalIO() {});
+                elevator = new Elevator(new ElevatorIO() {}, new LimitSwitchIO() {});
                 arm = new Arm(new ArmIO() {});
                 wrist = new Wrist(new WristIO() {});
                 claw = new Claw(new ClawIO() {});
-                intake = new Intake(new PivotIO() {}, new RollerIO() {});
-                climber = new Climber(new ClimberIO() {}, new DigitalIO() {});
+                intakePivot = new IntakePivot(new IntakePivotIO() {});
+                intakeRoller = new IntakeRoller(new IntakeRollerIO() {});
+                climber = new Climber(new ClimberIO() {}, new LimitSwitchIO() {});
                 leds = new Leds(new LedsIO() {});
             }
             default -> {
                 System.err.println("What happened here?" + ErrorUtil.attachJavaClassName(RobotContainer.class));
             }
         }
-    
+
         // Create superstructure
         superstructure =
             new Superstructure(
@@ -248,315 +227,34 @@ public class RobotContainer implements UnitTest {
                 arm,
                 wrist,
                 claw,
-                intake,
+                intakePivot,
+                intakeRoller,
                 new CoralSensorIOBeamBreak(),
                 drive::getCurrentPose);
     
         // Create offset manager
         offsetManager =
             new OffsetManager(
-                venue,
                 Constants.getMode() == Constants.Mode.REPLAY
                     ? new OffsetsIO() {}
                     : new OffsetsIOServer());
-
-        // Create auto intake commands
-        autoIntakeCommands =
-            new AutoIntakeCommands(
-                drive,
-                vision,
-                superstructure,
-                leds,
-                field,
-                offsetManager,
-                driverInputs,
-                autoDrivingEnabled::get);
-
-        // Create auto score commands
-        autoScoreCommands =
-            new AutoScoreCommands(
-                drive,
-                vision,
-                superstructure,
-                leds,
-                field,
-                offsetManager,
-                driverInputs,
-                autoDrivingEnabled::get);
 
         // Create auto chooser
         autoChooser =
             new AutoChooser(
                 drive,
                 field,
-                superstructure,
-                autoIntakeCommands,
-                autoScoreCommands);
+                superstructure);
 
-        // Create game visualizer
-        gameVisualizer = new GameVisualizer(field, drive::getCurrentPose);
-    
-        // Initialize command mappers
-        this.intakeRunner = new HashMap<>() {{
-            // Coral
-            put(Mode.CORAL_INTAKE,
-                autoIntakeCommands
-                    .coralAutoIntake()
-                    .alongWith(leds.intakeCoral()));
+        // Create viz
+        gameViz = new GameViz(drive, field);
 
-            // Algae
-            put(Mode.ALGAE_GROUND,
-                superstructure
-                    .intakeAlgaeFromGround()
-                    .alongWith(leds.intakeAlgae()));
-            put(Mode.ALGAE_HANDOFF,
-                superstructure
-                    .intakeAlgaeFromHandoff()
-                    .alongWith(leds.intakeAlgae()));
-            put(Mode.ALGAE_PLUCK_HIGH,
-                autoIntakeCommands
-                    .algaeAutoHighPluck()
-                    .alongWith(leds.intakeAlgae()));
-            put(Mode.ALGAE_PLUCK_LOW,
-                autoIntakeCommands
-                    .algaeAutoLowPluck()
-                    .alongWith(leds.intakeAlgae()));
-        }};
+        warmupExecutor = new WarmupExecutor(drive, autoChooser);
 
-        this.releaseIntakeRunner = new HashMap<>() {{
-            // Coral
-            put(Mode.CORAL_INTAKE, Commands.none());
+        drive.setDefaultCommand(new TeleopSwerveCommand(drive, field, driverInputs.get()));
 
-            // Algae
-            put(Mode.ALGAE_GROUND, superstructure.holdAlgaeFromGround());
-            put(Mode.ALGAE_HANDOFF, superstructure.holdAlgaeFromHandoff());
-            put(Mode.ALGAE_PLUCK_HIGH,
-                autoIntakeCommands  
-                    .algaeBackup()
-                    .andThen(superstructure.holdAlgaeFromPluck()));
-            put(Mode.ALGAE_PLUCK_LOW,
-                autoIntakeCommands
-                    .algaeBackup()
-                    .andThen(superstructure.holdAlgaeFromPluck()));
-        }};
-
-        this.scoreRunner = new HashMap<>() {{
-            // Coral
-            put(Mode.L1,
-                autoScoreCommands
-                    .coralAutoScoreL1()
-                    .alongWith(leds.scoreCoral()));
-            put(Mode.L2,
-                autoScoreCommands
-                    .coralAutoScore()
-                    .alongWith(Commands.runOnce(vision::reefAlignment))
-                    .alongWith(leds.scoreCoral()));
-            put(Mode.L3,
-                autoScoreCommands
-                    .coralAutoScore()
-                    .alongWith(Commands.runOnce(vision::reefAlignment))
-                    .alongWith(leds.scoreCoral()));
-            put(Mode.L4,
-                autoScoreCommands
-                    .coralAutoScore()
-                    .alongWith(Commands.runOnce(vision::reefAlignment))
-                    .alongWith(leds.scoreCoral()));
-
-            // Algae
-            put(Mode.PROCESSOR,
-                autoScoreCommands
-                    .processorAutoScore()
-                    .alongWith(leds.scoreAlgae()));
-            put(Mode.BARGE,
-                autoScoreCommands
-                    .bargeAutoScore()
-                    .alongWith(leds.scoreAlgae()));
-        }};
-
-        this.releaseScoreRunner = new HashMap<>() {{
-            // Coral
-            put(Mode.L1,
-                superstructure
-                    .ejectCoralForL1()
-                    .andThen(new WaitAfterCoralEject())
-                    .andThen(superstructure.home())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE))
-                    .alongWith(Commands.runOnce(vision::globalLocalization)));
-            put(Mode.L2,
-                superstructure
-                    .ejectCoral()
-                    .andThen(new WaitAfterCoralEject())
-                    .andThen(superstructure.home())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE))
-                    .alongWith(Commands.runOnce(vision::globalLocalization)));
-            put(Mode.L3,
-                superstructure
-                    .ejectCoral()
-                    .andThen(new WaitAfterCoralEject())
-                    .andThen(superstructure.home())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE))
-                    .alongWith(Commands.runOnce(vision::globalLocalization)));
-            put(Mode.L4,
-                superstructure
-                    .ejectCoral()
-                    .andThen(new WaitAfterCoralEject())
-                    .andThen(superstructure.homeAfterL4())
-                    .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE))
-                    .alongWith(Commands.runOnce(vision::globalLocalization)));
-
-            // Algae
-            put(Mode.PROCESSOR,
-                new WaitAfterAlgaeEject()
-                    .andThen(superstructure.home()));
-            put(Mode.BARGE,
-                superstructure
-                    .ejectAlgaeFromClaw()
-                    .andThen(new WaitAfterAlgaeEject())
-                    .andThen(superstructure.home()));
-        }};
-
-        configureButtonBindings();
-    }
-
-    private void configureButtonBindings() {
         // Triggers
-        coralMode = new Trigger(() -> superstructure.getCurrentPiece() == Gamepiece.CORAL);
-        algaeMode = new Trigger(() -> superstructure.getCurrentPiece() == Gamepiece.ALGAE);
-        manualControlEnabled = new Trigger(superstructure::isManualControlEnabled);
-        superstructureCoastEnabled = new Trigger(superstructureCoastOverride::get);
-        camerasConnected = new Trigger(() -> true); // TODO: Make a method for this in Vision.java
-
-        // Set default mode whenever gamepiece changes
-        coralMode.onTrue(Commands.runOnce(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE)));
-        algaeMode.onTrue(Commands.runOnce(() -> superstructure.setCurrentMode(Mode.ALGAE_GROUND)));
-
-        BiConsumer<Trigger, Runnable> bindSwitches =
-            (trigger, runnable) ->
-                trigger
-                    .onTrue(Commands.runOnce(runnable));
-
-        // Joystick drive command
-        Supplier<Command> joystickDriveCommandFactory =
-            () -> DriveCommands.joystickDrive(drive, field, driverInputs.get(), drive::isRobotRelative);
-
-        drive.setDefaultCommand(joystickDriveCommandFactory.get());
-
-        // Main Controls
-        driver
-            .leftTrigger()
-                .whileTrue(intake())
-                .whileFalse(releaseIntake());
-
-        driver
-            .rightTrigger()
-                .whileTrue(score())
-                .whileFalse(releaseScore());
-
-        bindSwitches.accept(driver.leftBumper(), () -> superstructure.setCurrentBranch(Branch.LEFT));
-        bindSwitches.accept(driver.rightBumper(), () -> superstructure.setCurrentBranch(Branch.RIGHT));
-
-        // Preset Selection
-        TriConsumer<Trigger, Gamepiece, Mode> bindSelection =
-            (trigger, gamepiece, mode) ->
-                trigger
-                    .onTrue(
-                        Commands.parallel(
-                            Commands.runOnce(() -> superstructure.setCurrentPiece(gamepiece)),
-                            Commands.runOnce(() -> superstructure.setCurrentMode(mode))
-                        )
-                        .ignoringDisable(true));
-
-        bindSelection.accept(driver.y(), Gamepiece.CORAL, Mode.L1);
-        bindSelection.accept(driver.b(), Gamepiece.CORAL, Mode.L2);
-        bindSelection.accept(driver.a(), Gamepiece.CORAL, Mode.L3);
-        bindSelection.accept(driver.x(), Gamepiece.CORAL, Mode.L4);
-
-        bindSelection.accept(driver.povUp(), Gamepiece.ALGAE, Mode.ALGAE_PLUCK_HIGH);
-        bindSelection.accept(driver.povDown(), Gamepiece.ALGAE, Mode.ALGAE_PLUCK_LOW);
-        bindSelection.accept(driver.povLeft(), Gamepiece.ALGAE, Mode.PROCESSOR);
-        bindSelection.accept(driver.povRight(), Gamepiece.ALGAE, Mode.BARGE);
-
-        bindSelection.accept(operator.y(), Gamepiece.ALGAE, Mode.ALGAE_GROUND);
-        bindSelection.accept(operator.a(), Gamepiece.ALGAE, Mode.ALGAE_HANDOFF);
-
-        BiConsumer<Trigger, Command> bindClimbing =
-            (trigger, command) ->
-                trigger
-                    .whileTrue(command)
-                    .whileFalse(superstructure.stop().alongWith(climber.stop()));
-
-        bindClimbing.accept(driverLeftPaddle.get(), superstructure.setPivotDown());
-        bindClimbing.accept(driverRightPaddle.get(), superstructure.bringPivotUp());
-        bindClimbing.accept(operator.b(), climber.runGoal(ClimberGoal.FAST_WIND));
-
-        // Toggles / Overrides
-        bindSwitches.accept(driver.back(), drive::toggleSlowMode);
-        bindSwitches.accept(driver.start(), drive::toggleRobotRelative);
-        bindSwitches.accept(operator.povUp(), drive::resetRotation);
-
-        operator
-            .leftTrigger()
-            .onTrue(Commands.runOnce(this::seedWristPosition));
-        
-        operator
-            .back()
-            .onTrue(Commands.runOnce(superstructure::toggleManualControl));
-
-        // Coast superstructure if manual control is enabled and specified trigger is true
-        Consumer<Trigger> bindSuperstructureCoast =
-            trigger ->
-                manualControlEnabled
-                    .and(trigger)
-                        .onChange(
-                            Commands.runOnce(() -> superstructure.setBrakeMode(!superstructure.isBrakeModeEnabled()))
-                                .ignoringDisable(true));
-
-        bindSuperstructureCoast.accept(superstructureCoastEnabled);
-
-        UnaryFunction limiter =
-            input ->
-                MathUtil.clamp(
-                    MathUtil.applyDeadband(input, 0.2), -1.0, 1.0);
-
-        TriConsumer<DoubleSupplier, DoubleSupplier, DoubleSupplier> bindManualControl =
-            (elevatorPercent, armPercent, wristPercent) ->
-                manualControlEnabled
-                    .whileTrue(
-                        Commands.parallel(
-                            superstructure.manualElevatorControl(
-                                limiter.apply(elevatorPercent.getAsDouble())),
-
-                            superstructure.manualArmControl(
-                                limiter.apply(armPercent.getAsDouble())),
-                                    
-                            superstructure.manualWristControl(
-                                limiter.apply(wristPercent.getAsDouble()))));
-
-        bindManualControl.accept(
-            operator::getLeftY,
-            operator::getRightY,
-            operator::getRightTriggerAxis);
-        
-        // Leds
-        BiConsumer<Trigger, Command> gotPiece =
-            (trigger, command) ->
-                trigger
-                    .onTrue(
-                        Commands.parallel(
-                            command,
-                            new RumbleCommand(driver)));
-
-        Trigger gotCoral = new Trigger(superstructure::isHasCoral);
-        Trigger gotAlgaeInClaw = new Trigger(superstructure::isHasAlgaeInClaw);
-        Trigger gotAlgaeInIntake = new Trigger(superstructure::isHasAlgaeInIntake);
-
-        // Signal when robot intook a gamepiece
-        gotPiece.accept(gotCoral, leds.gotCoral());
-        gotPiece.accept(gotAlgaeInClaw.or(gotAlgaeInIntake), leds.gotAlgae());
-
-        // Signal when gamepiece selected changes
-        coralMode.onTrue(leds.signalCoralMode());
-        algaeMode.onTrue(leds.signalAlgaeMode());
+        Trigger camerasConnected = new Trigger(() -> true); // TODO: Make a method for this in Vision.java
 
         // If cameras disconnected for 5 seconds, then leds will blink red for the rest of the match
         camerasConnected
@@ -565,83 +263,119 @@ public class RobotContainer implements UnitTest {
                 Commands.runOnce(
                     () -> leds.setCameraDisconnected(true))
                         .ignoringDisable(true));
+
+        configureButtonBindings();
     }
 
-    // Main Driver Commands
-    public Command intake() {
-        return new FFSelectCommand<>(intakeRunner, superstructure::getCurrentMode);
+    private void configureButtonBindings() {
+        driver.leftTrigger().whileTrue(
+            new FFSelectCommand<>(
+                Map.of(
+                    SuperstructureMode.CORAL_INTAKE, new SafelyStowAndIntakeCoralFromStation(drive, field, vision, superstructure, leds),
+                    SuperstructureMode.ALGAE_GROUND, new IntakeAlgaeFromGround(),
+                    SuperstructureMode.ALGAE_HANDOFF, new IntakeAlgaeFromHandoff(),
+                    SuperstructureMode.ALGAE_PLUCK_HIGH, new IntakeAlgaeFromReef(true),
+                    SuperstructureMode.ALGAE_PLUCK_LOW, new IntakeAlgaeFromReef(false)
+                ),
+                superstructure::getCurrentMode));
+
+        driver.leftBumper().whileTrue(new ScoreCoralOnReef());
+        driver.rightBumper().whileTrue(new ScoreCoralOnReef());
+
+        driver.rightTrigger().whileTrue(
+            new FFSelectCommand<>(
+                Map.of(
+                    SuperstructureMode.PROCESSOR, new ScoreAlgaeInProcessor(),
+                    SuperstructureMode.BARGE, new ScoreAlgaeInBarge()
+                ),
+                superstructure::getCurrentMode));
+
+        // Preset Selection
+        bindPresets(driver.y(), SuperstructureMode.L1, SuperstructureMode.BARGE, SuperstructureMode.ALGAE_PLUCK_HIGH);
+        bindPresets(driver.b(), SuperstructureMode.L2, null, SuperstructureMode.ALGAE_HANDOFF);
+        bindPresets(driver.a(), SuperstructureMode.L3, SuperstructureMode.PROCESSOR, SuperstructureMode.ALGAE_PLUCK_LOW);
+        bindPresets(driver.x(), SuperstructureMode.L4, null, SuperstructureMode.ALGAE_GROUND);
+
+        bindClimbing(driver.povLeft(), ClimbingCommands.setPivotDown(superstructure)); // Step 1 of climbing
+        bindClimbing(driver.povUp(), ClimbingCommands.bringPivotUp(superstructure)); // Step 2 of climbing
+        bindClimbing(driver.povRight(), ClimbingCommands.fastWind(climber)); // Step 3 of climbing
+
+        // Overrides
+        driver.back().onTrue(Commands.runOnce(drive::toggleSlowMode));
+        driver.start().onTrue(Commands.runOnce(drive::toggleRobotRelative));
+        operator.povUp().onTrue(Commands.runOnce(drive::resetRotation));
+
+        operator.leftTrigger().onTrue(Commands.runOnce(superstructure::seedWristPosition));
+
+        // superstructure.getArm().setDefaultCommand(new TuneArm(superstructure.getArm()));
     }
 
-    public Command releaseIntake() {
-        return new FFSelectCommand<>(releaseIntakeRunner, superstructure::getCurrentMode);
-    }
-    
-    public Command score() {
-        return new FFSelectCommand<>(scoreRunner, superstructure::getCurrentMode);
+    private void bindPresets(
+        Trigger trigger,
+        SuperstructureMode modeWithCoral,
+        SuperstructureMode modeWithAlgae,
+        SuperstructureMode modeWithoutAnything
+    ) {
+        trigger
+            .onTrue(
+                Commands.runOnce(() -> {
+                    if (modeWithCoral != null && superstructure.isHasCoral()) {
+                        superstructure.setCurrentMode(modeWithCoral);
+                    } else if (modeWithAlgae != null && (superstructure.isHasAlgaeInClaw() || superstructure.isHasAlgaeInIntake())) {
+                        superstructure.setCurrentMode(modeWithAlgae);
+                    } else if (modeWithoutAnything != null) {
+                        superstructure.setCurrentMode(modeWithoutAnything);
+                    }
+                })
+                .ignoringDisable(true));
     }
 
-    public Command releaseScore() {
-        return new FFSelectCommand<>(releaseScoreRunner, superstructure::getCurrentMode);
+    private void bindClimbing(Trigger trigger, Command climbCommand) {
+        trigger
+            .whileTrue(climbCommand)
+            .whileFalse(
+                Commands.runOnce(() -> {
+                    superstructure.stop();
+                    climber.stop();
+            }));
     }
 
-    // Auto Chooser
-    public void warmupAutoChooser() {
-        autoChooser.scheduleWarmupCommand();
+    public void robotPeriodic() {
+        if (RobotBase.isSimulation()) {
+            visionViz.update(drive.getCurrentPose());
+        }
     }
 
-    public void startAuto() {
+    public void autonomousInit() {
         autoChooser.startAuto();
     }
 
-    public void updateAutoChooser() {
-        autoChooser.periodic();
-    }
-
-    public void cleanupAutoChooser() {
+    public void teleopInit() {
+        superstructure.getClaw().stop(); // Make sure coral doesn't eject in case state goes to EJECT_CORAL
         autoChooser.cleanup();
     }
 
-    // Visualizer
-    public void updateVisualizers() {
-        if (RobotBase.isSimulation()) {
-            visionVisualizer.update(drive.getCurrentPose());
+    public void disabledInit() {
+        if (drive.isCoastAfterAutoEnd()) {
+            drive.coast(); // Coasts drivetrain in disabled mode if post-auto coasting is enabled
         }
+        warmupExecutor.disabledInit();
     }
 
-    // Other
-    public void seedWristPosition() {
+    public void disabledPeriodic() {
+        autoChooser.periodic();
         superstructure.seedWristPosition();
-    }
-
-    public void stopClaw() {
-        superstructure.stopClaw().schedule();
-    }
-
-    /** Coasts drivetrain in disabled mode if post-auto coasting is enabled. */
-    public void coastAfterAutoEnd() {
-        if (RobotState.isDisabled() && drive.isCoastAfterAutoEnd()) {
-            drive.coast();
-        }
+        warmupExecutor.disabledPeriodic();
     }
 
     @Override
     public void test() {
         // // Uncomment to test (Waits 5 sec, auto aligns to nearest branch & does reef alignment, waits 1 sec after finished, and then homes & goes to global localization)
-
+        // CharacterizationExecutor executor = new CharacterizationExecutor(drive);
+        
         // RobotModeTriggers.teleop().onTrue(
         //     Commands.sequence(
-        //         Commands.waitSeconds(5),
-        //         autoScoreCommands
-        //             .coralAutoScore()
-        //             .alongWith(Commands.runOnce(vision::reefAlignment))
-        //             .alongWith(leds.scoreCoral()),
-        //         Commands.waitSeconds(1),
-        //         superstructure
-        //             .ejectCoral()
-        //             .andThen(new WaitAfterCoralEject())
-        //             .andThen(superstructure.homeAfterL4())
-        //             .andThen(() -> superstructure.setCurrentMode(Mode.CORAL_INTAKE))
-        //             .alongWith(Commands.runOnce(vision::globalLocalization))
+        //         executor.wheelRadiusCharacterization().withTimeout(20)
         //     )
         // );
     }

@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.frogforce503.robot2025.subsystems.vision.VisionConstants.CameraName;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagGoal;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIO;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagInputsAutoLogged;
@@ -42,19 +43,6 @@ public class Vision extends SubsystemBase {
     private EnumMap<CameraName, ObjectDetectionIO> objectDetectionIOMap = new EnumMap<>(CameraName.class);
     // Maps camera names to their corresponding ObjectDetectionInputs instances.
     private EnumMap<CameraName, ObjectDetectionInputsAutoLogged> objectDetectionInputsMap = new EnumMap<>(CameraName.class);
-
-    /**
-     * Cameras on robots are configured with a name.
-     * Every camera on the robot must have a name from this enum.
-     * This enum is used to identify specific cameras on a robot for any use case.
-     */
-    public enum CameraName {
-        FRONT_LEFT,
-        UPPER_FRONT_RIGHT,
-        LOWER_FRONT_RIGHT,
-        ELEVATOR_BACK,
-        ELEVATOR_FRONT
-    }
     
     /**
      * @param visionConsumer The consumer that will fuse vision measurements into the robot pose
@@ -212,22 +200,19 @@ public class Vision extends SubsystemBase {
         return measurement;
     }
 
+    /**
+     * Pose observations contain an array of TrackedAprilTags that aren't automatically logged by the Logger.
+     * This method logs the pose observation and the array of TrackedAprilTags it used to estimate the robot's pose.
+     * 
+     * @param aprilTagIO AprilTagIO instance of the camera outputting the pose observation
+     * @param poseObservation The outputted pose observation to log
+     */
     private void logPoseObservation(AprilTagIO aprilTagIO, PoseObservation poseObservation) {
         Logger.recordOutput("Vision/AprilTag Detection/" + aprilTagIO.getCameraName().name() + "/Pose Observation", poseObservation);
         Logger.recordOutput("Vision/AprilTag Detection/" + aprilTagIO.getCameraName().name() + "/Pose Observation/Used April Tags", poseObservation.usedAprilTags());
     }
 
-    /**
-     * Sets the current AprilTag goal for the Vision subsystem for global localization.
-     */
-    public void globalLocalization() {
-        desiredAprilTagGoal = AprilTagGoal.GLOBAL_LOCALIZATION;
-    }
-
-    /**
-     * Sets the current AprilTag goal for the Vision subsystem for alignment with the reef.
-     */
-    public void reefAlignment() {
-        desiredAprilTagGoal = AprilTagGoal.REEF_ALIGNMENT;
+    public void setDesiredAprilTagGoal(AprilTagGoal goal) {
+        this.desiredAprilTagGoal = goal;
     }
 }

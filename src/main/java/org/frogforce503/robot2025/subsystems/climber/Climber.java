@@ -1,171 +1,95 @@
 package org.frogforce503.robot2025.subsystems.climber;
 
-import org.frogforce503.lib.motorcontrol.tuning.TuningService;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
-import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIO;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.DigitalIOInputsAutoLogged;
+import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIO;
+import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.util.function.BooleanConsumer;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import lombok.Setter;
 
 public class Climber extends FFSubsystemBase {
     private final ClimberIO climberIO;
     private final ClimberIOInputsAutoLogged climberInputs = new ClimberIOInputsAutoLogged();
 
-    private final DigitalIO digitalIO;
-    private final DigitalIOInputsAutoLogged digitalInputs = new DigitalIOInputsAutoLogged();
+    private final LimitSwitchIO limitSwitchIO;
+    private final LimitSwitchIOInputsAutoLogged limitSwitchInputs = new LimitSwitchIOInputsAutoLogged();
 
-    private final Debouncer winchFilter = new Debouncer(0.1, DebounceType.kRising);
+    // Constants
+    private final Debouncer currentHoldDebouncer = new Debouncer(0.1, DebounceType.kRising);
 
+    // Control
+    @Setter private ClimberState currentState = ClimberState.IDLE;
     private boolean holdRequested = false;
 
-    // Tuning
-    private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Climber", Robot.bot.climberConstants.kPIDF());
-
-    // Overrides
-    private LoggedNetworkBoolean tuningEnabled =
-        new LoggedNetworkBoolean("Tuning/Climber/Tuning?", false);
-
-    private LoggedNetworkBoolean coastOverride =
-        new LoggedNetworkBoolean("Coast Mode/Climber", false);
-
-    private boolean requestCurrentControl = true;
-
-    // Alerts
-    private final Alert coastModeWhileRunning =
-        new Alert("Climber is in coast mode while running!", AlertType.kError);
-
-    public enum ClimberGoal {
-        IDLE(0.0),
-
-        SLOW_WIND(0.05),
-        FAST_WIND(1.0),
-
-        HOLD(0.3);
-        
-        private double current;
-        
-        private ClimberGoal(double current) {
-            this.current = current;
-        }
+    public enum ClimberState {
+        IDLE,
+        SLOW_WIND,
+        FAST_WIND,
+        HOLD
     }
 
-    public ClimberGoal currentGoal = ClimberGoal.IDLE;
-
-    public Climber(ClimberIO climberIO, DigitalIO digitalIO) {
+    public Climber(ClimberIO climberIO, LimitSwitchIO limitSwitchIO) {
         this.climberIO = climberIO;
-        this.digitalIO = digitalIO;
+        this.limitSwitchIO = limitSwitchIO;
     }
 
     @Override
     public void periodic() {
+        super.periodic();
+
         climberIO.updateInputs(climberInputs);
         Logger.processInputs("Climber/Winch", climberInputs);
 
-        digitalIO.updateInputs(digitalInputs);
-        Logger.processInputs("Climber/LimitSwitch", digitalInputs);
-
-        coastModeWhileRunning
-            .set(coastOverride.get() && !RobotState.isDisabled());
-
-        // Update tunable numbers
-        tuningExecutor().accept(tuningEnabled.get());
-
-        // Set coast mode
-        if (RobotState.isDisabled()) {
-            setBrakeMode(!coastOverride.get());
-        }
+        limitSwitchIO.updateInputs(limitSwitchInputs);
+        Logger.processInputs("Climber/LimitSwitch", limitSwitchInputs);
 
         if (currentThresholdForHoldMet()) {
             holdRequested = true;
         }
 
-        if (holdRequested && currentGoal != ClimberGoal.SLOW_WIND) {
-            currentGoal = ClimberGoal.HOLD;
+        if (holdRequested && currentState != ClimberState.SLOW_WIND) {
+            currentState = ClimberState.HOLD;
         }
 
-        if (requestCurrentControl) {
-            climberIO.runTorqueCurrent(currentGoal.current);
+        switch (currentState) {
+            case IDLE:
+                break;
+
+            case SLOW_WIND:
+                climberIO.runOpenLoop(0.05);
+                break;
+
+            case FAST_WIND:
+                climberIO.runOpenLoop(1.0);
+                break;
+
+            case HOLD:
+                climberIO.runOpenLoop(0.3);
+                break;
         }
 
-        Logger.recordOutput("Climber/Goal", currentGoal.name());
-        Logger.recordOutput("Climber/Reached Goal", atGoal());
+        Logger.recordOutput("Climber/State", currentState.name());
 
         // Record cycle time
         LoggedTracer.record("Climber");
     }
 
     private boolean currentThresholdForHoldMet() {
-        return winchFilter.calculate(
+        return currentHoldDebouncer.calculate(
             climberInputs.data.statorCurrentAmps() > 63);
     }
 
+    // Actions
     @Override
-    public BooleanConsumer tuningExecutor() {
-        return tuningEnabled -> {
-            pidfTuningService.setTuning(tuningEnabled);
-            
-            if (tuningEnabled) {
-                PIDFConfig newPIDFConfig = pidfTuningService.getUpdatedConfig();
-
-                climberIO.setPID(
-                    newPIDFConfig.kP(),
-                    newPIDFConfig.kI(),
-                    newPIDFConfig.kD());
-            }
-        };
-    }
-
-    @Override
-    public boolean atGoal() {
-        return MathUtil.isNear(currentGoal.current, climberInputs.data.statorCurrentAmps(), 10);
-    }
-
     public void setBrakeMode(boolean enabled) {
         climberIO.setBrakeMode(enabled);
     }
 
     @Override
-    public Command stop() {
-        return Commands.sequence(
-            runOnce(() -> requestCurrentControl = false),
-            runOnce(climberIO::stop)
-        );
-    }
-
-    @Override
-    public Command runManual(double output) {
-        return Commands.sequence(
-            runOnce(() -> requestCurrentControl = false),
-            run(() -> climberIO.runOpenLoop(output))
-        );
-    }
-
-    public Command setGoal(ClimberGoal goal) {
-        return Commands.sequence(
-            runOnce(() -> requestCurrentControl = true),
-            runOnce(() -> currentGoal = goal)
-        );
-    }
-
-    public Command runGoal(ClimberGoal goal) {
-        return Commands.sequence(
-            setGoal(goal),
-            Commands.waitUntil(this::atGoal)
-        );
+    public void stop() {
+        climberIO.stop();
     }
 }

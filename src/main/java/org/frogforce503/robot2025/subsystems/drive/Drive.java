@@ -2,8 +2,7 @@ package org.frogforce503.robot2025.subsystems.drive;
 
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.lib.vision.apriltag_detection.VisionMeasurement;
-import org.frogforce503.robot2025.fields.FieldInfo;
-import org.frogforce503.robot2025.subsystems.drive.DriveConstants.ModuleName;
+import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.io.DriveIO;
 import org.frogforce503.robot2025.subsystems.drive.io.DriveIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
@@ -23,23 +22,17 @@ public class Drive extends SubsystemBase {
 
     private final FieldInfo field;
 
-    @Getter private Pose2d currentPose = Pose2d.kZero;
-    @Getter private ChassisSpeeds currentVelocity = new ChassisSpeeds();
-
-    @Getter private boolean slowModeEnabled = false;
-    @Getter private boolean robotRelative = false;
-
-    @Setter @Getter private boolean coastAfterAutoEnd = false;
-
-    private DriveVisualizer visualizer;
-
+    // State
     private ChassisSpeeds requestedSpeeds = new ChassisSpeeds();
+
+    // Toggles
+    @Getter private boolean robotRelative = false;
+    @Getter private boolean slowMode = false;
+    @Setter @Getter private boolean coastAfterAutoEnd = false;
 
     public Drive(DriveIO io, FieldInfo field) {
         this.io = io;
         this.field = field;
-
-        this.visualizer = new DriveVisualizer(DriveConstants.FAST_TRANSLATION_METERS_PER_SECOND);
 
         setPose(Pose2d.kZero);
     }
@@ -49,9 +42,6 @@ public class Drive extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Drive", inputs);
 
-        currentPose = inputs.data.poseMeters();
-        currentVelocity = inputs.data.velocityMeters();
-
         this.outputTelemetry();
 
         // Record cycle time
@@ -60,17 +50,17 @@ public class Drive extends SubsystemBase {
 
     private void outputTelemetry() {
         // Toggles
-        Logger.recordOutput("Drive/Toggles/SlowModeEnabled", slowModeEnabled);
+        Logger.recordOutput("Drive/Toggles/SlowModeEnabled", slowMode);
         Logger.recordOutput("Drive/Toggles/RobotRelative", robotRelative);
 
         // Inputs
-        Logger.recordOutput("Drive/Inputs/Pose", currentPose);
-        Logger.recordOutput("Drive/Inputs/Velocity", currentVelocity);
-        Logger.recordOutput("Drive/Inputs/Velocity/Magnitude", Math.hypot(currentVelocity.vxMetersPerSecond, currentVelocity.vyMetersPerSecond));
+        Logger.recordOutput("Drive/Inputs/Pose", getCurrentPose());
+        Logger.recordOutput("Drive/Inputs/Velocity", getCurrentVelocity());
+        Logger.recordOutput("Drive/Inputs/Velocity/Magnitude", Math.hypot(getCurrentVelocity().vxMetersPerSecond, getCurrentVelocity().vyMetersPerSecond));
 
         // Status
         Logger.recordOutput("Drive/State/AttainedWheelSpeed", Units.metersToFeet(inputs.data.state().ModuleStates[0].speedMetersPerSecond));
-        Logger.recordOutput("Drive/State/Current Speeds", requestedSpeeds.toString());
+        Logger.recordOutput("Drive/State/Current Speeds", requestedSpeeds);
 
         SwerveModuleState[] states = inputs.data.state().ModuleStates;
         Logger.recordOutput("Drive/State/ModuleStates", states);
@@ -78,22 +68,27 @@ public class Drive extends SubsystemBase {
         for (int i = 0; i < states.length; i++) {
             SwerveModuleState state = states[i];
 
-            Logger.recordOutput("Drive/Module/" + ModuleName.fromIndex(i) + "/Angle", state.angle.getDegrees());
-            Logger.recordOutput("Drive/Module/" + ModuleName.fromIndex(i) + "/Velocity", state.speedMetersPerSecond);
+            Logger.recordOutput("Drive/Module/" + ModuleName.values()[i] + "/Angle", state.angle.getDegrees());
+            Logger.recordOutput("Drive/Module/" + ModuleName.values()[i] + "/Velocity", state.speedMetersPerSecond);
         }
-
-        visualizer.updateModules(states, getAngle());
-        visualizer.displayModulePoses(currentPose.getTranslation(), getAngle());
 
         // Field
         Logger.recordOutput("Alliance Color", field.getAlliance());
-        Logger.recordOutput("Current Global Pose", currentPose);
-        field.setRobotPose(currentPose);
+        Logger.recordOutput("Current Global Pose", getCurrentPose());
+        field.setRobotPose(getCurrentPose());
+    }
+
+    public Pose2d getCurrentPose() {
+        return inputs.data.poseMeters();
+    }
+
+    public ChassisSpeeds getCurrentVelocity() {
+        return inputs.data.velocityMeters();
     }
 
     // Toggles
     public void toggleSlowMode() {
-        slowModeEnabled = !slowModeEnabled;
+        slowMode = !slowMode;
     }
 
     public void toggleRobotRelative() {
@@ -126,18 +121,18 @@ public class Drive extends SubsystemBase {
 
     // Getters
     public Rotation2d getAngle() {
-        return this.currentPose.getRotation();
+        return getCurrentPose().getRotation();
     }
 
     public ChassisSpeeds getFieldVelocity() {
-        return ChassisSpeeds.fromRobotRelativeSpeeds(currentVelocity, getAngle());
+        return ChassisSpeeds.fromRobotRelativeSpeeds(getCurrentVelocity(), getAngle());
     }
 
     /** Returns the position of each module in radians. */
     public double[] getWheelRadiusCharacterizationPositions() {
         double[] values = new double[4];
         for (int i = 0; i < 4; i++) {
-            values[i] = io.getModuleData(ModuleName.fromIndex(i)).drivePositionRad();
+            values[i] = io.getCharacterizationData(i).drivePositionRad();
         }
         return values;
     }
@@ -147,13 +142,13 @@ public class Drive extends SubsystemBase {
         double output = 0.0;
         for (int i = 0; i < 4; i++) {
             output +=
-                Units.radiansToRotations(io.getModuleData(ModuleName.fromIndex(i)).driveVelocityRadPerSec()) / 4.0;
+                Units.radiansToRotations(io.getCharacterizationData(i).driveVelocityRadPerSec()) / 4.0;
         }
         return output;
     }
 
     public Rotation2d getGyroRotation() {
-        return io.getRawGyroAngle();
+        return io.getGyroYaw();
     }
 
     // Actions
@@ -184,5 +179,12 @@ public class Drive extends SubsystemBase {
 
     public void stop() {
         runVelocity(new ChassisSpeeds());
+    }
+
+    private enum ModuleName {
+        FrontLeft,
+        FrontRight,
+        BackLeft,
+        BackRight;
     }
 }

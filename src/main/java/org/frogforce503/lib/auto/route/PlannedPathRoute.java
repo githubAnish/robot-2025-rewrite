@@ -20,7 +20,7 @@ public class PlannedPathRoute implements BaseRoute {
     }
 
     @Override
-    public Pose2d getInitialPose(Supplier<Pose2d> overridePoseSupplier) {
+    public Pose2d getInitialPoseOrElseGet(Supplier<Pose2d> overridePoseSupplier) {
         Optional<Pose2d> initialPose =
             Optional.ofNullable(
                 paths

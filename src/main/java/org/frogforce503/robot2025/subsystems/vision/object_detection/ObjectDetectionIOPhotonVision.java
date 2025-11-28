@@ -3,7 +3,7 @@ package org.frogforce503.robot2025.subsystems.vision.object_detection;
 import java.util.Comparator;
 import java.util.List;
 
-import org.frogforce503.robot2025.subsystems.vision.Vision.CameraName;
+import org.frogforce503.robot2025.subsystems.vision.VisionConstants.CameraName;
 import org.frogforce503.lib.vision.object_detection.ObjectSortingMode;
 import org.frogforce503.lib.vision.object_detection.TrackedObject;
 

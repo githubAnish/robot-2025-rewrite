@@ -2,65 +2,77 @@ package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
+import org.frogforce503.robot2025.Robot;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import lombok.Getter;
+import lombok.Setter;
 
 public class Claw extends FFSubsystemBase {
     private final ClawIO io;
     private final ClawIOInputsAutoLogged inputs = new ClawIOInputsAutoLogged();
 
+    // Constants
+    @Setter private SimpleMotorFeedforward feedforward = Robot.bot.getClawConfig().kFF().getSimpleMotorFF();
     private final Debouncer coralFilter = new Debouncer(0.1);
     private final Debouncer algaeFilter = new Debouncer(0.25, DebounceType.kRising);
 
-    // Overrides
-    private LoggedNetworkBoolean coastOverride =
-        new LoggedNetworkBoolean("Coast Mode/Claw", false);
+    // Control
+    private double targetLeftVelocityRPM = ClawConstants.START;
+    private double targetRightVelocityRPM = ClawConstants.START;
 
-    private boolean requestVelocityControl = true;
+    private boolean shouldRunVelocity = false;
+    private boolean atGoal = false;
 
-    // Alerts
-    private final Alert coastModeWhileRunning =
-        new Alert("Claw is in coast mode while running!", AlertType.kError);
-
-    @Getter private ClawGoal currentGoal = ClawGoal.OFF;
-
-    public Claw(ClawIO clawIO) {
-        this.io = clawIO;
+    public Claw(ClawIO io) {
+        this.io = io;
     }
 
     @Override
     public void periodic() {
+        super.periodic();
+
         io.updateInputs(inputs);
         Logger.processInputs("Claw", inputs);
 
-        coastModeWhileRunning
-            .set(coastOverride.get() && !RobotState.isDisabled());
+        // Run velocity mode unless requested to stop
+        if (shouldRunVelocity && RobotState.isEnabled()) {
+            atGoal = isAtVelocity(targetLeftVelocityRPM, targetRightVelocityRPM, ClawConstants.kTolerance);
+            io.runVelocity(targetLeftVelocityRPM, targetRightVelocityRPM, feedforward.calculate((targetLeftVelocityRPM + targetRightVelocityRPM) / 2.0));
 
-        // Set coast mode
-        if (RobotState.isDisabled()) {
-            setBrakeMode(!coastOverride.get());
+            // Log state
+            Logger.recordOutput("Claw/LeftSetpointVelocityRPM", targetLeftVelocityRPM);
+            Logger.recordOutput("Claw/RightSetpointVelocityRPM", targetRightVelocityRPM);
+            Logger.recordOutput("Claw/AtGoal", atGoal);
+        } else {
+            // Reset setpoint
+            targetLeftVelocityRPM = 0.0;
+            targetRightVelocityRPM = 0.0;
+
+            // Clear logs
+            Logger.recordOutput("Claw/LeftSetpointVelocityRPM", 0.0);
+            Logger.recordOutput("Claw/RightSetpointVelocityRPM", 0.0);
+            Logger.recordOutput("Claw/AtGoal", true);
         }
 
-        if (requestVelocityControl) {
-            io.runVolts(currentGoal.velocityLeft, currentGoal.velocityRight);
-        }
-
-        Logger.recordOutput("Claw/Goal", currentGoal.name());
-        Logger.recordOutput("Claw/Reached Goal", atGoal());
+        Logger.recordOutput("Claw/LeftCurrentVelocityRPM", getLeftVelocityRPM());
+        Logger.recordOutput("Claw/RightCurrentVelocityRPM", getRightVelocityRPM());
 
         // Record cycle time
         LoggedTracer.record("Claw");
+    }
+
+    public double getLeftVelocityRPM() {
+        return inputs.leftMotorData.velocityRPM();
+    }
+
+    public double getRightVelocityRPM() {
+        return inputs.rightMotorData.velocityRPM();
     }
 
     public boolean coralCurrentThresholdForIntookMet() {
@@ -83,44 +95,39 @@ public class Claw extends FFSubsystemBase {
             inputs.rightMotorData.statorCurrentAmps() > 15);
     }
 
-    @Override
-    public boolean atGoal() {
-        return
-            MathUtil.isNear(currentGoal.velocityLeft, inputs.leftMotorData.velocity(), 50) &&
-            MathUtil.isNear(currentGoal.velocityRight, inputs.rightMotorData.velocity(), 50);
+    // Actions
+    public void setPID(double kP, double kI, double kD) {
+        io.setPID(kP, kI, kD);
     }
 
+    @Override
     public void setBrakeMode(boolean enabled) {
         io.setBrakeMode(enabled);
     }
 
     @Override
-    public Command stop() {
-        return Commands.sequence(
-            runOnce(() -> requestVelocityControl = false),
-            runOnce(io::stop)
-        );
+    public void stop() {
+        io.stop();
     }
 
-    @Override
-    public Command runManual(double output) {
-        return Commands.sequence(
-            runOnce(() -> requestVelocityControl = false),
-            run(() -> io.runOpenLoop(output, output))
-        );
+    public void runOpenLoop(double leftOutput, double rightOutput) {
+        this.shouldRunVelocity = false;
+        io.runOpenLoop(leftOutput, rightOutput);
     }
 
-    public Command setGoal(ClawGoal goal) {
-        return Commands.sequence(
-            runOnce(() -> requestVelocityControl = true),
-            runOnce(() -> currentGoal = goal)
-        );
+    public void setVelocity(double leftVelocityRPM, double rightVelocityRPM) {
+        this.shouldRunVelocity = true;
+        this.targetLeftVelocityRPM = leftVelocityRPM;
+        this.targetRightVelocityRPM = rightVelocityRPM;
     }
 
-    public Command runGoal(ClawGoal goal) {
-        return Commands.sequence(
-            setGoal(goal),
-            Commands.waitUntil(this::atGoal)
-        );
+    public void setVelocity(double velocityRPM) {
+        setVelocity(velocityRPM, velocityRPM);
+    }
+
+    public boolean isAtVelocity(double leftVelocityRPM, double rightVelocityRPM, double tolerance) {
+        return
+            MathUtil.isNear(leftVelocityRPM, getLeftVelocityRPM(), tolerance) &&
+            MathUtil.isNear(rightVelocityRPM, getRightVelocityRPM(), tolerance);
     }
 }

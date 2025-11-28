@@ -79,7 +79,7 @@ public class RotationSequence {
   }
 
   /** Represents a state in a rotation sequence with a position and velocity. */
-  public static class State {
+  public class State {
     public Rotation2d position;
     public double velocityRadiansPerSec;
 

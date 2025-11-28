@@ -1,0 +1,107 @@
+package org.frogforce503.robot2025.commands.tuning;
+
+import org.frogforce503.lib.motorcontrol.FFConfig;
+import org.frogforce503.lib.motorcontrol.PIDConfig;
+import org.frogforce503.lib.util.LoggedTunableNumber;
+import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.config.subsystem.ArmConfig;
+import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
+
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj2.command.Command;
+
+public class TuneArm extends Command {
+    private final Arm arm;
+
+    private final LoggedTunableNumber kP;
+    private final LoggedTunableNumber kI;
+    private final LoggedTunableNumber kD;
+    private final LoggedTunableNumber kS;
+    private final LoggedTunableNumber kG;
+    private final LoggedTunableNumber kV;
+    private final LoggedTunableNumber kA;
+    private final LoggedTunableNumber maxVel;
+    private final LoggedTunableNumber maxAcc;
+
+    private final LoggedTunableNumber setpointAngle;
+
+    public TuneArm(Arm arm) {
+        this.arm = arm;
+
+        // Get initial values from config
+        final ArmConfig armConfig = Robot.bot.getArmConfig();
+
+        final PIDConfig initialPID = armConfig.kPID();
+        final FFConfig initialFF = armConfig.kFF();
+        final Constraints initialConstraints = armConfig.kConstraints();
+
+        // Create tunable numbers
+        this.kP = new LoggedTunableNumber("Arm/kP", initialPID.kP());
+        this.kI = new LoggedTunableNumber("Arm/kI", initialPID.kI());
+        this.kD = new LoggedTunableNumber("Arm/kD", initialPID.kD());
+        this.kS = new LoggedTunableNumber("Arm/kS", initialFF.kS());
+        this.kG = new LoggedTunableNumber("Arm/kG", initialFF.kG());
+        this.kV = new LoggedTunableNumber("Arm/kV", initialFF.kV());
+        this.kA = new LoggedTunableNumber("Arm/kA", initialFF.kA());
+
+        this.maxVel = new LoggedTunableNumber("Arm/MaxVelocityRadPerSec", initialConstraints.maxVelocity);
+        this.maxAcc = new LoggedTunableNumber("Arm/MaxAccelerationRadPerSec2", initialConstraints.maxAcceleration);
+
+        this.setpointAngle = new LoggedTunableNumber("Arm/SetpointRad", arm.getAngleRad());
+
+        addRequirements(arm);
+    }
+
+    @Override
+    public void initialize() {
+        // Set tuning mode to true
+        this.kP.setTuningMode(true);
+        this.kI.setTuningMode(true);
+        this.kD.setTuningMode(true);
+        this.kS.setTuningMode(true);
+        this.kG.setTuningMode(true);
+        this.kV.setTuningMode(true);
+        this.kA.setTuningMode(true);
+        this.maxVel.setTuningMode(true);
+        this.maxAcc.setTuningMode(true);
+    }
+
+    @Override
+    public void execute() {
+        // Update PID only if changed
+        LoggedTunableNumber.ifChanged(
+            hashCode(),
+            () -> arm.setPID(kP.get(), kI.get(), kD.get()),
+            kP, kI, kD);
+        
+        // Update FF only if changed
+        LoggedTunableNumber.ifChanged(
+            hashCode(),
+            () -> arm.setFeedforward(new ArmFeedforward(kS.get(), kG.get(), kV.get(), kA.get())),
+            kS, kG, kV, kA);
+
+        // Update trapezoid profile only if changed
+        LoggedTunableNumber.ifChanged(
+            hashCode(),
+            () -> arm.setProfile(new TrapezoidProfile(new Constraints(maxVel.get(), maxAcc.get()))),
+            maxVel, maxAcc);
+
+        // Update setpoint only if changed
+        LoggedTunableNumber.ifChanged(
+            hashCode(),
+            () -> arm.setAngle(setpointAngle.get()),
+            setpointAngle);
+    }
+
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        arm.stop();
+    }
+}

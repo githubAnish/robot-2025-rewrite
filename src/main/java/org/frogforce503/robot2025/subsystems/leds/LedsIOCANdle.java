@@ -15,14 +15,14 @@ public class LedsIOCANdle implements LedsIO {
     private CANdle leds;
 
     public LedsIOCANdle() {
-        leds = new CANdle(Robot.bot.candleID);
+        leds = new CANdle(Robot.bot.getLedsConfig().candleID());
 
         CANdleConfiguration config = new CANdleConfiguration();
 
         leds.configFactoryDefault();
         leds.clearStickyFaults();
 
-        leds.setStatusFramePeriod(CANdleStatusFrame.CANdleStatusFrame_Status_1_General, 250);
+        leds.setStatusFramePeriod(CANdleStatusFrame.CANdleStatusFrame_Status_1_General, 500); // Update twice a second
 
         leds.configAllSettings(config);
     }

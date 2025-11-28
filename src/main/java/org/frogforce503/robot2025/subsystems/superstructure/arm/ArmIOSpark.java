@@ -2,6 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.config.subsystem.ArmConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -9,56 +10,56 @@ import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
-import com.revrobotics.spark.config.ClosedLoopConfigAccessor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.filter.Debouncer;
+import lombok.Getter;
 
 public class ArmIOSpark implements ArmIO {
     // Hardware
-    private SparkMax motor;
-    private SparkAbsoluteEncoder encoder;
+    @Getter private final SparkMax motor;
+    private final SparkAbsoluteEncoder encoder;
 
     // Control
-    private SparkClosedLoopController pidController;
+    private final SparkClosedLoopController controller;
 
     // Config
     private SparkMaxConfig config = new SparkMaxConfig();
-    private final double ABSOLUTE_CONVERSION_FACTOR = 360.0;
-    private final int STATOR_CURRENT_LIMIT = 30;
 
     // Connected Debouncers
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public ArmIOSpark() {
-        motor = SparkUtil.getSpark(Robot.bot.armConstants.armID(), false);
-        encoder = motor.getAbsoluteEncoder();
+        final ArmConfig armConfig = Robot.bot.getArmConfig();
 
-        pidController = motor.getClosedLoopController();
+        motor = new SparkMax(armConfig.id(), MotorType.kBrushless);
+        encoder = motor.getAbsoluteEncoder();
+        controller = motor.getClosedLoopController();
 
         // Configure motor
+        config.inverted(armConfig.inverted());
+        config.idleMode(IdleMode.kBrake);
+        config.smartCurrentLimit(armConfig.statorCurrentLimit());
+        config.voltageCompensation(12.0);
+
         config
             .absoluteEncoder
-                .zeroOffset(Robot.bot.armConstants.armOffset())
-                .positionConversionFactor(ABSOLUTE_CONVERSION_FACTOR)
+                .zeroOffset(armConfig.zeroOffset())
+                .positionConversionFactor(2 * Math.PI) // convert rotations to radians
+                .velocityConversionFactor(2 * Math.PI / 60) // convert RPM to rad/sec
+                .zeroCentered(true)
+                .averageDepth(2)
                 .setSparkMaxDataPortConfig();
 
         config
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-                .pid(
-                    Robot.bot.armConstants.kPIDF().kP(),
-                    Robot.bot.armConstants.kPIDF().kI(),
-                    Robot.bot.armConstants.kPIDF().kD(),
-                    ClosedLoopSlot.kSlot0);
+                .pid(armConfig.kPID().kP(), armConfig.kPID().kI(), armConfig.kPID().kD());
 
-        config.inverted(Robot.bot.armConstants.armInverted());
-
-        config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
-
-        config.voltageCompensation(12);
+        SparkUtil.optimizeSignals(config, true, false);
 
         motor.clearFaults();
 
@@ -73,7 +74,7 @@ public class ArmIOSpark implements ArmIO {
                 connectedDebouncer.calculate(motor.getLastError() == REVLibError.kOk),
                 encoder.getPosition(),
                 encoder.getVelocity(),
-                motor.getBusVoltage() * motor.getAppliedOutput(),
+                motor.getAppliedOutput() * motor.getBusVoltage(),
                 motor.getOutputCurrent(),
                 motor.getMotorTemperature());
     }
@@ -89,8 +90,8 @@ public class ArmIOSpark implements ArmIO {
     }
 
     @Override
-    public void runPosition(double position, double feedforward) {
-        pidController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
+    public void runPosition(double positionRad, double feedforward) {
+        controller.setReference(positionRad, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
     }
 
     @Override
@@ -100,19 +101,13 @@ public class ArmIOSpark implements ArmIO {
 
     @Override
     public void setPID(double kP, double kI, double kD) {
-        ClosedLoopConfigAccessor accessor = motor.configAccessor.closedLoop;
-
-        if (accessor.getP() != kP || accessor.getI() != kI || accessor.getD() != kD) {
-            config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
-        }
-
+        config.closedLoop.pid(kP, kI, kD);
         SparkUtil.configure(motor, config, false);
     }
 
     @Override
     public void setBrakeMode(boolean enabled) {
         config.idleMode(enabled ? IdleMode.kBrake : IdleMode.kCoast);
-
         SparkUtil.configure(motor, config, false);
     }
 }

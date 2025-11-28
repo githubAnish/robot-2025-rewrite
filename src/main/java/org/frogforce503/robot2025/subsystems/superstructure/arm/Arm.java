@@ -3,25 +3,15 @@ package org.frogforce503.robot2025.subsystems.superstructure.arm;
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
-import edu.wpi.first.util.function.BooleanConsumer;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import lombok.Getter;
+import lombok.Setter;
 
-import org.frogforce503.lib.motorcontrol.tuning.TuningService;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFConfig;
-import org.frogforce503.lib.motorcontrol.tuning.pidf.PIDFTuningService;
-import org.frogforce503.lib.motorcontrol.tuning.speed.SpeedConstraintsTuningService;
 import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
@@ -31,65 +21,34 @@ public class Arm extends FFSubsystemBase {
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
     // Constants
-    private final Range range = Robot.bot.armConstants.range();
-    private ArmFeedforward feedforward = Robot.bot.armConstants.kPIDF().toArmFeedforward();
-    private final double parallelToGroundAngle = 88.5;
+    private final Range motionRange = Robot.bot.getArmConfig().motionRange();
+    @Setter private ArmFeedforward feedforward = Robot.bot.getArmConfig().kFF().getArmFF();
 
     // Control
-    private TrapezoidProfile profile;
+    private double targetAngleRad = ArmConstants.START;
+
+    private boolean shouldRunProfile = false;
+    @Setter private TrapezoidProfile profile;
     @Getter private State setpoint = new State();
-
-    // Tuning
-    private TuningService<PIDFConfig> pidfTuningService =
-        new PIDFTuningService("Arm", Robot.bot.armConstants.kPIDF());
-
-    private TuningService<Constraints> speedTuningService =
-        new SpeedConstraintsTuningService("Arm", Robot.bot.armConstants.kConstraints());
-
-    // Overrides
-    private LoggedNetworkBoolean tuningEnabled =
-        new LoggedNetworkBoolean("Tuning/Arm/Tuning?", false);
-
-    private LoggedNetworkBoolean coastOverride =
-        new LoggedNetworkBoolean("Coast Mode/Arm", false);
-
-    private boolean requestPositionControl = true;
-
-    // Alerts
-    private final Alert coastModeWhileRunning =
-        new Alert("Arm is in coast mode while running!", AlertType.kError);
-
-    @Getter private ArmGoal currentGoal = ArmGoal.DOWN;
+    private boolean atGoal = false;
 
     public Arm(ArmIO io) {
         this.io = io;
-
-        profile =
-            new TrapezoidProfile(
-                Robot.bot.armConstants.kConstraints());
+        profile = new TrapezoidProfile(Robot.bot.getArmConfig().kConstraints());
     }
 
     @Override
     public void periodic() {
+        super.periodic();
+
         io.updateInputs(inputs);
         Logger.processInputs("Arm", inputs);
 
-        coastModeWhileRunning
-            .set(coastOverride.get() && !RobotState.isDisabled());
-
-        // Update tunable numbers
-        tuningExecutor().accept(tuningEnabled.get());
-
-        // Set coast mode
-        if (RobotState.isDisabled()) {
-            setBrakeMode(!coastOverride.get());
-        }
-
-        // Run position mode unless requested to stop
-        if (requestPositionControl) {
+        // Update profile
+        if (shouldRunProfile && RobotState.isEnabled()) {
             var goalState =
                 new State(
-                    range.clamp(currentGoal.position),
+                    motionRange.clamp(targetAngleRad),
                     0.0);
 
             double previousVelocity = setpoint.velocity;
@@ -98,96 +57,74 @@ public class Arm extends FFSubsystemBase {
                 profile
                     .calculate(Constants.loopPeriodSecs, setpoint, goalState);
 
-            if (!range.contains(setpoint.position)) {
+            if (!motionRange.contains(setpoint.position)) {
                 setpoint =
                     new State(
-                        range.clamp(setpoint.position),
+                        motionRange.clamp(setpoint.position),
                         0.0);
             }
 
-            double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
+            atGoal = isAtAngle(goalState.position, ArmConstants.kTolerance);
 
-            io.runPosition(setpoint.position, feedforward.calculate(Math.toRadians(currentGoal.position - parallelToGroundAngle), setpoint.velocity, accel));
+            if (atGoal) {
+                stop();
+            } else {
+                double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
+                io.runPosition(setpoint.position, feedforward.calculate(setpoint.position, setpoint.velocity, accel));
+            }
 
             // Log state
-            Logger.recordOutput("Arm/Profile/SetpointPosition", setpoint.position);
-            Logger.recordOutput("Arm/Profile/SetpointVelocity", setpoint.velocity);
-            Logger.recordOutput("Arm/Profile/GoalPosition", goalState.position);
+            Logger.recordOutput("Arm/Profile/SetpointPositionRad", setpoint.position);
+            Logger.recordOutput("Arm/Profile/SetpointVelocityRadPerSec", setpoint.velocity);
+            Logger.recordOutput("Arm/Profile/GoalPositionRad", goalState.position);
+            Logger.recordOutput("Arm/AtGoal", atGoal);
+        } else {
+            // Reset setpoint
+            setpoint = new State(getAngleRad(), 0.0);
+      
+            // Clear logs
+            Logger.recordOutput("Arm/Profile/SetpointPositionRad", 0.0);
+            Logger.recordOutput("Arm/Profile/SetpointVelocityRadPerSec", 0.0);
+            Logger.recordOutput("Arm/Profile/GoalPositionRad", 0.0);
+            Logger.recordOutput("Arm/AtGoal", true);
         }
 
-        Logger.recordOutput("Arm/Goal", currentGoal.name());
-        Logger.recordOutput("Arm/Reached Goal", atGoal());
+        Logger.recordOutput("Arm/CurrentPositionRad", getAngleRad());
 
         // Record cycle time
         LoggedTracer.record("Arm");
     }
 
-    public double getPosition() {
-        return inputs.data.position();
+    public double getAngleRad() {
+        return inputs.data.positionRad();
+    }
+
+    // Actions
+    public void setPID(double kP, double kI, double kD) {
+        io.setPID(kP, kI, kD);
     }
 
     @Override
-    public BooleanConsumer tuningExecutor() {
-        return tuningEnabled -> {
-            pidfTuningService.setTuning(tuningEnabled);
-            speedTuningService.setTuning(tuningEnabled);
-            
-            if (tuningEnabled) {
-                PIDFConfig newPIDFConfig = pidfTuningService.getUpdatedConfig();
-                Constraints newSpeedConfig = speedTuningService.getUpdatedConfig();
-
-                io.setPID(
-                    newPIDFConfig.kP(),
-                    newPIDFConfig.kI(),
-                    newPIDFConfig.kD());
-
-                feedforward = newPIDFConfig.toArmFeedforward();
-
-                profile =
-                    new TrapezoidProfile(
-                        new Constraints(
-                            newSpeedConfig.maxVelocity,
-                            newSpeedConfig.maxAcceleration));
-            }
-        };
-    }
-
-    @Override
-    public boolean atGoal() {
-        return MathUtil.isNear(currentGoal.position, inputs.data.position(), 2);
-    }
-
     public void setBrakeMode(boolean enabled) {
         io.setBrakeMode(enabled);
     }
 
     @Override
-    public Command stop() {
-        return Commands.sequence(
-            runOnce(() -> requestPositionControl = false),
-            runOnce(io::stop)
-        );
+    public void stop() {
+        io.stop();
     }
 
-    @Override
-    public Command runManual(double output) {
-        return Commands.sequence(
-            runOnce(() -> requestPositionControl = false),
-            run(() -> io.runOpenLoop(output))
-        );
+    public void runOpenLoop(double output) {
+        this.shouldRunProfile = false;
+        io.runOpenLoop(output);
     }
 
-    public Command setGoal(ArmGoal goal) {
-        return Commands.sequence(
-            runOnce(() -> requestPositionControl = true),
-            runOnce(() -> currentGoal = goal)
-        );
+    public void setAngle(double angleRad) {
+        this.shouldRunProfile = true;
+        this.targetAngleRad = angleRad;
     }
 
-    public Command runGoal(ArmGoal goal) {
-        return Commands.sequence(
-            setGoal(goal),
-            Commands.waitUntil(this::atGoal)
-        );
+    public boolean isAtAngle(double angleRad, double tolerance) {
+        return MathUtil.isNear(angleRad, getAngleRad(), tolerance);
     }
 }

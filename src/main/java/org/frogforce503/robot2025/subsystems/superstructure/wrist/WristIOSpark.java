@@ -2,6 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.config.subsystem.WristConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -10,65 +11,69 @@ import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
-import com.revrobotics.spark.config.ClosedLoopConfigAccessor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.filter.Debouncer;
+import lombok.Getter;
 
 public class WristIOSpark implements WristIO {
     // Hardware
-    private SparkMax motor;
-    private RelativeEncoder mainEncoder;
-    private SparkAbsoluteEncoder seedEncoder;
+    @Getter private final SparkMax motor;
+    private final RelativeEncoder relativeEncoder;
+    private final SparkAbsoluteEncoder absoluteEncoder;
 
     // Control
-    private SparkClosedLoopController pidController;
+    private final SparkClosedLoopController controller;
 
     // Config
     private SparkMaxConfig config = new SparkMaxConfig();
-    private final double ABSOLUTE_CONVERSION_FACTOR = 360.0;
-    private final double RELATIVE_CONVERSION_FACTOR = 9.0;
-    private final int STATOR_CURRENT_LIMIT = 40;
 
     // Connected Debouncers
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public WristIOSpark() {
-        motor = SparkUtil.getSpark(Robot.bot.wristConstants.wristID(), false);
-        mainEncoder = motor.getEncoder();
-        seedEncoder = motor.getAbsoluteEncoder();
+        final WristConfig wristConfig = Robot.bot.getWristConfig();
 
-        pidController = motor.getClosedLoopController();
+        motor = new SparkMax(wristConfig.id(), MotorType.kBrushless);
+        relativeEncoder = motor.getEncoder();
+        absoluteEncoder = motor.getAbsoluteEncoder();
+        controller = motor.getClosedLoopController();
 
         // Configure motor
-        config
-            .absoluteEncoder
-                .zeroOffset(Robot.bot.wristConstants.wristOffset())
-                .positionConversionFactor(ABSOLUTE_CONVERSION_FACTOR)
-                .setSparkMaxDataPortConfig();
+        config.inverted(wristConfig.inverted());
+        config.idleMode(IdleMode.kBrake);
+        config.smartCurrentLimit(wristConfig.statorCurrentLimit());
+        config.voltageCompensation(12.0);
 
         config
             .encoder
-                .positionConversionFactor(RELATIVE_CONVERSION_FACTOR);
+                .positionConversionFactor((1 / wristConfig.mechanismRatio()) * (2 * Math.PI)) // convert rotations to radians
+                .velocityConversionFactor((1 / wristConfig.mechanismRatio()) * (2 * Math.PI) / 60) // convert RPM to rad/sec
+                .uvwMeasurementPeriod(10)
+                .uvwMeasurementPeriod(2);
+
+        config
+            .absoluteEncoder
+                .zeroOffset(wristConfig.zeroOffset())
+                .positionConversionFactor(2 * Math.PI) // convert rotations to radians
+                .velocityConversionFactor(2 * Math.PI / 60) // convert RPM to rad/sec
+                .zeroCentered(true)
+                .averageDepth(2)
+                .setSparkMaxDataPortConfig();
 
         config
             .closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .pid(
-                    Robot.bot.wristConstants.kPIDF().kP(),
-                    Robot.bot.wristConstants.kPIDF().kI(),
-                    Robot.bot.wristConstants.kPIDF().kD(),
-                    ClosedLoopSlot.kSlot0);
+                .pid(wristConfig.kPID().kP(), wristConfig.kPID().kI(), wristConfig.kPID().kD());
 
-        config.inverted(Robot.bot.wristConstants.wristInverted());
-
-        config.smartCurrentLimit(STATOR_CURRENT_LIMIT);
-
-        config.voltageCompensation(12);
+        SparkUtil.optimizeSignals(config, true, false);
 
         motor.clearFaults();
+
+        relativeEncoder.setPosition(0.0);
 
         // Apply configuration
         SparkUtil.configure(motor, config, true);
@@ -79,9 +84,9 @@ public class WristIOSpark implements WristIO {
         inputs.data =
             new WristIOData(
                 connectedDebouncer.calculate(motor.getLastError() == REVLibError.kOk),
-                mainEncoder.getPosition(),
-                seedEncoder.getPosition(),
-                mainEncoder.getVelocity(),
+                relativeEncoder.getPosition(),
+                absoluteEncoder.getPosition(),
+                relativeEncoder.getVelocity(),
                 motor.getBusVoltage() * motor.getAppliedOutput(),
                 motor.getOutputCurrent(),
                 motor.getMotorTemperature());
@@ -98,8 +103,8 @@ public class WristIOSpark implements WristIO {
     }
 
     @Override
-    public void runPosition(double position, double feedforward) {
-        pidController.setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
+    public void runPosition(double positionRad, double feedforward) {
+        controller.setReference(positionRad, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
     }
 
     @Override
@@ -109,24 +114,18 @@ public class WristIOSpark implements WristIO {
 
     @Override
     public void setPID(double kP, double kI, double kD) {
-        ClosedLoopConfigAccessor accessor = motor.configAccessor.closedLoop;
-
-        if (accessor.getP() != kP || accessor.getI() != kI || accessor.getD() != kD) {
-            config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
-        }
-
+        config.closedLoop.pid(kP, kI, kD, ClosedLoopSlot.kSlot0);
         SparkUtil.configure(motor, config, false);
     }
 
     @Override
     public void setBrakeMode(boolean enabled) {
         config.idleMode(enabled ? IdleMode.kBrake : IdleMode.kCoast);
-
         SparkUtil.configure(motor, config, false);
     }
 
     @Override
-    public void setEncoderPosition(double position) {
-        mainEncoder.setPosition(position);
+    public void setRelativeEncoderPosition(double position) {
+        relativeEncoder.setPosition(position);
     }
 }

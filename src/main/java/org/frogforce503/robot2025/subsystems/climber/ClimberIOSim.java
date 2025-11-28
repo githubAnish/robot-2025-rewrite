@@ -1,46 +1,39 @@
 package org.frogforce503.robot2025.subsystems.climber;
 
-import org.frogforce503.lib.motorcontrol.MotorControlMode;
-import org.frogforce503.lib.motorcontrol.MotorSim;
+import org.frogforce503.lib.motorcontrol.SimpleMotorSim;
+import org.frogforce503.lib.motorcontrol.SimpleMotorSim.MotorControlMode;
+import org.frogforce503.robot2025.Constants;
 
-public class ClimberIOSim implements ClimberIO {
-    private MotorSim sim;
+import com.revrobotics.sim.SparkMaxSim;
+
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotController;
+
+public class ClimberIOSim extends ClimberIOSpark {
+    // Control
+    private final SparkMaxSim motorSim;
+    private final SimpleMotorSim climberSim = new SimpleMotorSim(1.0, 42);
 
     public ClimberIOSim() {
-        sim = new MotorSim(3.25, 360);
+        motorSim = new SparkMaxSim(super.getMotor(), DCMotor.getNEO(1));
     }
 
     @Override
     public void updateInputs(ClimberIOInputs inputs) {
+        double appliedVolts = motorSim.getAppliedOutput() * RobotController.getBatteryVoltage();
+
+        // Apply physics
+        climberSim.set(MotorControlMode.Voltage, appliedVolts);
+        climberSim.update();
+
+        // Update motor simulation
+        motorSim.iterate(climberSim.getVelocity(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+
         inputs.data =
             new ClimberIOData(
                 true,
-                sim.getPosition(),
-                sim.getVelocity(),
                 0.0,
                 0.0,
                 24.0);
-        
-        sim.update();
-    }
-
-    @Override
-    public void runOpenLoop(double output) {
-        sim.set(MotorControlMode.DutyCycle, output);
-    }
-
-    @Override
-    public void runVolts(double volts) {
-        sim.set(MotorControlMode.Voltage, volts);
-    }
-
-    @Override
-    public void runTorqueCurrent(double current) {
-        sim.set(MotorControlMode.Current, current);
-    }
-
-    @Override
-    public void stop() {
-        sim.set(MotorControlMode.DutyCycle, 0);
     }
 }

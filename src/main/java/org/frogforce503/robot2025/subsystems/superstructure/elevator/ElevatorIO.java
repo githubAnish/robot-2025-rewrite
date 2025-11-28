@@ -10,8 +10,8 @@ public interface ElevatorIO {
 
     record ElevatorIOData(
         boolean motorConnected,
-        double position,
-        double velocity,
+        double positionMeters,
+        double velocityMetersPerSec,
         double appliedVolts,
         double statorCurrentAmps,
         double tempCelsius) {}
@@ -22,7 +22,7 @@ public interface ElevatorIO {
 
     default void runVolts(double volts) {}
 
-    default void runPosition(double position, double feedforward) {}
+    default void runPosition(double positionMeters, double feedforward) {}
 
     default void stop() {}
 

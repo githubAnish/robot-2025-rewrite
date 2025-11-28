@@ -10,8 +10,8 @@ public interface ArmIO {
 
     record ArmIOData(
         boolean motorConnected,
-        double position,
-        double velocity,
+        double positionRad,
+        double velocityRadPerSec,
         double appliedVolts,
         double statorCurrentAmps,
         double tempCelsius) {}
@@ -22,7 +22,7 @@ public interface ArmIO {
 
     default void runVolts(double volts) {}
 
-    default void runPosition(double position, double feedforward) {}
+    default void runPosition(double positionRad, double feedforward) {}
 
     default void stop() {}
 
