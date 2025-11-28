@@ -14,18 +14,7 @@ public class Leds extends SubsystemBase {
     private final LedsIO io;
     private final LedsIOInputsAutoLogged inputs = new LedsIOInputsAutoLogged();
 
-    // Control
-    private LedsState currentState = LedsState.OFF;
-    private Color currentColor = Color.kBlack;
-    private Animation currentAnimation = null;
-
     @Setter private boolean cameraDisconnected = false;
-
-    private enum LedsState {
-        OFF,
-        STATIC_COLOR,
-        ANIMATION
-    }
 
     public Leds(LedsIO io) {
         this.io = io;
@@ -39,41 +28,28 @@ public class Leds extends SubsystemBase {
         Logger.processInputs("Leds", inputs);
 
         if (cameraDisconnected) {
-            currentState = LedsState.ANIMATION;
-            currentAnimation = Animations.FLASH_RED;
+            io.runAnimation(Animations.CAMERA_DISCONNECTED);   
         }
-
-        switch (currentState) {
-            case OFF:
-                io.stop();
-                break;
-
-            case STATIC_COLOR:
-                io.runColor(currentColor);
-                break;
-
-            case ANIMATION:
-                io.runAnimation(currentAnimation);
-                break;
-        }
-
-        Logger.recordOutput("Leds/State", currentState);
 
         // Record cycle time
         LoggedTracer.record("Leds");
     }
 
-    public void off() {
-        currentState = LedsState.OFF;
+    public void stop() {
+        if (!cameraDisconnected) {
+            io.stop();
+        }
     }
 
     public void runColor(Color color) {
-        currentState = LedsState.STATIC_COLOR;
-        currentColor = color;
+        if (!cameraDisconnected) {
+            io.runColor(color);
+        }
     }
 
     public void runAnimation(Animation animation) {
-        currentState = LedsState.ANIMATION;
-        currentAnimation = animation;
+        if (!cameraDisconnected) {
+            io.runAnimation(animation);
+        }
     }
 }

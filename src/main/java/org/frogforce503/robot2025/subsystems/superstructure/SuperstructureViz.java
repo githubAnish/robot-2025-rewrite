@@ -2,6 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure;
 
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -24,5 +25,7 @@ public class SuperstructureViz {
 
     public void update(double elevatorHeightMeters, double armAngleRad, double wristAngleRad, double intakePivotAngleRad) {
         Pose3d drivePose3d = new Pose3d(robotPoseSupplier.get());
+
+        Logger.recordOutput("SuperstructureViz", Pose3d.kZero, Pose3d.kZero, Pose3d.kZero, Pose3d.kZero);
     }
 }

@@ -150,7 +150,6 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
                 .withWheelForceFeedforwardsX(moduleForcesX)
                 .withWheelForceFeedforwardsY(moduleForcesY));
     }
-    
 
     @Override
     public void runCharacterization(double output) {

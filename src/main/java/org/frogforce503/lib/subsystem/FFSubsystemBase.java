@@ -24,10 +24,11 @@ public abstract class FFSubsystemBase extends SubsystemBase {
         LoggerUtil.recordCurrentCommand(this);
 
         // Set coast mode only when disabled and there is a change in the override
-        if (RobotState.isDisabled() && coastOverride.get() != inCoast) {
-            setBrakeMode(!coastOverride.get());
-            System.out.println("SETTING COAST MODE FOR " + this.getName() + " TO " + coastOverride.get()); // debug print, TODO remove
-            inCoast = coastOverride.get();
+        boolean shouldCoast = coastOverride.get();
+
+        if (RobotState.isDisabled() && shouldCoast != inCoast) {
+            inCoast = shouldCoast;
+            setBrakeMode(!shouldCoast);
         }
 
         coastModeWhileRunning

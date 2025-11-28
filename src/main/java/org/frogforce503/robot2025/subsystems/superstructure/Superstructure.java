@@ -3,6 +3,7 @@ package org.frogforce503.robot2025.subsystems.superstructure;
 import java.util.function.Supplier;
 
 import org.frogforce503.lib.math.MathUtils;
+import org.frogforce503.lib.subsystem.VirtualSubsystem;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.ArmConstants;
@@ -20,12 +21,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lombok.Getter;
 import lombok.Setter;
 
 /** Wrapper class for {@link Elevator}, {@link Arm}, {@link Wrist}, {@link Claw}, {@link Intake}, and {@link CoralSensorIO} */
-public class Superstructure extends SubsystemBase {
+public class Superstructure extends VirtualSubsystem {
     // Subsystems
     @Getter private final Elevator elevator;
     @Getter private final Arm arm;
@@ -50,6 +50,8 @@ public class Superstructure extends SubsystemBase {
     // Overrides
     private LoggedNetworkBoolean superstructureCoastOverride =
         new LoggedNetworkBoolean("Coast Mode/Superstructure", false);
+
+    private boolean inCoast = false;
 
     public Superstructure(
         Elevator elevator,
@@ -77,9 +79,12 @@ public class Superstructure extends SubsystemBase {
         coralSensorIO.updateInputs(coralSensorInputs);
         Logger.processInputs("CoralSensors", coralSensorInputs);
 
-        setCoastMode(
-            RobotState.isDisabled() &&
-            superstructureCoastOverride.get());
+        boolean shouldCoast = superstructureCoastOverride.get();
+        
+        if (RobotState.isDisabled() && shouldCoast != inCoast) {
+            inCoast = shouldCoast;
+            setCoastMode(shouldCoast);
+        }
 
         // Update viz
         if (RobotBase.isSimulation()) {

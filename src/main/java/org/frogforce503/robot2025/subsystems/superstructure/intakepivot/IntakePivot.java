@@ -2,7 +2,6 @@ package org.frogforce503.robot2025.subsystems.superstructure.intakepivot;
 
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.subsystems.superstructure.intake.pivot.IntakePivotIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
@@ -38,6 +37,7 @@ public class IntakePivot extends FFSubsystemBase {
         profile = new TrapezoidProfile(Robot.bot.getIntakePivotConfig().kConstraints());
     }
 
+    @Override
     public void periodic() {
         super.periodic();
 

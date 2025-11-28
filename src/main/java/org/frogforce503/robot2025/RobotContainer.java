@@ -19,7 +19,9 @@ import org.frogforce503.robot2025.commands.IntakeAlgaeFromReef;
 import org.frogforce503.robot2025.commands.ScoreAlgaeInBarge;
 import org.frogforce503.robot2025.commands.ScoreAlgaeInProcessor;
 import org.frogforce503.robot2025.commands.ScoreCoralOnReef;
+import org.frogforce503.robot2025.commands.SafelyStowAndIntakeCoralFromStation;
 import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
+import org.frogforce503.robot2025.commands.tuning.TuneArm;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSim;
@@ -269,7 +271,7 @@ public class RobotContainer implements UnitTest {
         driver.leftTrigger().whileTrue(
             new FFSelectCommand<>(
                 Map.of(
-                    // SuperstructureMode.CORAL_INTAKE, new StowAndIntakeCoralFromStation(drive, field, superstructure, leds),
+                    SuperstructureMode.CORAL_INTAKE, new SafelyStowAndIntakeCoralFromStation(drive, field, vision, superstructure, leds),
                     SuperstructureMode.ALGAE_GROUND, new IntakeAlgaeFromGround(),
                     SuperstructureMode.ALGAE_HANDOFF, new IntakeAlgaeFromHandoff(),
                     SuperstructureMode.ALGAE_PLUCK_HIGH, new IntakeAlgaeFromReef(true),
@@ -304,6 +306,8 @@ public class RobotContainer implements UnitTest {
         operator.povUp().onTrue(Commands.runOnce(drive::resetRotation));
 
         operator.leftTrigger().onTrue(Commands.runOnce(superstructure::seedWristPosition));
+
+        // superstructure.getArm().setDefaultCommand(new TuneArm(superstructure.getArm()));
     }
 
     private void bindPresets(

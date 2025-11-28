@@ -7,6 +7,8 @@ public final class ArmConstants {
 
     public static final double START = Units.degreesToRadians(-89);
 
+    public static final double STOW_ANGLE = 0.0;
+
     public static final double NONE = 0;
 
     public static final double DOWN = 18;

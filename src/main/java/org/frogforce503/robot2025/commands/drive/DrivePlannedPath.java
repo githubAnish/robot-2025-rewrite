@@ -25,7 +25,6 @@ public class DrivePlannedPath extends Command {
     private final Timer timer;
 
     private final Supplier<PlannedPath> dynamicPath;
-    private PlannedPath path;
 
     private final boolean willStopAtEnd;
 
@@ -72,13 +71,14 @@ public class DrivePlannedPath extends Command {
 
     @Override
     public void initialize() {       
-        this.path = dynamicPath.get(); 
+        PlannedPath path = dynamicPath.get(); 
+
         this.timer.reset();
         this.controller.reset();
         this.timer.start();
 
-        lastPosition = this.path.getInitialHolonomicPose().getTranslation();
-        lastAngle = this.path.getInitialHolonomicPose().getRotation();
+        lastPosition = path.getInitialHolonomicPose().getTranslation();
+        lastAngle = path.getInitialHolonomicPose().getRotation();
         lastTime = 0;
 
         var poses =
@@ -98,11 +98,11 @@ public class DrivePlannedPath extends Command {
     @Override
     public void execute() {
         // Get inputs
-        this.path = dynamicPath.get();
+        PlannedPath path = dynamicPath.get();
         double currentTime = this.timer.get();
         Pose2d currentPose = drive.getCurrentPose();
 
-        PlannedPath.HolonomicState desiredState = this.path.sample(currentTime);
+        PlannedPath.HolonomicState desiredState = path.sample(currentTime);
 
         if (headingOverride != null) {
             desiredState
@@ -135,7 +135,7 @@ public class DrivePlannedPath extends Command {
         Logger.recordOutput("FollowPlannedPath/Desired Angle", desiredState.holonomicAngle());
         
         Logger.recordOutput("FollowPlannedPath/Current Velocity", measuredVelocity);
-        Logger.recordOutput("FollowPlannedPath/Desired Velocity", targetChassisSpeeds);
+        Logger.recordOutput("FollowPlannedPath/Desired Velocity", new Translation2d(targetChassisSpeeds.vxMetersPerSecond, targetChassisSpeeds.vyMetersPerSecond));
 
         Logger.recordOutput("FollowPlannedPath/Drive Error", controller.getPoseError().getTranslation());
         Logger.recordOutput("FollowPlannedPath/Theta Error", controller.getRotationError());
@@ -145,6 +145,8 @@ public class DrivePlannedPath extends Command {
 
     @Override
     public boolean isFinished() {
+        PlannedPath path = dynamicPath.get();
+
         boolean timeHasFinished = timer.hasElapsed(path.getTotalTimeSeconds());
         boolean poseTolerance = controller.atReference();
         boolean tooLong = timeHasFinished && timer.hasElapsed(path.getTotalTimeSeconds() + 0.5);
@@ -156,9 +158,7 @@ public class DrivePlannedPath extends Command {
     public void end(boolean interrupted) {
         System.out.println("END " + interrupted);
 
-        field
-            .getObject("CurrentTrajectory")
-            .setPoses();
+        field.getObject("CurrentTrajectory").setPoses();
 
         if (this.willStopAtEnd) {
             drive.stop();

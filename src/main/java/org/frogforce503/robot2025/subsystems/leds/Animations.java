@@ -9,6 +9,7 @@ import com.ctre.phoenix.led.StrobeAnimation;
 
 /** List of commonly used animations for a CTRE CANdle. */
 public final class Animations {
+    // Generic animations
     public static final Animation PURPLE_STROBE =
         new StrobeAnimation(208, 89, 227, 100, 0.25, -1, 0);
 
@@ -47,4 +48,9 @@ public final class Animations {
 
     public static final Animation FLASH_RED =
         new SingleFadeAnimation(255, 0, 0, 100, 0.5, -1, 0);
+    
+    // Season-specific animations
+    public static final Animation INTAKE_CORAL = FLASH_PURPLE;
+
+    public static final Animation CAMERA_DISCONNECTED = FLASH_RED;
 }

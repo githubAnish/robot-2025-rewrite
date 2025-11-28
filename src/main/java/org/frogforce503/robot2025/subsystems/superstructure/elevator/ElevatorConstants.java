@@ -1,9 +1,13 @@
 package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
+import org.frogforce503.robot2025.Robot;
+
 public final class ElevatorConstants {
     public static final double kTolerance = 0.5;
 
     public static final double START = 0;
+
+    public static final double MIN_HEIGHT = Robot.bot.getElevatorConfig().motionRange().min();
 
     public static final double NONE = 0;
 
