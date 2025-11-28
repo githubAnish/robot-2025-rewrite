@@ -54,10 +54,10 @@ public class IntakePivotIOSpark implements IntakePivotIO {
                 .averageDepth(2)
                 .setSparkMaxDataPortConfig();
 
-                config
-                .closedLoop
-                    .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-                    .pid(pivotConfig.kPID().kP(), pivotConfig.kPID().kI(), pivotConfig.kPID().kD());
+        config
+            .closedLoop
+                .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+                .pid(pivotConfig.kPID().kP(), pivotConfig.kPID().kI(), pivotConfig.kPID().kD());
 
         SparkUtil.optimizeSignals(config, true, false);
 

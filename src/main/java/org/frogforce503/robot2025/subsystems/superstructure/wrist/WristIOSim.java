@@ -18,7 +18,7 @@ public class WristIOSim extends WristIOSpark {
 
     // Constants
     private final DCMotor motorModel = DCMotor.getNeo550(1);
-    private final double length = Units.inchesToMeters(2.5);
+    private final double length = Units.inchesToMeters(4.5);
     private final double moi = 0.075; // kg * m^2
 
     public WristIOSim() {

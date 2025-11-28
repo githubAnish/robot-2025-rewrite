@@ -18,7 +18,7 @@ public class IntakePivotIOSim extends IntakePivotIOSpark {
 
     // Constants
     private final DCMotor motorModel = DCMotor.getNEO(1);
-    private final double length = Units.inchesToMeters(14.5);
+    private final double length = Units.inchesToMeters(14.75);
     private final double moi = 0.68; // kg * m^2
 
     public IntakePivotIOSim() {
