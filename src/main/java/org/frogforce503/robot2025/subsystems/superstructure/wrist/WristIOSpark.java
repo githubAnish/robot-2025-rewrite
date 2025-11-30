@@ -53,7 +53,7 @@ public class WristIOSpark implements WristIO {
                 .positionConversionFactor((1 / wristConfig.mechanismRatio()) * (2 * Math.PI)) // convert rotations to radians
                 .velocityConversionFactor((1 / wristConfig.mechanismRatio()) * (2 * Math.PI) / 60) // convert RPM to rad/sec
                 .uvwMeasurementPeriod(10)
-                .uvwMeasurementPeriod(2);
+                .uvwAverageDepth(2);
 
         config
             .absoluteEncoder
@@ -87,7 +87,7 @@ public class WristIOSpark implements WristIO {
                 relativeEncoder.getPosition(),
                 absoluteEncoder.getPosition(),
                 relativeEncoder.getVelocity(),
-                motor.getBusVoltage() * motor.getAppliedOutput(),
+                motor.getAppliedOutput() * motor.getBusVoltage(),
                 motor.getOutputCurrent(),
                 motor.getMotorTemperature());
     }

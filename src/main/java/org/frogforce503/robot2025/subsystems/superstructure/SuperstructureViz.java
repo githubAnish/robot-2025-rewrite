@@ -33,7 +33,7 @@ public class SuperstructureViz {
     private final double wrist2dLengthMeters = Units.inchesToMeters(4.5);
     private final double intakePivot2dLengthMeters = Units.inchesToMeters(14.75);
 
-    private final double arm2dAngleOffsetRad = Units.degreesToRadians(-175);
+    private final double arm2dAngleOffsetRad = Units.degreesToRadians(-85);
     private final double wrist2dAngleOffsetRad = Units.degreesToRadians(180);
 
     // State

@@ -10,6 +10,7 @@ import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class TuneArm extends Command {
@@ -49,7 +50,7 @@ public class TuneArm extends Command {
         this.maxVel = new LoggedTunableNumber("Arm/MaxVelocityRadPerSec", initialConstraints.maxVelocity);
         this.maxAcc = new LoggedTunableNumber("Arm/MaxAccelerationRadPerSec2", initialConstraints.maxAcceleration);
 
-        this.setpointAngle = new LoggedTunableNumber("Arm/SetpointRad", arm.getAngleRad());
+        this.setpointAngle = new LoggedTunableNumber("Arm/SetpointDeg", Units.radiansToDegrees(arm.getAngleRad()));
 
         addRequirements(arm);
     }
@@ -91,7 +92,7 @@ public class TuneArm extends Command {
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> arm.setAngle(setpointAngle.get()),
+            () -> arm.setAngle(Units.degreesToRadians(setpointAngle.get())),
             setpointAngle);
     }
 

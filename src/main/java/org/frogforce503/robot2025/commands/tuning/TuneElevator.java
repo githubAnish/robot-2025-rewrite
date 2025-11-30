@@ -10,6 +10,7 @@ import org.frogforce503.robot2025.subsystems.superstructure.elevator.Elevator;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class TuneElevator extends Command {
@@ -49,7 +50,7 @@ public class TuneElevator extends Command {
         this.maxVel = new LoggedTunableNumber("Elevator/MaxVelocityMetersPerSec", initialConstraints.maxVelocity);
         this.maxAcc = new LoggedTunableNumber("Elevator/MaxAccelerationMetersPerSec2", initialConstraints.maxAcceleration);
 
-        this.setpointHeight = new LoggedTunableNumber("Elevator/SetpointMeters", elevator.getHeightMeters());
+        this.setpointHeight = new LoggedTunableNumber("Elevator/SetpointInches", Units.metersToInches(elevator.getHeightMeters()));
 
         addRequirements(elevator);
     }
@@ -91,7 +92,7 @@ public class TuneElevator extends Command {
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> elevator.setHeight(setpointHeight.get()),
+            () -> elevator.setHeight(Units.inchesToMeters(setpointHeight.get())),
             setpointHeight);
     }
 

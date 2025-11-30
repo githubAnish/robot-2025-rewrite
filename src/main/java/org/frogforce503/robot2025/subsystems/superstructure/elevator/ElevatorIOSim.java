@@ -50,10 +50,10 @@ public class ElevatorIOSim extends ElevatorIOSpark {
         inputs.data =
             new ElevatorIOData(
                 true,
-                motorSim.getPosition(),
-                motorSim.getVelocity(),
+                elevatorSim.getPositionMeters(),
+                elevatorSim.getVelocityMetersPerSecond(),
                 appliedVolts,
-                motorSim.getMotorCurrent(),
+                elevatorSim.getCurrentDrawAmps(),
                 24.0);
     }
 }

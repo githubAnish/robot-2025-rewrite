@@ -51,10 +51,10 @@ public class ArmIOSim extends ArmIOSpark {
         inputs.data =
             new ArmIOData(
                 true,
-                motorSim.getPosition(),
-                motorSim.getVelocity(),
+                armSim.getAngleRads(),
+                armSim.getVelocityRadPerSec(),
                 appliedVolts,
-                motorSim.getMotorCurrent(),
+                armSim.getCurrentDrawAmps(),
                 24.0);
     }
 }

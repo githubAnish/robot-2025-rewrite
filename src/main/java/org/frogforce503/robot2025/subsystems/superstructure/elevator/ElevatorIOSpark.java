@@ -24,7 +24,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     private final RelativeEncoder encoder;
 
     // Control
-    private final SparkClosedLoopController pidController;
+    private final SparkClosedLoopController controller;
 
     // Config
     private SparkMaxConfig config = new SparkMaxConfig();
@@ -37,7 +37,7 @@ public class ElevatorIOSpark implements ElevatorIO {
 
         motor = new SparkMax(elevatorConfig.id(), MotorType.kBrushless);
         encoder = motor.getEncoder();
-        pidController = motor.getClosedLoopController();
+        controller = motor.getClosedLoopController();
 
         // Configure motor
         config.inverted(elevatorConfig.inverted());
@@ -50,7 +50,7 @@ public class ElevatorIOSpark implements ElevatorIO {
                 .positionConversionFactor((1 / elevatorConfig.mechanismRatio()) * (Math.PI * elevatorConfig.sprocketPitchDiameter())) // convert rotations to meters
                 .velocityConversionFactor((1 / elevatorConfig.mechanismRatio()) * (Math.PI * elevatorConfig.sprocketPitchDiameter()) / 60) // convert RPM to meters/sec
                 .uvwMeasurementPeriod(10)
-                .uvwMeasurementPeriod(2);
+                .uvwAverageDepth(2);
 
         config
             .closedLoop
@@ -74,7 +74,7 @@ public class ElevatorIOSpark implements ElevatorIO {
                 connectedDebouncer.calculate(motor.getLastError() == REVLibError.kOk),
                 encoder.getPosition(),
                 encoder.getVelocity(),
-                motor.getBusVoltage() * motor.getAppliedOutput(),
+                motor.getAppliedOutput() * motor.getBusVoltage(),
                 motor.getOutputCurrent(),
                 motor.getMotorTemperature());
     }
@@ -91,7 +91,7 @@ public class ElevatorIOSpark implements ElevatorIO {
 
     @Override
     public void runPosition(double positionMeters, double feedforward) {
-        pidController.setReference(positionMeters, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
+        controller.setReference(positionMeters, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
     }
 
     @Override

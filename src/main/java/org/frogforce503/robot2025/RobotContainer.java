@@ -21,7 +21,7 @@ import org.frogforce503.robot2025.commands.ScoreAlgaeInProcessor;
 import org.frogforce503.robot2025.commands.ScoreCoralOnReef;
 import org.frogforce503.robot2025.commands.SafelyStowAndIntakeCoralFromStation;
 import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
-import org.frogforce503.robot2025.commands.tuning.TuneArm;
+import org.frogforce503.robot2025.commands.tuning.TuneElevator;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSim;
@@ -189,7 +189,7 @@ public class RobotContainer implements UnitTest {
                             new AprilTagIOPhotonSim(CameraName.ELEVATOR_BACK, Robot.bot.getVisionConfig().ELEVATOR_BACK_CAMERA_TO_CENTER(), visionViz)
                         },
                         new ObjectDetectionIO[] {});
-                elevator = new Elevator(new ElevatorIOSim(), new LimitSwitchIO() {});
+                elevator = new Elevator(new ElevatorIOSim(), new LimitSwitchIOElevator());
                 arm = new Arm(new ArmIOSim());
                 wrist = new Wrist(new WristIOSim());
                 claw = new Claw(new ClawIOSim());
@@ -307,7 +307,7 @@ public class RobotContainer implements UnitTest {
 
         operator.leftTrigger().onTrue(Commands.runOnce(superstructure::seedWristPosition));
 
-        // superstructure.getArm().setDefaultCommand(new TuneArm(superstructure.getArm()));
+        superstructure.getElevator().setDefaultCommand(new TuneElevator(superstructure.getElevator()));
     }
 
     private void bindPresets(
