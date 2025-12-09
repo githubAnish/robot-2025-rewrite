@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.config.subsystem;
+package org.frogforce503.robot2025.constants.subsystem.subsystemconfig;
 
 import edu.wpi.first.math.geometry.Transform3d;
 

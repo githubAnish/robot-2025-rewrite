@@ -37,7 +37,7 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     // Requests
     private final ApplyRobotSpeeds RUN_CHASSIS_SPEEDS =
         new ApplyRobotSpeeds()
-            .withCenterOfRotation(DriveConstants.CENTER_OF_ROTATION)
+            .withCenterOfRotation(DriveConstants.centerOfRotation)
             .withDriveRequestType(DriveRequestType.Velocity)
             .withSteerRequestType(SteerRequestType.MotionMagicExpo)
             .withDesaturateWheelSpeeds(true);

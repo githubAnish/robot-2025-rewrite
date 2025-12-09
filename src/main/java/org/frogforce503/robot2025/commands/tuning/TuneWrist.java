@@ -4,7 +4,7 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.WristConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.WristConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -21,7 +21,7 @@ public class TuneWrist extends Command {
     private final LoggedTunableNumber kV;
     private final LoggedTunableNumber kA;
 
-    private final LoggedTunableNumber setpointAngle;
+    private final LoggedTunableNumber setpointAngleRad;
 
     public TuneWrist(Wrist wrist) {
         this.wrist = wrist;
@@ -41,7 +41,7 @@ public class TuneWrist extends Command {
         this.kV = new LoggedTunableNumber("Wrist/kV", initialFF.kV());
         this.kA = new LoggedTunableNumber("Wrist/kA", initialFF.kA());
 
-        this.setpointAngle = new LoggedTunableNumber("Wrist/SetpointRad", wrist.getRelativeAngleRad());
+        this.setpointAngleRad = new LoggedTunableNumber("Wrist/SetpointRad", wrist.getRelativeAngleRad());
 
         addRequirements(wrist);
     }
@@ -56,6 +56,7 @@ public class TuneWrist extends Command {
         this.kG.setTuningMode(true);
         this.kV.setTuningMode(true);
         this.kA.setTuningMode(true);
+        this.setpointAngleRad.setTuningMode(true);
     }
 
     @Override
@@ -75,8 +76,8 @@ public class TuneWrist extends Command {
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> wrist.setAngle(setpointAngle.get()),
-            setpointAngle);
+            () -> wrist.setAngle(setpointAngleRad.get()),
+            setpointAngleRad);
     }
 
     @Override

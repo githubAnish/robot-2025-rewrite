@@ -32,6 +32,4 @@ public interface WristIO {
     default void setBrakeMode(boolean enabled) {}
 
     default void setRelativeEncoderPosition(double position) {}
-
-    default void setAbsoluteEncoderPosition(double position) {}
 }

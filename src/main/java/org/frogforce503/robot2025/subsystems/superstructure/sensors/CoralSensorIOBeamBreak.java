@@ -1,26 +1,37 @@
 package org.frogforce503.robot2025.subsystems.superstructure.sensors;
 
-import org.frogforce503.robot2025.Robot;
+import java.time.Duration;
 
-import edu.wpi.first.math.filter.Debouncer;
+import org.frogforce503.robot2025.Robot;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.SensorConfig;
+
+import edu.wpi.first.wpilibj.DigitalGlitchFilter;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 public class CoralSensorIOBeamBreak implements CoralSensorIO {
-    private DigitalInput upperBeamBreak, lowerBeamBreak;
+    // Hardware
+    private final DigitalInput upperBeamBreak;
+    private final DigitalInput lowerBeamBreak;
 
-    private Debouncer upperDebouncer = new Debouncer(0.1);
-    private Debouncer lowerDebouncer = new Debouncer(0.1);
+    // Filters
+    private final DigitalGlitchFilter beamBreakFilter = new DigitalGlitchFilter();
 
     public CoralSensorIOBeamBreak() {
-        upperBeamBreak = new DigitalInput(Robot.bot.getSensorsConfig().upperBeamID());
-        lowerBeamBreak = new DigitalInput(Robot.bot.getSensorsConfig().lowerBeamID());
+        final SensorConfig sensorConfig = Robot.bot.getSensorConfig();
+
+        // Initialize beam breaks
+        upperBeamBreak = new DigitalInput(sensorConfig.upperBeamBreakId());
+        lowerBeamBreak = new DigitalInput(sensorConfig.lowerBeamBreakId());
+        beamBreakFilter.setPeriodNanoSeconds(Duration.ofMillis(10).toNanos());
+        beamBreakFilter.add(upperBeamBreak);
+        beamBreakFilter.add(lowerBeamBreak);
     }
 
     @Override
     public void updateInputs(CoralSensorIOInputs inputs) {
         inputs.data =
             new CoralSensorIOData(
-                upperDebouncer.calculate(upperBeamBreak.get()),
-                lowerDebouncer.calculate(lowerBeamBreak.get()));
+                upperBeamBreak.get(),
+                lowerBeamBreak.get());
     }
 }

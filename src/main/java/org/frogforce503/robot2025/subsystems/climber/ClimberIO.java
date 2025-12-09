@@ -5,14 +5,15 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ClimberIO {
     @AutoLog
     class ClimberIOInputs {
-        public ClimberIOData data = new ClimberIOData(false, 0.0, 0.0, 0.0);
+        public ClimberIOData data = new ClimberIOData(false, 0.0, 0.0, 0.0, false);
     }
 
     record ClimberIOData(
         boolean motorConnected,
         double appliedVolts,
         double statorCurrentAmps,
-        double tempCelsius) {}
+        double tempCelsius,
+        boolean limitSwitchPressed) {}
 
     default void updateInputs(ClimberIOInputs inputs) {}
 

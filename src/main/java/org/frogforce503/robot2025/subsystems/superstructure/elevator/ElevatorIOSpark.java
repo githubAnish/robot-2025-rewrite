@@ -1,8 +1,11 @@
 package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
+import java.time.Duration;
+
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.ElevatorConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ElevatorConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.SensorConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -16,6 +19,8 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.wpilibj.DigitalGlitchFilter;
+import edu.wpi.first.wpilibj.DigitalInput;
 import lombok.Getter;
 
 public class ElevatorIOSpark implements ElevatorIO {
@@ -23,21 +28,31 @@ public class ElevatorIOSpark implements ElevatorIO {
     @Getter private final SparkMax motor;
     private final RelativeEncoder encoder;
 
+    @Getter private final DigitalInput limitSwitch;
+
     // Control
     private final SparkClosedLoopController controller;
 
     // Config
     private SparkMaxConfig config = new SparkMaxConfig();
 
-    // Connected Debouncers
+    // Filters
     private final Debouncer connectedDebouncer = new Debouncer(.5);
+    private final DigitalGlitchFilter limitSwitchFilter = new DigitalGlitchFilter();
 
     public ElevatorIOSpark() {
         final ElevatorConfig elevatorConfig = Robot.bot.getElevatorConfig(); 
+        final SensorConfig sensorConfig = Robot.bot.getSensorConfig();
 
+        // Initialize motor
         motor = new SparkMax(elevatorConfig.id(), MotorType.kBrushless);
         encoder = motor.getEncoder();
         controller = motor.getClosedLoopController();
+
+        // Initialize limit switch
+        limitSwitch = new DigitalInput(sensorConfig.elevatorLimitSwitchId());
+        limitSwitchFilter.setPeriodNanoSeconds(Duration.ofMillis(100).toNanos());
+        limitSwitchFilter.add(limitSwitch);
 
         // Configure motor
         config.inverted(elevatorConfig.inverted());
@@ -61,10 +76,10 @@ public class ElevatorIOSpark implements ElevatorIO {
 
         motor.clearFaults();
 
-        resetEncoder();
-
         // Apply configuration
         SparkUtil.configure(motor, config, true);
+
+        resetEncoder();
     }
 
     @Override
@@ -76,7 +91,8 @@ public class ElevatorIOSpark implements ElevatorIO {
                 encoder.getVelocity(),
                 motor.getAppliedOutput() * motor.getBusVoltage(),
                 motor.getOutputCurrent(),
-                motor.getMotorTemperature());
+                motor.getMotorTemperature(),
+                !limitSwitch.get());
     }
 
     @Override

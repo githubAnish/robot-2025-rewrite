@@ -9,7 +9,8 @@ public final class ElevatorConstants {
 
     public static final double START = Units.inchesToMeters(0);
 
-    public static final double MIN_HEIGHT = Robot.bot.getElevatorConfig().motionRange().min();
+    public static final double minHeight = Robot.bot.getElevatorConfig().minHeight();
+    public static final double maxHeight = Robot.bot.getElevatorConfig().maxHeight();
 
     public static final double NONE = 0;
 

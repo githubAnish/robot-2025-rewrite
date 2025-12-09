@@ -1,12 +1,9 @@
 package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
-import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIO;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
@@ -18,27 +15,25 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class Elevator extends FFSubsystemBase {
-    private final ElevatorIO elevatorIO;
-    private final ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
-    
-    private final LimitSwitchIO limitSwitchIO;
-    private final LimitSwitchIOInputsAutoLogged limitSwitchInputs = new LimitSwitchIOInputsAutoLogged();
+    private final ElevatorIO io;
+    private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
     // Constants
-    private final Range motionRange = Robot.bot.getElevatorConfig().motionRange();
-    @Setter private ElevatorFeedforward feedforward = Robot.bot.getElevatorConfig().kFF().getElevatorFF();
+    @Setter private ElevatorFeedforward feedforward;
     
     // Control
     private double targetHeightMeters = ElevatorConstants.START;
+    private double lastHeightMeters = 0.0;
 
     private boolean shouldRunProfile = false;
     @Setter private TrapezoidProfile profile;
     @Getter private State setpoint = new State();
     private boolean atGoal = false;
 
-    public Elevator(ElevatorIO elevatorIO, LimitSwitchIO limitSwitchIO) {
-        this.elevatorIO = elevatorIO;
-        this.limitSwitchIO = limitSwitchIO;
+    public Elevator(ElevatorIO io) {
+        this.io = io;
+        
+        feedforward = Robot.bot.getElevatorConfig().kFF().getElevatorFF();
         profile = new TrapezoidProfile(Robot.bot.getElevatorConfig().kConstraints());
     }
 
@@ -46,15 +41,12 @@ public class Elevator extends FFSubsystemBase {
     public void periodic() {
         super.periodic();
 
-        elevatorIO.updateInputs(elevatorInputs);
-        Logger.processInputs("Elevator/Elevator", elevatorInputs);
-
-        limitSwitchIO.updateInputs(limitSwitchInputs);
-        Logger.processInputs("Elevator/LimitSwitch", limitSwitchInputs);
+        io.updateInputs(inputs);
+        Logger.processInputs("Elevator", inputs);
 
         // Reset encoder if limit switch pressed & elevator is going down
-        if (limitSwitchInputs.data.pressed() && getHeightMeters() > setpoint.position) {
-            elevatorIO.resetEncoder();
+        if (inputs.data.limitSwitchPressed() && getHeightMeters() < lastHeightMeters) {
+            io.resetEncoder();
             setpoint = new State(0.0, 0.0);
         }
 
@@ -62,30 +54,16 @@ public class Elevator extends FFSubsystemBase {
         if (shouldRunProfile && RobotState.isEnabled()) {
             var goalState =
                 new State(
-                    motionRange.clamp(targetHeightMeters),
+                    MathUtil.clamp(targetHeightMeters, ElevatorConstants.minHeight, ElevatorConstants.maxHeight),
                     0.0);
 
             double previousVelocity = setpoint.velocity;
 
-            setpoint =
-                profile
-                    .calculate(Constants.loopPeriodSecs, setpoint, goalState);
-
-            if (!motionRange.contains(setpoint.position)) {
-                setpoint =
-                    new State(
-                        motionRange.clamp(setpoint.position),
-                        0.0);
-            }
-
+            setpoint = profile.calculate(Constants.loopPeriodSecs, setpoint, goalState);
             atGoal = isAtHeight(goalState.position, ElevatorConstants.kTolerance);
 
-            if (atGoal) {
-                stop();
-            } else {
-                double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
-                elevatorIO.runPosition(setpoint.position, feedforward.calculate(setpoint.velocity, accel));
-            }
+            double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
+            io.runPosition(setpoint.position, feedforward.calculate(setpoint.velocity, accel));
 
             /// Log state
             Logger.recordOutput("Elevator/Profile/SetpointPositionMeters", setpoint.position);
@@ -104,33 +82,40 @@ public class Elevator extends FFSubsystemBase {
         }
 
         Logger.recordOutput("Elevator/CurrentPositionMeters", getHeightMeters());
+        lastHeightMeters = getHeightMeters();
 
         // Record cycle time
         LoggedTracer.record("Elevator");
     }
 
     public double getHeightMeters() {
-        return elevatorInputs.data.positionMeters();
+        return inputs.data.positionMeters();
     }
 
     // Actions
     public void setPID(double kP, double kI, double kD) {
-        elevatorIO.setPID(kP, kI, kD);
+        io.setPID(kP, kI, kD);
     }
 
     @Override
     public void setBrakeMode(boolean enabled) {
-        elevatorIO.setBrakeMode(enabled);
+        io.setBrakeMode(enabled);
     }
 
     @Override
     public void stop() {
-        elevatorIO.stop();
+        io.stop();
     }
 
-    public void runOpenLoop(double output) {
+    public void runVolts(double volts) {
         shouldRunProfile = false;
-        elevatorIO.runOpenLoop(output);
+
+        // Prevent downward motion into the limit switch
+        if (inputs.data.limitSwitchPressed() && volts < 0) {
+            volts = 0;
+        }
+
+        io.runVolts(volts);
     }
 
     public void setHeight(double heightMeters) {

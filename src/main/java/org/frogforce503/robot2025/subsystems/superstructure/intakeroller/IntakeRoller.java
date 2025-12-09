@@ -8,8 +8,6 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotState;
 import lombok.Setter;
 
@@ -18,17 +16,19 @@ public class IntakeRoller extends FFSubsystemBase {
     private final IntakeRollerIOInputsAutoLogged inputs = new IntakeRollerIOInputsAutoLogged();
 
     // Constants
-    @Setter private SimpleMotorFeedforward feedforward = Robot.bot.getIntakeRollerConfig().kFF().getSimpleMotorFF();
-    private final Debouncer algaeIntakeDebouncer = new Debouncer(0.5, DebounceType.kRising);
+    @Setter private SimpleMotorFeedforward feedforward;
+    private final Debouncer algaeDebouncer = new Debouncer(0.5);
 
     // Control
-    private double targetVelocityRPM = IntakeRollerConstants.START;
+    private double targetVelocityRadPerSec = IntakeRollerConstants.START;
 
     private boolean shouldRunVelocity = false;
     private boolean atGoal = false;
 
     public IntakeRoller(IntakeRollerIO io) {
         this.io = io;
+
+        feedforward = Robot.bot.getIntakeRollerConfig().kFF().getSimpleMotorFF();
     }
 
     @Override
@@ -40,37 +40,33 @@ public class IntakeRoller extends FFSubsystemBase {
 
         // Run velocity mode unless requested to stop
         if (shouldRunVelocity && RobotState.isEnabled()) {
-            atGoal = isAtVelocity(targetVelocityRPM, IntakeRollerConstants.kRollerTolerance);
-            io.runVelocity(targetVelocityRPM, feedforward.calculate(targetVelocityRPM));
+            atGoal = isAtVelocity(targetVelocityRadPerSec, IntakeRollerConstants.kRollerTolerance);
+            io.runVelocity(targetVelocityRadPerSec, feedforward.calculate(targetVelocityRadPerSec));
 
             // Log state
-            Logger.recordOutput("IntakeRoller/SetpointVelocityRPM", targetVelocityRPM);
+            Logger.recordOutput("IntakeRoller/SetpointVelocityRadPerSec", targetVelocityRadPerSec);
             Logger.recordOutput("IntakeRoller/AtGoal", atGoal);
         } else {
             // Reset setpoint
-            targetVelocityRPM = 0.0;
+            targetVelocityRadPerSec = 0.0;
 
             // Clear logs
-            Logger.recordOutput("IntakeRoller/SetpointVelocityRPM", 0.0);
+            Logger.recordOutput("IntakeRoller/SetpointVelocityRadPerSec", 0.0);
             Logger.recordOutput("IntakeRoller/AtGoal", true);
         }
 
-        Logger.recordOutput("IntakeRoller/CurrentVelocityRPM", getVelocityRPM());
+        Logger.recordOutput("IntakeRoller/CurrentVelocityRadPerSec", getVelocityRadPerSec());
 
         // Record cycle time
         LoggedTracer.record("IntakeRoller");
     }
 
-    public double getVelocityRPM() {
-        return inputs.data.velocityRPM();
+    public double getVelocityRadPerSec() {
+        return inputs.data.velocityRadPerSec();
     }
 
     public boolean algaeCurrentThresholdForHoldMet() {
-        if (RobotBase.isSimulation()) {
-            return true;
-        }
-
-        return algaeIntakeDebouncer.calculate(
+        return algaeDebouncer.calculate(
             inputs.data.statorCurrentAmps() > 15);
     }
 
@@ -89,17 +85,17 @@ public class IntakeRoller extends FFSubsystemBase {
         io.stop();
     }
 
-    public void runOpenLoop(double output) {
+    public void runVolts(double volts) {
         this.shouldRunVelocity = false;
-        io.runOpenLoop(output);
+        io.runVolts(volts);
     }
 
-    public void setVelocity(double velocityRPM) {
+    public void setVelocity(double velocityRadPerSec) {
         this.shouldRunVelocity = true;
-        this.targetVelocityRPM = velocityRPM;
+        this.targetVelocityRadPerSec = velocityRadPerSec;
     }
 
-    public boolean isAtVelocity(double velocityRPM, double tolerance) {
-        return MathUtil.isNear(velocityRPM, getVelocityRPM(), tolerance);
+    public boolean isAtVelocity(double velocityRadPerSec, double tolerance) {
+        return MathUtil.isNear(velocityRadPerSec, getVelocityRadPerSec(), tolerance);
     }
 }

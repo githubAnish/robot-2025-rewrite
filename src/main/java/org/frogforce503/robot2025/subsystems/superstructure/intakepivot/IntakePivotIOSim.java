@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.intakepivot;
 
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.IntakePivotConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.IntakePivotConfig;
 
 import com.revrobotics.sim.SparkMaxSim;
 
@@ -31,8 +31,8 @@ public class IntakePivotIOSim extends IntakePivotIOSpark {
                 pivotConfig.mechanismRatio(),
                 moi,
                 length,
-                pivotConfig.motionRange().min(),
-                pivotConfig.motionRange().max(),
+                pivotConfig.minAngle(),
+                pivotConfig.maxAngle(),
                 true,
                 IntakePivotConstants.START);
     }
@@ -51,10 +51,10 @@ public class IntakePivotIOSim extends IntakePivotIOSpark {
         inputs.data =
             new IntakePivotIOData(
                 true,
-                motorSim.getPosition(),
-                motorSim.getVelocity(),
+                pivotSim.getAngleRads(),
+                pivotSim.getVelocityRadPerSec(),
                 appliedVolts,
-                motorSim.getMotorCurrent(),
+                pivotSim.getCurrentDrawAmps(),
                 24.0);
     } 
 }

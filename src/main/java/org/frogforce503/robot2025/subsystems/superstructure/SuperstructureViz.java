@@ -115,7 +115,7 @@ public class SuperstructureViz {
     }
 
     private void update2dViz(double elevatorHeightMeters, double armAngleRad, double wristAngleRad, double intakePivotAngleRad) {
-        elevatorLigament.setLength(elevator2dInitialLengthMeters + elevatorHeightMeters);
+        elevatorLigament.setLength(elevatorHeightMeters + elevator2dInitialLengthMeters);
         armLigament.setAngle(Units.radiansToDegrees(armAngleRad + arm2dAngleOffsetRad));
         wristLigament.setAngle(Units.radiansToDegrees(wristAngleRad + wrist2dAngleOffsetRad));
 

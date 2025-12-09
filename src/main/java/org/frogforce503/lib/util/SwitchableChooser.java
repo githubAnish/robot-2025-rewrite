@@ -1,21 +1,25 @@
+// Copyright (c) 2025 FRC 6328
+// http://github.com/Mechanical-Advantage
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package org.frogforce503.lib.util;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringArrayPublisher;
 import edu.wpi.first.networktables.StringPublisher;
 import java.util.Arrays;
-import java.util.HashMap;
-
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardString;
 import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
+import org.littletonrobotics.junction.networktables.LoggedNetworkString;
 
 /** A string chooser for the dashboard where the options can be changed on-the-fly. */
-public class SwitchableChooser<E> extends LoggedNetworkInput {
+public class SwitchableChooser extends LoggedNetworkInput {
   private static final String placeholder = "<NA>";
 
-  private String[] internalOptions = new String[] {placeholder};
-  private HashMap<String, E> optionMap = new HashMap<>();
+  private String[] options = new String[] {placeholder};
   private String active = placeholder;
 
   private final StringPublisher namePublisher;
@@ -24,7 +28,7 @@ public class SwitchableChooser<E> extends LoggedNetworkInput {
   private final StringPublisher defaultPublisher;
   private final StringPublisher activePublisher;
   private final StringPublisher selectedPublisher;
-  private final LoggedDashboardString selectedInput;
+  private final LoggedNetworkString selectedInput;
 
   public SwitchableChooser(String name) {
     var table = NetworkTableInstance.getDefault().getTable("SmartDashboard").getSubTable(name);
@@ -34,48 +38,42 @@ public class SwitchableChooser<E> extends LoggedNetworkInput {
     defaultPublisher = table.getStringTopic("default").publish();
     activePublisher = table.getStringTopic("active").publish();
     selectedPublisher = table.getStringTopic("selected").publish();
-    selectedInput = new LoggedDashboardString(name + "/selected");
+    selectedInput = new LoggedNetworkString("/SmartDashboard/" + name + "/selected");
     Logger.registerDashboardInput(this);
 
     namePublisher.set(name);
     typePublisher.set("String Chooser");
-    optionsPublisher.set(this.internalOptions);
-    defaultPublisher.set(this.internalOptions[0]);
-    activePublisher.set(this.internalOptions[0]);
-    selectedPublisher.set(this.internalOptions[0]);
+    optionsPublisher.set(this.options);
+    defaultPublisher.set(this.options[0]);
+    activePublisher.set(this.options[0]);
+    selectedPublisher.set(this.options[0]);
   }
 
   /** Updates the set of available options. */
-  public void setOptions(E[] options) {
-    if (Arrays.equals(options, optionMap.keySet().toArray())) {
+  public void setOptions(String[] options) {
+    if (Arrays.equals(options, this.options)) {
       return;
     }
-
-    this.optionMap.clear();
-    for (E option : options) {
-      this.optionMap.put(option.toString(), option);
-    }
-
-    this.internalOptions = options.length == 0 ? new String[] {placeholder} : this.optionMap.keySet().toArray(String[]::new);
-    optionsPublisher.set(this.internalOptions);
+    this.options = options.length == 0 ? new String[] {placeholder} : options;
+    optionsPublisher.set(this.options);
     periodic();
   }
 
   /** Returns the selected option. */
-  public E get() {
-    return active == placeholder ? null : this.optionMap.get(active);
+  public String get() {
+    return active == placeholder ? null : active;
   }
 
   public void periodic() {
     String selected = selectedInput.get();
     active = null;
-    for (String option : internalOptions) {
+    for (String option : options) {
       if (!option.equals(placeholder) && option.equals(selected)) {
         active = option;
       }
     }
     if (active == null) {
-      active = internalOptions[0];
+      active = options[0];
       selectedPublisher.set(active);
     }
     defaultPublisher.set(active);

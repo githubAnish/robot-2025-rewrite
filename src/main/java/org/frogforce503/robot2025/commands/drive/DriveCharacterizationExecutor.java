@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /** Instantiate an object of {@code CharacterizationExecutor} to execute characterization commands. */
-public class CharacterizationExecutor {
+public class DriveCharacterizationExecutor {
     private final double FF_START_DELAY = 2.0; // Secs
     private final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
@@ -33,7 +33,7 @@ public class CharacterizationExecutor {
 
     private final Drive drive;
 
-    public CharacterizationExecutor(Drive drive) {
+    public DriveCharacterizationExecutor(Drive drive) {
         this.drive = drive;
     }
 
@@ -48,11 +48,9 @@ public class CharacterizationExecutor {
                     rampRate,
                     stepVoltage,
                     timeout,
-                    state ->
-                        Logger.recordOutput("Drive/SysIdState", state.toString())),
+                    state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
                 new SysIdRoutine.Mechanism(
-                    voltage ->
-                        drive.runCharacterization(voltage.in(Volts)),
+                    voltage -> drive.runCharacterization(voltage.in(Volts)),
                     null, // No log consumer, since data is recorded by AdvantageKit
                     drive));
     }

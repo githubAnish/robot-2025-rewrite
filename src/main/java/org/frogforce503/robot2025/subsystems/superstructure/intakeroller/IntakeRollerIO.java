@@ -10,7 +10,7 @@ public interface IntakeRollerIO {
 
     record IntakeRollerIOData(
         boolean motorConnected,
-        double velocityRPM,
+        double velocityRadPerSec,
         double appliedVolts,
         double statorCurrentAmps,
         double tempCelsius) {}
@@ -21,7 +21,7 @@ public interface IntakeRollerIO {
 
     default void runVolts(double volts) {}
 
-    default void runVelocity(double velocity, double feedforward) {}
+    default void runVelocity(double velocityRadPerSec, double feedforward) {}
 
     default void stop() {}
 

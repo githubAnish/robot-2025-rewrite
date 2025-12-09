@@ -1,5 +1,7 @@
 package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
+import org.frogforce503.robot2025.Robot;
+
 import edu.wpi.first.math.util.Units;
 
 public final class WristConstants {
@@ -7,6 +9,9 @@ public final class WristConstants {
     
     public static final double START = Units.degreesToRadians(0.0); // straight horizontally
     public static final double PARALLEL_TO_GROUND = 90.0;
+
+    public static final double minAngle = Robot.bot.getWristConfig().minAngle();
+    public static final double maxAngle = Robot.bot.getWristConfig().maxAngle();
 
     public static final double TOZERO = 24;
     public static final double TO90 = 90;

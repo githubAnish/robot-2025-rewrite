@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025;
 
 import org.frogforce503.lib.math.Polygon2d;
-import org.frogforce503.robot2025.config.field.FieldConfig;
+import org.frogforce503.robot2025.constants.field.FieldConfig;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -78,17 +78,5 @@ public class FieldInfo extends Field2d {
 
     public Translation2d getRightStation() {
         return flip(config.RedRightStation, config.BlueRightStation);
-    }
-
-    public Translation2d getLeftCage() {
-        return flip(config.RedLeftCage, config.BlueLeftCage);
-    }
-
-    public Translation2d getCenterCage() {
-        return flip(config.RedCenterCage, config.BlueCenterCage);
-    }
-
-    public Translation2d getRightCage() {
-        return flip(config.RedRightCage, config.BlueRightCage);
     }
 }

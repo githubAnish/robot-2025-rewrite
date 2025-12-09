@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.config.tunerconstants;
+package org.frogforce503.robot2025.constants.tuner;
 
 import static edu.wpi.first.units.Units.*;
 

@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.ArmConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ArmConfig;
 
 import com.revrobotics.sim.SparkMaxSim;
 
@@ -31,8 +31,8 @@ public class ArmIOSim extends ArmIOSpark {
                 armConfig.mechanismRatio(),
                 moi,
                 length,
-                armConfig.motionRange().min(),
-                armConfig.motionRange().max(),
+                armConfig.minAngle(),
+                armConfig.maxAngle(),
                 true,
                 ArmConstants.START);
     }

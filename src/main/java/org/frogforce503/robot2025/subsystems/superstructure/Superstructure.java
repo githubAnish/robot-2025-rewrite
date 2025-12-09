@@ -107,22 +107,14 @@ public class Superstructure extends VirtualSubsystem {
     }
 
     public boolean upperBeamTriggered() {
-        return coralSensorInputs.data.upperTriggered();
+        return coralSensorInputs.data.upperBeamBreakTriggered();
     }
 
     public boolean lowerBeamTriggered() {
-        return coralSensorInputs.data.lowerTriggered();
+        return coralSensorInputs.data.lowerBeamBreakTriggered();
     }
 
-    public void seedWristPosition() { // Only works in real anyway, so doesn't affect sim
-        if (RobotBase.isReal() &&
-            MathUtils.inRange(arm.getAngleRad(), ArmConstants.START, Units.degreesToRadians(-60)) &&
-            MathUtils.inRange(wrist.getAbsoluteAngleRad(), Units.degreesToRadians(-90), Units.degreesToRadians(90))
-        ) {
-            wrist.setEncoderPosition((arm.getAngleRad() + Math.PI / 2) + wrist.getAbsoluteAngleRad()); // Look at math in robot-2025, it should make sense
-        }
-    }
-
+    // Actions
     public void setCoastMode(boolean enabled) {
         elevator.getCoastOverride().set(enabled);
         arm.getCoastOverride().set(enabled);
@@ -130,6 +122,15 @@ public class Superstructure extends VirtualSubsystem {
         claw.getCoastOverride().set(enabled);
         intakePivot.getCoastOverride().set(enabled);
         intakeRoller.getCoastOverride().set(enabled);
+    }
+
+    public void seedWristPosition() { // Only works in real anyway, so doesn't affect sim
+        if (RobotBase.isReal() &&
+            MathUtils.inRange(arm.getAngleRad(), ArmConstants.START, Units.degreesToRadians(-60)) &&
+            MathUtils.inRange(wrist.getAbsoluteAngleRad(), Units.degreesToRadians(-90), Units.degreesToRadians(90))
+        ) {
+            wrist.setRelativeEncoderPosition((arm.getAngleRad() + Math.PI / 2) + wrist.getAbsoluteAngleRad()); // Look at math in robot-2025, it should make sense
+        }
     }
 
     public void stop() {

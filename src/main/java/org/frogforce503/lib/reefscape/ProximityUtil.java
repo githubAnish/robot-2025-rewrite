@@ -1,11 +1,10 @@
-package org.frogforce503.lib.util;
+package org.frogforce503.lib.reefscape;
 
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.frogforce503.robot2025.FieldInfo;
-import org.frogforce503.lib.reefscape.*;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
 import edu.wpi.first.math.geometry.Pose2d;

@@ -1,6 +1,7 @@
 package org.frogforce503.robot2025;
 
-import org.frogforce503.robot2025.config.field.FieldVenue;
+import org.frogforce503.robot2025.constants.field.FieldVenue;
+import org.littletonrobotics.junction.LoggedRobot;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -8,10 +9,8 @@ import edu.wpi.first.wpilibj.RobotBase;
 
 /** This class contains global configuration describing the current robot and runtime mode. */
 public final class Constants {
-  public static final double loopPeriodSecs = 0.02;
-
+  public static final double loopPeriodSecs = LoggedRobot.defaultPeriodSecs;
   public static final boolean useAllianceFlipping = false;
-  public static final boolean selectAllianceFromDS = true;
 
   private static RobotType robotType = RobotType.SimBot;
   public static final FieldVenue fieldVenue = FieldVenue.Shop;
@@ -19,8 +18,7 @@ public final class Constants {
   @SuppressWarnings("resource")
   public static RobotType getRobot() {
     if (RobotBase.isReal() && robotType == RobotType.SimBot) {
-        new Alert("Invalid robot selected, using competition robot as default.", AlertType.kError)
-            .set(true);
+        new Alert("Invalid robot selected, using competition robot as default.", AlertType.kError).set(true);
         robotType = RobotType.CompBot;
     }
     return robotType;

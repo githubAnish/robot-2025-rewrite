@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.intakepivot;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.IntakePivotConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.IntakePivotConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -29,12 +29,13 @@ public class IntakePivotIOSpark implements IntakePivotIO {
     // Config
     private SparkMaxConfig config = new SparkMaxConfig();
 
-    // Connected Debouncers
+    // Filters
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public IntakePivotIOSpark() {
         final IntakePivotConfig pivotConfig = Robot.bot.getIntakePivotConfig();
 
+        // Initialize motor
         motor = new SparkMax(pivotConfig.id(), MotorType.kBrushless);
         encoder = motor.getAbsoluteEncoder();
         controller = motor.getClosedLoopController();

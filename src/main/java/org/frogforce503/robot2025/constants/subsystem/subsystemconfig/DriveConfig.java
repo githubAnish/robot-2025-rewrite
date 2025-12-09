@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.config.subsystem;
+package org.frogforce503.robot2025.constants.subsystem.subsystemconfig;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;

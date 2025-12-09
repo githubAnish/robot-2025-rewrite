@@ -4,13 +4,12 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.ElevatorConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ElevatorConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.elevator.Elevator;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class TuneElevator extends Command {
@@ -26,7 +25,7 @@ public class TuneElevator extends Command {
     private final LoggedTunableNumber maxVel;
     private final LoggedTunableNumber maxAcc;
 
-    private final LoggedTunableNumber setpointHeight;
+    private final LoggedTunableNumber setpointHeightMeters;
 
     public TuneElevator(Elevator elevator) {
         this.elevator = elevator;
@@ -50,7 +49,7 @@ public class TuneElevator extends Command {
         this.maxVel = new LoggedTunableNumber("Elevator/MaxVelocityMetersPerSec", initialConstraints.maxVelocity);
         this.maxAcc = new LoggedTunableNumber("Elevator/MaxAccelerationMetersPerSec2", initialConstraints.maxAcceleration);
 
-        this.setpointHeight = new LoggedTunableNumber("Elevator/SetpointInches", Units.metersToInches(elevator.getHeightMeters()));
+        this.setpointHeightMeters = new LoggedTunableNumber("Elevator/SetpointMeters", elevator.getHeightMeters());
 
         addRequirements(elevator);
     }
@@ -67,6 +66,7 @@ public class TuneElevator extends Command {
         this.kA.setTuningMode(true);
         this.maxVel.setTuningMode(true);
         this.maxAcc.setTuningMode(true);
+        this.setpointHeightMeters.setTuningMode(true);
     }
 
     @Override
@@ -92,8 +92,8 @@ public class TuneElevator extends Command {
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> elevator.setHeight(Units.inchesToMeters(setpointHeight.get())),
-            setpointHeight);
+            () -> elevator.setHeight(setpointHeightMeters.get()),
+            setpointHeightMeters);
     }
 
     @Override

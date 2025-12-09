@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.WristConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.WristConfig;
 
 import com.revrobotics.sim.SparkMaxSim;
 
@@ -31,8 +31,8 @@ public class WristIOSim extends WristIOSpark {
                 wristConfig.mechanismRatio(),
                 moi,
                 length,
-                wristConfig.motionRange().min(),
-                wristConfig.motionRange().max(),
+                wristConfig.minAngle(),
+                wristConfig.maxAngle(),
                 true,
                 WristConstants.START);
     }
@@ -51,11 +51,11 @@ public class WristIOSim extends WristIOSpark {
         inputs.data =
             new WristIOData(
                 true,
-                motorSim.getPosition(),
-                motorSim.getPosition(), // In sim, assume absolute encoder pos matches relative pos
-                motorSim.getVelocity(),
+                wristSim.getAngleRads(),
+                wristSim.getAngleRads(), // In sim, assume absolute encoder position matches relative encoder position
+                wristSim.getVelocityRadPerSec(),
                 appliedVolts,
-                motorSim.getMotorCurrent(),
+                wristSim.getCurrentDrawAmps(),
                 24.0);
     }
 }

@@ -4,7 +4,7 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.IntakeRollerConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.IntakeRollerConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRoller;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -20,7 +20,7 @@ public class TuneIntakeRoller extends Command {
     private final LoggedTunableNumber kV;
     private final LoggedTunableNumber kA;
 
-    private final LoggedTunableNumber setpointVelocity;
+    private final LoggedTunableNumber setpointVelocityRadPerSec;
 
     public TuneIntakeRoller(IntakeRoller intakeRoller) {
         this.intakeRoller = intakeRoller;
@@ -39,7 +39,7 @@ public class TuneIntakeRoller extends Command {
         this.kV = new LoggedTunableNumber("IntakeRoller/kV", initialFF.kV());
         this.kA = new LoggedTunableNumber("IntakeRoller/kA", initialFF.kA());
 
-        this.setpointVelocity = new LoggedTunableNumber("IntakeRoller/SetpointRPM", intakeRoller.getVelocityRPM());
+        this.setpointVelocityRadPerSec = new LoggedTunableNumber("IntakeRoller/SetpointRadPerSec", intakeRoller.getVelocityRadPerSec());
 
         addRequirements(intakeRoller);
     }
@@ -53,6 +53,7 @@ public class TuneIntakeRoller extends Command {
         this.kS.setTuningMode(true);
         this.kV.setTuningMode(true);
         this.kA.setTuningMode(true);
+        this.setpointVelocityRadPerSec.setTuningMode(true);
     }
 
     @Override
@@ -72,8 +73,8 @@ public class TuneIntakeRoller extends Command {
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> intakeRoller.setVelocity(setpointVelocity.get()),
-            setpointVelocity);
+            () -> intakeRoller.setVelocity(setpointVelocityRadPerSec.get()),
+            setpointVelocityRadPerSec);
     }
 
     @Override

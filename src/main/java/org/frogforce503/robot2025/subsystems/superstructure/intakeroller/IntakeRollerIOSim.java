@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.intakeroller;
 
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.IntakeRollerConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.IntakeRollerConfig;
 
 import com.revrobotics.spark.SparkSim;
 
@@ -36,14 +36,14 @@ public class IntakeRollerIOSim extends IntakeRollerIOSpark {
         rollerSim.update(Constants.loopPeriodSecs);
 
         // Update motor simulation
-        motorSim.iterate(rollerSim.getAngularVelocityRPM(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        motorSim.iterate(rollerSim.getAngularVelocityRadPerSec(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
         
         inputs.data =
             new IntakeRollerIOData(
                 true,
-                motorSim.getVelocity(),
+                rollerSim.getAngularVelocityRadPerSec(),
                 appliedVolts,
-                motorSim.getMotorCurrent(),
+                rollerSim.getCurrentDrawAmps(),
                 24.0);
     }
 }

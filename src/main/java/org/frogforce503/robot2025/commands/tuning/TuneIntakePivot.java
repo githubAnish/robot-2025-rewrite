@@ -4,7 +4,7 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.IntakePivotConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.IntakePivotConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.intakepivot.IntakePivot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -25,7 +25,7 @@ public class TuneIntakePivot extends Command {
     private final LoggedTunableNumber maxVel;
     private final LoggedTunableNumber maxAcc;
 
-    private final LoggedTunableNumber setpointAngle;
+    private final LoggedTunableNumber setpointAngleRad;
 
     public TuneIntakePivot(IntakePivot intakePivot) {
         this.intakePivot = intakePivot;
@@ -49,7 +49,7 @@ public class TuneIntakePivot extends Command {
         this.maxVel = new LoggedTunableNumber("IntakePivot/MaxVelocityRadPerSec", initialConstraints.maxVelocity);
         this.maxAcc = new LoggedTunableNumber("IntakePivot/MaxAccelerationRadPerSec2", initialConstraints.maxAcceleration);
 
-        this.setpointAngle = new LoggedTunableNumber("IntakePivot/SetpointRad", intakePivot.getAngleRad());
+        this.setpointAngleRad = new LoggedTunableNumber("IntakePivot/SetpointRad", intakePivot.getAngleRad());
 
         addRequirements(intakePivot);
     }
@@ -66,6 +66,7 @@ public class TuneIntakePivot extends Command {
         this.kA.setTuningMode(true);
         this.maxVel.setTuningMode(true);
         this.maxAcc.setTuningMode(true);
+        this.setpointAngleRad.setTuningMode(true);
     }
 
     @Override
@@ -91,8 +92,8 @@ public class TuneIntakePivot extends Command {
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> intakePivot.setAngle(setpointAngle.get()),
-            setpointAngle);
+            () -> intakePivot.setAngle(setpointAngleRad.get()),
+            setpointAngleRad);
     }
 
     @Override

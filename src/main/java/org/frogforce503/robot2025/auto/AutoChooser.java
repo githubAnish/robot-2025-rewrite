@@ -21,6 +21,7 @@ public class AutoChooser {
     private final AutoFactory autoFactory;
 
     // State
+    // private LoggedDashboardChooser<Allaice>
     private LoggedDashboardChooser<AutoMode> selector = new LoggedDashboardChooser<>("Auto Mode");
     private AutoMode auto;
     private Command autoCommand;

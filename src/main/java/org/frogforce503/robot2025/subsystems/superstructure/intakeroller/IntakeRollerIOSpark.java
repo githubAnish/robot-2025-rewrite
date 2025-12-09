@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.intakeroller;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.IntakeRollerConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.IntakeRollerConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -15,6 +15,8 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.filter.Debouncer;
@@ -29,14 +31,15 @@ public class IntakeRollerIOSpark implements IntakeRollerIO {
     private final SparkClosedLoopController controller;
 
     // Config
-    private SparkMaxConfig config = new SparkMaxConfig();
+    private SparkBaseConfig config;
 
-    // Connected Debouncers
+    // Filters
     private final Debouncer connectedDebouncer = new Debouncer(.5);
     
     public IntakeRollerIOSpark() {
         final IntakeRollerConfig rollerConfig = Robot.bot.getIntakeRollerConfig();
 
+        // Initialize motor
         motor = rollerConfig.isSparkFlex()
             ? new SparkFlex(rollerConfig.id(), MotorType.kBrushless)
             : new SparkMax(rollerConfig.id(), MotorType.kBrushless);
@@ -44,6 +47,10 @@ public class IntakeRollerIOSpark implements IntakeRollerIO {
         controller = motor.getClosedLoopController();
 
         // Configure motor
+        config = rollerConfig.isSparkFlex()
+            ? new SparkFlexConfig()
+            : new SparkMaxConfig();
+        
         config.inverted(rollerConfig.inverted());
         config.idleMode(IdleMode.kBrake);
         config.smartCurrentLimit(rollerConfig.statorCurrentLimit());
@@ -51,8 +58,8 @@ public class IntakeRollerIOSpark implements IntakeRollerIO {
 
         config
             .encoder
-                .positionConversionFactor(1 / rollerConfig.mechanismRatio())
-                .velocityConversionFactor(1 / rollerConfig.mechanismRatio())
+                .positionConversionFactor((1 / rollerConfig.mechanismRatio()) * (2 * Math.PI)) // convert rotations to radians
+                .velocityConversionFactor((1 / rollerConfig.mechanismRatio()) * (2 * Math.PI) / 60) // convert RPM to rad/sec
                 .uvwMeasurementPeriod(10)
                 .uvwAverageDepth(2);
 
@@ -91,8 +98,8 @@ public class IntakeRollerIOSpark implements IntakeRollerIO {
     }
 
     @Override
-    public void runVelocity(double velocity, double feedforward) {
-        controller.setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
+    public void runVelocity(double velocityRadPerSec, double feedforward) {
+        controller.setReference(velocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
     }
 
     @Override

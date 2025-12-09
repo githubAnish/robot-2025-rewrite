@@ -1,8 +1,11 @@
 package org.frogforce503.robot2025.subsystems.climber;
 
+import java.time.Duration;
+
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.ClimberConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ClimberConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.SensorConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -11,22 +14,34 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.wpilibj.DigitalGlitchFilter;
+import edu.wpi.first.wpilibj.DigitalInput;
 import lombok.Getter;
 
 public class ClimberIOSpark implements ClimberIO {
     // Hardware
     @Getter private final SparkMax motor;
 
+    @Getter private final DigitalInput limitSwitch;
+
     // Config
     private SparkMaxConfig config = new SparkMaxConfig();
 
-    // Connected Debouncers
+    // Filters
     private final Debouncer connectedDebouncer = new Debouncer(.5);
+    private final DigitalGlitchFilter limitSwitchFilter = new DigitalGlitchFilter();
     
     public ClimberIOSpark() {
         final ClimberConfig climberConfig = Robot.bot.getClimberConfig();
+        final SensorConfig sensorConfig = Robot.bot.getSensorConfig();
 
+        // Initialize motor
         motor = new SparkMax(climberConfig.id(), MotorType.kBrushless);
+
+        // Initialize limit switch
+        limitSwitch = new DigitalInput(sensorConfig.winchLimitSwitchId());
+        limitSwitchFilter.setPeriodNanoSeconds(Duration.ofMillis(100).toNanos());
+        limitSwitchFilter.add(limitSwitch);
 
         // Configure motor
         config.inverted(climberConfig.inverted());
@@ -49,7 +64,8 @@ public class ClimberIOSpark implements ClimberIO {
                 connectedDebouncer.calculate(motor.getLastError() == REVLibError.kOk),
                 motor.getBusVoltage() * motor.getAppliedOutput(),
                 motor.getOutputCurrent(),
-                motor.getMotorTemperature());
+                motor.getMotorTemperature(),
+                !limitSwitch.get());
     }
 
     @Override

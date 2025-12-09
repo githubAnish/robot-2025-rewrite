@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.WristConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.WristConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -31,12 +31,13 @@ public class WristIOSpark implements WristIO {
     // Config
     private SparkMaxConfig config = new SparkMaxConfig();
 
-    // Connected Debouncers
+    // Filters
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public WristIOSpark() {
         final WristConfig wristConfig = Robot.bot.getWristConfig();
 
+        // Initialize motor
         motor = new SparkMax(wristConfig.id(), MotorType.kBrushless);
         relativeEncoder = motor.getEncoder();
         absoluteEncoder = motor.getAbsoluteEncoder();
@@ -58,8 +59,8 @@ public class WristIOSpark implements WristIO {
         config
             .absoluteEncoder
                 .zeroOffset(wristConfig.zeroOffset())
-                .positionConversionFactor(2 * Math.PI) // convert rotations to radians
-                .velocityConversionFactor(2 * Math.PI / 60) // convert RPM to rad/sec
+                .positionConversionFactor(2 * Math.PI) // convert rotations to radians, mounted on axis wrist rotates on, so no need to apply gear ratio
+                .velocityConversionFactor(2 * Math.PI / 60) // convert RPM to rad/sec, mounted on axis wrist rotates on, so no need to apply gear ratio
                 .zeroCentered(true)
                 .averageDepth(2)
                 .setSparkMaxDataPortConfig();
@@ -73,10 +74,10 @@ public class WristIOSpark implements WristIO {
 
         motor.clearFaults();
 
-        relativeEncoder.setPosition(0.0);
-
         // Apply configuration
         SparkUtil.configure(motor, config, true);
+
+        setRelativeEncoderPosition(0.0);
     }
 
     @Override

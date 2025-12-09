@@ -3,7 +3,6 @@ package org.frogforce503.lib.reefscape;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.util.ProximityUtil;
 import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.offsets.Offset;

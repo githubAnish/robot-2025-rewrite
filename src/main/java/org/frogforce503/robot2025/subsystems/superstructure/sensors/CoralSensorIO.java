@@ -9,8 +9,8 @@ public interface CoralSensorIO {
     }   
 
     record CoralSensorIOData(
-        boolean upperTriggered,
-        boolean lowerTriggered) {}
+        boolean upperBeamBreakTriggered,
+        boolean lowerBeamBreakTriggered) {}
 
     default void updateInputs(CoralSensorIOInputs inputs) {}
 }

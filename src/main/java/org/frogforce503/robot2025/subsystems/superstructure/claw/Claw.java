@@ -18,19 +18,21 @@ public class Claw extends FFSubsystemBase {
     private final ClawIOInputsAutoLogged inputs = new ClawIOInputsAutoLogged();
 
     // Constants
-    @Setter private SimpleMotorFeedforward feedforward = Robot.bot.getClawConfig().kFF().getSimpleMotorFF();
-    private final Debouncer coralFilter = new Debouncer(0.1);
-    private final Debouncer algaeFilter = new Debouncer(0.25, DebounceType.kRising);
+    @Setter private SimpleMotorFeedforward feedforward;
+    private final Debouncer coralDebouncer = new Debouncer(0.1);
+    private final Debouncer algaeDebouncer = new Debouncer(0.25);
 
     // Control
-    private double targetLeftVelocityRPM = ClawConstants.START;
-    private double targetRightVelocityRPM = ClawConstants.START;
+    private double targetLeftVelocityRadPerSec = ClawConstants.START;
+    private double targetRightVelocityRadPerSec = ClawConstants.START;
 
     private boolean shouldRunVelocity = false;
     private boolean atGoal = false;
 
     public Claw(ClawIO io) {
         this.io = io;
+
+        feedforward = Robot.bot.getClawConfig().kFF().getSimpleMotorFF();
     }
 
     @Override
@@ -42,57 +44,49 @@ public class Claw extends FFSubsystemBase {
 
         // Run velocity mode unless requested to stop
         if (shouldRunVelocity && RobotState.isEnabled()) {
-            atGoal = isAtVelocity(targetLeftVelocityRPM, targetRightVelocityRPM, ClawConstants.kTolerance);
-            io.runVelocity(targetLeftVelocityRPM, targetRightVelocityRPM, feedforward.calculate((targetLeftVelocityRPM + targetRightVelocityRPM) / 2.0));
+            atGoal = isAtVelocity(targetLeftVelocityRadPerSec, targetRightVelocityRadPerSec, ClawConstants.kTolerance);
+            io.runVelocity(targetLeftVelocityRadPerSec, targetRightVelocityRadPerSec, feedforward.calculate(targetLeftVelocityRadPerSec), feedforward.calculate(targetRightVelocityRadPerSec));
 
             // Log state
-            Logger.recordOutput("Claw/LeftSetpointVelocityRPM", targetLeftVelocityRPM);
-            Logger.recordOutput("Claw/RightSetpointVelocityRPM", targetRightVelocityRPM);
+            Logger.recordOutput("Claw/LeftSetpointVelocityRadPerSec", targetLeftVelocityRadPerSec);
+            Logger.recordOutput("Claw/RightSetpointVelocityRadPerSec", targetRightVelocityRadPerSec);
             Logger.recordOutput("Claw/AtGoal", atGoal);
         } else {
             // Reset setpoint
-            targetLeftVelocityRPM = 0.0;
-            targetRightVelocityRPM = 0.0;
+            targetLeftVelocityRadPerSec = 0.0;
+            targetRightVelocityRadPerSec = 0.0;
 
             // Clear logs
-            Logger.recordOutput("Claw/LeftSetpointVelocityRPM", 0.0);
-            Logger.recordOutput("Claw/RightSetpointVelocityRPM", 0.0);
+            Logger.recordOutput("Claw/LeftSetpointVelocityRadPerSec", 0.0);
+            Logger.recordOutput("Claw/RightSetpointVelocityRadPerSec", 0.0);
             Logger.recordOutput("Claw/AtGoal", true);
         }
 
-        Logger.recordOutput("Claw/LeftCurrentVelocityRPM", getLeftVelocityRPM());
-        Logger.recordOutput("Claw/RightCurrentVelocityRPM", getRightVelocityRPM());
+        Logger.recordOutput("Claw/LeftCurrentVelocityRadPerSec", getLeftVelocityRadPerSec());
+        Logger.recordOutput("Claw/RightCurrentVelocityRadPerSec", getRightVelocityRadPerSec());
 
         // Record cycle time
         LoggedTracer.record("Claw");
     }
 
-    public double getLeftVelocityRPM() {
-        return inputs.leftMotorData.velocityRPM();
+    public double getLeftVelocityRadPerSec() {
+        return inputs.leftData.velocityRadPerSec();
     }
 
-    public double getRightVelocityRPM() {
-        return inputs.rightMotorData.velocityRPM();
+    public double getRightVelocityRadPerSec() {
+        return inputs.rightData.velocityRadPerSec();
     }
 
     public boolean coralCurrentThresholdForIntookMet() {
-        if (RobotBase.isSimulation()) {
-            return true;
-        }
-
-        return coralFilter.calculate(
-            inputs.leftMotorData.statorCurrentAmps() > 10 ||
-            inputs.rightMotorData.statorCurrentAmps() > 10);
+        return coralDebouncer.calculate(
+            inputs.leftData.statorCurrentAmps() > 10 ||
+            inputs.rightData.statorCurrentAmps() > 10);
     }
 
     public boolean algaeCurrentThresholdForHoldMet() {
-        if (RobotBase.isSimulation()) {
-            return true;
-        }
-
-        return algaeFilter.calculate(
-            inputs.leftMotorData.statorCurrentAmps() > 15 ||
-            inputs.rightMotorData.statorCurrentAmps() > 15);
+        return algaeDebouncer.calculate(
+            inputs.leftData.statorCurrentAmps() > 15 ||
+            inputs.rightData.statorCurrentAmps() > 15);
     }
 
     // Actions
@@ -110,24 +104,24 @@ public class Claw extends FFSubsystemBase {
         io.stop();
     }
 
-    public void runOpenLoop(double leftOutput, double rightOutput) {
+    public void runVolts(double leftVolts, double rightVolts) {
         this.shouldRunVelocity = false;
-        io.runOpenLoop(leftOutput, rightOutput);
+        io.runVolts(leftVolts, rightVolts);
     }
 
-    public void setVelocity(double leftVelocityRPM, double rightVelocityRPM) {
+    public void setVelocity(double leftVelocityRadPerSec, double rightVelocityRadPerSec) {
         this.shouldRunVelocity = true;
-        this.targetLeftVelocityRPM = leftVelocityRPM;
-        this.targetRightVelocityRPM = rightVelocityRPM;
+        this.targetLeftVelocityRadPerSec = leftVelocityRadPerSec;
+        this.targetRightVelocityRadPerSec = rightVelocityRadPerSec;
     }
 
-    public void setVelocity(double velocityRPM) {
-        setVelocity(velocityRPM, velocityRPM);
+    public void setVelocity(double velocityRadPerSec) {
+        setVelocity(velocityRadPerSec, velocityRadPerSec);
     }
 
-    public boolean isAtVelocity(double leftVelocityRPM, double rightVelocityRPM, double tolerance) {
+    public boolean isAtVelocity(double leftVelocityRadPerSec, double rightVelocityRadPerSec, double tolerance) {
         return
-            MathUtil.isNear(leftVelocityRPM, getLeftVelocityRPM(), tolerance) &&
-            MathUtil.isNear(rightVelocityRPM, getRightVelocityRPM(), tolerance);
+            MathUtil.isNear(leftVelocityRadPerSec, getLeftVelocityRadPerSec(), tolerance) &&
+            MathUtil.isNear(rightVelocityRadPerSec, getRightVelocityRadPerSec(), tolerance);
     }
 }

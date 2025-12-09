@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.ClawConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ClawConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -34,19 +34,19 @@ public class ClawIOSpark implements ClawIO {
     private SparkMaxConfig leftConfig = new SparkMaxConfig();
     private SparkMaxConfig rightConfig = new SparkMaxConfig();
 
-    // Connected Debouncers
+    // Filters
     private final Debouncer connectedDebouncer = new Debouncer(.5);
     
     public ClawIOSpark() {
         final ClawConfig clawConfig = Robot.bot.getClawConfig();
 
+        // Initialize motors
         leftMotor = new SparkMax(clawConfig.leftId(), MotorType.kBrushless);
         leftEncoder = leftMotor.getEncoder();
+        leftController = leftMotor.getClosedLoopController();
 
         rightMotor = new SparkMax(clawConfig.rightId(), MotorType.kBrushless);
         rightEncoder = rightMotor.getEncoder();
-
-        leftController = leftMotor.getClosedLoopController();
         rightController = rightMotor.getClosedLoopController();
 
         // Configure motor
@@ -57,8 +57,8 @@ public class ClawIOSpark implements ClawIO {
 
         leftConfig
             .encoder
-                .positionConversionFactor(1 / clawConfig.mechanismRatio())
-                .velocityConversionFactor(1 / clawConfig.mechanismRatio())
+                .positionConversionFactor((1 / clawConfig.mechanismRatio()) * (2 * Math.PI)) // convert rotations to radians
+                .velocityConversionFactor((1 / clawConfig.mechanismRatio()) * (2 * Math.PI) / 60) // convert RPM to rad/sec
                 .uvwMeasurementPeriod(10)
                 .uvwAverageDepth(2);
 
@@ -84,7 +84,7 @@ public class ClawIOSpark implements ClawIO {
 
     @Override
     public void updateInputs(ClawIOInputs inputs) {
-        inputs.leftMotorData =
+        inputs.leftData =
             new ClawIOData(
                 connectedDebouncer.calculate(leftMotor.getLastError() == REVLibError.kOk),
                 leftEncoder.getVelocity(),
@@ -92,7 +92,7 @@ public class ClawIOSpark implements ClawIO {
                 leftMotor.getOutputCurrent(),
                 leftMotor.getMotorTemperature());
 
-        inputs.rightMotorData =
+        inputs.rightData =
             new ClawIOData(
                 connectedDebouncer.calculate(rightMotor.getLastError() == REVLibError.kOk),
                 rightEncoder.getVelocity(),
@@ -102,21 +102,21 @@ public class ClawIOSpark implements ClawIO {
     }
 
     @Override
-    public void runOpenLoop(double outputLeft, double outputRight) {
-        leftMotor.set(outputLeft);
-        rightMotor.set(outputRight);
+    public void runOpenLoop(double leftOutput, double rightOutput) {
+        leftMotor.set(leftOutput);
+        rightMotor.set(rightOutput);
     }
 
     @Override
-    public void runVolts(double voltsLeft, double voltsRight) {
-        leftMotor.setVoltage(voltsLeft);
-        rightMotor.setVoltage(voltsRight);
+    public void runVolts(double leftVolts, double rightVolts) {
+        leftMotor.setVoltage(leftVolts);
+        rightMotor.setVoltage(rightVolts);
     }
 
     @Override
-    public void runVelocity(double velocityLeft, double velocityRight, double feedforward) {
-        leftController.setReference(velocityLeft, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
-        rightController.setReference(velocityRight, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
+    public void runVelocity(double leftVelocityRadPerSec, double rightVelocityRadPerSec, double leftFeedforward, double rightFeedforward) {
+        leftController.setReference(leftVelocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, leftFeedforward);
+        rightController.setReference(rightVelocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, rightFeedforward);
     }
 
     @Override

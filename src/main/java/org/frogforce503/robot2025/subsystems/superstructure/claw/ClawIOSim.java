@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.ClawConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ClawConfig;
 
 import com.revrobotics.sim.SparkMaxSim;
 
@@ -44,23 +44,23 @@ public class ClawIOSim extends ClawIOSpark {
         rightRollerSim.update(Constants.loopPeriodSecs);
 
         // Update motor simulation
-        leftMotorSim.iterate(leftRollerSim.getAngularVelocityRPM(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
-        rightMotorSim.iterate(rightRollerSim.getAngularVelocityRPM(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        leftMotorSim.iterate(leftRollerSim.getAngularVelocityRadPerSec(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        rightMotorSim.iterate(rightRollerSim.getAngularVelocityRadPerSec(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
 
-        inputs.leftMotorData =
+        inputs.leftData =
             new ClawIOData(
                 true,
-                leftMotorSim.getVelocity(),
+                leftRollerSim.getAngularVelocityRadPerSec(),
                 appliedVolts,
-                leftMotorSim.getMotorCurrent(),
+                leftRollerSim.getCurrentDrawAmps(),
                 24.0);
 
-        inputs.rightMotorData =
+        inputs.rightData =
             new ClawIOData(
                 true,
-                rightMotorSim.getVelocity(),
+                rightRollerSim.getAngularVelocityRadPerSec(),
                 appliedVolts,
-                rightMotorSim.getMotorCurrent(),
+                rightRollerSim.getCurrentDrawAmps(),
                 24.0);
     }
 }

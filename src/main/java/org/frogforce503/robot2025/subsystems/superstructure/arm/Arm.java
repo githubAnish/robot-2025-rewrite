@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.RobotState;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
 
@@ -21,8 +20,7 @@ public class Arm extends FFSubsystemBase {
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
     // Constants
-    private final Range motionRange = Robot.bot.getArmConfig().motionRange();
-    @Setter private ArmFeedforward feedforward = Robot.bot.getArmConfig().kFF().getArmFF();
+    @Setter private ArmFeedforward feedforward;
 
     // Control
     private double targetAngleRad = ArmConstants.START;
@@ -34,6 +32,8 @@ public class Arm extends FFSubsystemBase {
 
     public Arm(ArmIO io) {
         this.io = io;
+
+        feedforward = Robot.bot.getArmConfig().kFF().getArmFF();
         profile = new TrapezoidProfile(Robot.bot.getArmConfig().kConstraints());
     }
 
@@ -48,30 +48,16 @@ public class Arm extends FFSubsystemBase {
         if (shouldRunProfile && RobotState.isEnabled()) {
             var goalState =
                 new State(
-                    motionRange.clamp(targetAngleRad),
+                    MathUtil.clamp(targetAngleRad, ArmConstants.minAngle, ArmConstants.maxAngle),
                     0.0);
 
             double previousVelocity = setpoint.velocity;
 
-            setpoint =
-                profile
-                    .calculate(Constants.loopPeriodSecs, setpoint, goalState);
-
-            if (!motionRange.contains(setpoint.position)) {
-                setpoint =
-                    new State(
-                        motionRange.clamp(setpoint.position),
-                        0.0);
-            }
-
+            setpoint = profile.calculate(Constants.loopPeriodSecs, setpoint, goalState);
             atGoal = isAtAngle(goalState.position, ArmConstants.kTolerance);
 
-            if (atGoal) {
-                stop();
-            } else {
-                double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
-                io.runPosition(setpoint.position, feedforward.calculate(setpoint.position, setpoint.velocity, accel));
-            }
+            double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
+            io.runPosition(setpoint.position, feedforward.calculate(setpoint.position, setpoint.velocity, accel));
 
             // Log state
             Logger.recordOutput("Arm/Profile/SetpointPositionRad", setpoint.position);
@@ -114,9 +100,9 @@ public class Arm extends FFSubsystemBase {
         io.stop();
     }
 
-    public void runOpenLoop(double output) {
+    public void runVolts(double volts) {
         this.shouldRunProfile = false;
-        io.runOpenLoop(output);
+        io.runVolts(volts);
     }
 
     public void setAngle(double angleRad) {

@@ -4,8 +4,8 @@ import org.frogforce503.lib.auto.builder.PlannedPathGenerator;
 import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.lib.planning.planned_path.Waypoint;
 import org.frogforce503.lib.reefscape.PrescoreBoundary;
+import org.frogforce503.lib.reefscape.ProximityUtil;
 import org.frogforce503.lib.reefscape.Station;
-import org.frogforce503.lib.util.ProximityUtil;
 import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.commands.drive.DrivePlannedPath;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
@@ -130,7 +130,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 break;
 
             case PARTIAL_STOW:
-                elevator.setHeight(ElevatorConstants.MIN_HEIGHT);
+                elevator.setHeight(ElevatorConstants.minHeight);
                 currentState = IntakingState.STOW;
                 break;
 

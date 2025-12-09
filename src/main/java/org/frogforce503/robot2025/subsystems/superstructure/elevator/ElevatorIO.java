@@ -5,7 +5,7 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ElevatorIO {
     @AutoLog
     class ElevatorIOInputs {
-        public ElevatorIOData data = new ElevatorIOData(false, 0.0, 0.0, 0.0, 0.0, 0.0);
+        public ElevatorIOData data = new ElevatorIOData(false, 0.0, 0.0, 0.0, 0.0, 0.0, false);
     }
 
     record ElevatorIOData(
@@ -14,7 +14,8 @@ public interface ElevatorIO {
         double velocityMetersPerSec,
         double appliedVolts,
         double statorCurrentAmps,
-        double tempCelsius) {}
+        double tempCelsius,
+        boolean limitSwitchPressed) {}
 
     default void updateInputs(ElevatorIOInputs inputs) {}
 
@@ -28,7 +29,7 @@ public interface ElevatorIO {
 
     default void setPID(double kP, double kI, double kD) {}
 
-    default void setBrakeMode(boolean enabled) {}  
-    
+    default void setBrakeMode(boolean enabled) {}
+
     default void resetEncoder() {}
 }

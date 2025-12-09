@@ -4,13 +4,12 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.ArmConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ArmConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class TuneArm extends Command {
@@ -26,7 +25,7 @@ public class TuneArm extends Command {
     private final LoggedTunableNumber maxVel;
     private final LoggedTunableNumber maxAcc;
 
-    private final LoggedTunableNumber setpointAngle;
+    private final LoggedTunableNumber setpointAngleRad;
 
     public TuneArm(Arm arm) {
         this.arm = arm;
@@ -50,7 +49,7 @@ public class TuneArm extends Command {
         this.maxVel = new LoggedTunableNumber("Arm/MaxVelocityRadPerSec", initialConstraints.maxVelocity);
         this.maxAcc = new LoggedTunableNumber("Arm/MaxAccelerationRadPerSec2", initialConstraints.maxAcceleration);
 
-        this.setpointAngle = new LoggedTunableNumber("Arm/SetpointDeg", Units.radiansToDegrees(arm.getAngleRad()));
+        this.setpointAngleRad = new LoggedTunableNumber("Arm/SetpointRad", arm.getAngleRad());
 
         addRequirements(arm);
     }
@@ -67,6 +66,7 @@ public class TuneArm extends Command {
         this.kA.setTuningMode(true);
         this.maxVel.setTuningMode(true);
         this.maxAcc.setTuningMode(true);
+        this.setpointAngleRad.setTuningMode(true);
     }
 
     @Override
@@ -92,8 +92,8 @@ public class TuneArm extends Command {
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> arm.setAngle(Units.degreesToRadians(setpointAngle.get())),
-            setpointAngle);
+            () -> arm.setAngle(setpointAngleRad.get()),
+            setpointAngleRad);
     }
 
     @Override

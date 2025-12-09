@@ -2,8 +2,6 @@ package org.frogforce503.robot2025.subsystems.climber;
 
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIO;
-import org.frogforce503.robot2025.subsystems.superstructure.sensors.LimitSwitchIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.filter.Debouncer;
@@ -11,14 +9,11 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import lombok.Setter;
 
 public class Climber extends FFSubsystemBase {
-    private final ClimberIO climberIO;
-    private final ClimberIOInputsAutoLogged climberInputs = new ClimberIOInputsAutoLogged();
-
-    private final LimitSwitchIO limitSwitchIO;
-    private final LimitSwitchIOInputsAutoLogged limitSwitchInputs = new LimitSwitchIOInputsAutoLogged();
+    private final ClimberIO io;
+    private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
 
     // Constants
-    private final Debouncer currentHoldDebouncer = new Debouncer(0.1, DebounceType.kRising);
+    private final Debouncer holdDebouncer = new Debouncer(0.1, DebounceType.kRising);
 
     // Control
     @Setter private ClimberState currentState = ClimberState.IDLE;
@@ -31,20 +26,16 @@ public class Climber extends FFSubsystemBase {
         HOLD
     }
 
-    public Climber(ClimberIO climberIO, LimitSwitchIO limitSwitchIO) {
-        this.climberIO = climberIO;
-        this.limitSwitchIO = limitSwitchIO;
+    public Climber(ClimberIO io) {
+        this.io = io;
     }
 
     @Override
     public void periodic() {
         super.periodic();
 
-        climberIO.updateInputs(climberInputs);
-        Logger.processInputs("Climber/Winch", climberInputs);
-
-        limitSwitchIO.updateInputs(limitSwitchInputs);
-        Logger.processInputs("Climber/LimitSwitch", limitSwitchInputs);
+        io.updateInputs(inputs);
+        Logger.processInputs("Climber", inputs);
 
         if (currentThresholdForHoldMet()) {
             holdRequested = true;
@@ -59,15 +50,15 @@ public class Climber extends FFSubsystemBase {
                 break;
 
             case SLOW_WIND:
-                climberIO.runOpenLoop(0.05);
+                io.runOpenLoop(0.05);
                 break;
 
             case FAST_WIND:
-                climberIO.runOpenLoop(1.0);
+                io.runOpenLoop(1.0);
                 break;
 
             case HOLD:
-                climberIO.runOpenLoop(0.3);
+                io.runOpenLoop(0.3);
                 break;
         }
 
@@ -78,18 +69,18 @@ public class Climber extends FFSubsystemBase {
     }
 
     private boolean currentThresholdForHoldMet() {
-        return currentHoldDebouncer.calculate(
-            climberInputs.data.statorCurrentAmps() > 63);
+        return holdDebouncer.calculate(
+            inputs.data.statorCurrentAmps() > 63);
     }
 
     // Actions
     @Override
     public void setBrakeMode(boolean enabled) {
-        climberIO.setBrakeMode(enabled);
+        io.setBrakeMode(enabled);
     }
 
     @Override
     public void stop() {
-        climberIO.stop();
+        io.stop();
     }
 }

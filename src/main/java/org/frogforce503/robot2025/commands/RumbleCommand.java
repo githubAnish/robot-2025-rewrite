@@ -1,21 +1,17 @@
 package org.frogforce503.robot2025.commands;
 
-import org.frogforce503.lib.math.Range;
-
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RumbleCommand extends StartEndCommand {
-    public RumbleCommand(CommandXboxController joystick, Range rumbleStrengths) {
+    public RumbleCommand(CommandXboxController joystick, double minRumbleStrength, double maxRumbleStrength) {
         super(
-            () -> joystick.setRumble(RumbleType.kBothRumble, rumbleStrengths.max()),
-            () -> joystick.setRumble(RumbleType.kBothRumble, rumbleStrengths.min()));
+            () -> joystick.setRumble(RumbleType.kBothRumble, minRumbleStrength),
+            () -> joystick.setRumble(RumbleType.kBothRumble, maxRumbleStrength));
     }
 
     public RumbleCommand(CommandXboxController joystick) {
-        this(
-            joystick,
-            new Range(0.0, 1.0));
+        this(joystick, 0.0, 1.0);
     }
 }

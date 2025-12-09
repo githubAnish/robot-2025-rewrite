@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.ElevatorConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ElevatorConfig;
 
 import com.revrobotics.sim.SparkMaxSim;
 
@@ -30,8 +30,8 @@ public class ElevatorIOSim extends ElevatorIOSpark {
                 elevatorConfig.mechanismRatio(),
                 simCarriageMass,
                 elevatorConfig.sprocketPitchDiameter() / 2,
-                elevatorConfig.motionRange().min(),
-                elevatorConfig.motionRange().max(),
+                elevatorConfig.minHeight(),
+                elevatorConfig.maxHeight(),
                 true,
                 ElevatorConstants.START);
     }
@@ -54,6 +54,7 @@ public class ElevatorIOSim extends ElevatorIOSpark {
                 elevatorSim.getVelocityMetersPerSecond(),
                 appliedVolts,
                 elevatorSim.getCurrentDrawAmps(),
-                24.0);
+                24.0,
+                !super.getLimitSwitch().get());
     }
 }

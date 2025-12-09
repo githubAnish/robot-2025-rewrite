@@ -35,7 +35,7 @@ public abstract class FFSubsystemBase extends SubsystemBase {
             .set(coastOverride.get() && !RobotState.isDisabled());
     };
 
+    // Actions
     protected abstract void setBrakeMode(boolean enabled);
-
     public abstract void stop();
 }

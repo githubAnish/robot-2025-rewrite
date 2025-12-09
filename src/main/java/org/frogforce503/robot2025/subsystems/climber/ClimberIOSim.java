@@ -32,8 +32,9 @@ public class ClimberIOSim extends ClimberIOSpark {
         inputs.data =
             new ClimberIOData(
                 true,
-                0.0,
-                0.0,
-                24.0);
+                appliedVolts,
+                motorSim.getMotorCurrent(),
+                24.0,
+                !super.getLimitSwitch().get());
     }
 }

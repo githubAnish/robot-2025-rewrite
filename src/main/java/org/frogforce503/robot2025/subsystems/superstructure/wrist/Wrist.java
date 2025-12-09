@@ -2,11 +2,15 @@ package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.wpilibj.RobotState;
+import lombok.Getter;
 import lombok.Setter;
 
-import org.frogforce503.lib.math.Range;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.frogforce503.lib.util.LoggedTracer;
+import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
 import org.littletonrobotics.junction.Logger;
 
@@ -15,17 +19,20 @@ public class Wrist extends FFSubsystemBase {
     private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
     // Constants
-    private final Range motionRange = Robot.bot.getWristConfig().motionRange();
-    @Setter private ArmFeedforward feedforward = Robot.bot.getWristConfig().kFF().getArmFF();
+    @Setter private ArmFeedforward feedforward;
 
     // Control
     private double targetAngleRad = WristConstants.START;
     
-    private boolean shouldRunPosition = false;
+    private boolean shouldRunProfile = false;
+    @Setter private TrapezoidProfile profile;
+    @Getter private State setpoint = new State();
     private boolean atGoal = false;
 
     public Wrist(WristIO io) {
         this.io = io;
+
+        feedforward = Robot.bot.getWristConfig().kFF().getArmFF();
     }
 
     @Override
@@ -35,32 +42,39 @@ public class Wrist extends FFSubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Wrist", inputs);
 
-        // Run position mode unless requested to stop
-        if (shouldRunPosition) {
-            var goalState = motionRange.clamp(targetAngleRad);
+        // Update profile
+        if (shouldRunProfile && RobotState.isEnabled()) {
+            var goalState =
+                new State(
+                    MathUtil.clamp(targetAngleRad, WristConstants.minAngle, WristConstants.maxAngle),
+                    0.0);
 
-            atGoal = isAtAngle(goalState, WristConstants.kTolerance);
+            double previousVelocity = setpoint.velocity;
 
-            if (atGoal) {
-                stop();
-            } else {
-                io.runPosition(goalState, feedforward.calculate(goalState, 0.0));
-            }
+            setpoint = profile.calculate(Constants.loopPeriodSecs, setpoint, goalState);
+            atGoal = isAtAngle(goalState.position, WristConstants.kTolerance);
+
+            double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
+            io.runPosition(setpoint.position, feedforward.calculate(setpoint.position, setpoint.velocity, accel));
 
             // Log state
-            Logger.recordOutput("Wrist/GoalPositionRad", goalState);
+            Logger.recordOutput("Wrist/Profile/SetpointPositionRad", setpoint.position);
+            Logger.recordOutput("Wrist/Profile/SetpointVelocityRadPerSec", setpoint.velocity);
+            Logger.recordOutput("Wrist/Profile/GoalPositionRad", goalState.position);
             Logger.recordOutput("Wrist/AtGoal", atGoal);
         } else {
             // Reset setpoint
-            targetAngleRad = 0.0;
+            setpoint = new State(getRelativeAngleRad(), 0.0);
       
             // Clear logs
-            Logger.recordOutput("Wrist/GoalPositionRad", 0.0);
+            Logger.recordOutput("Wrist/Profile/SetpointPositionRad", 0.0);
+            Logger.recordOutput("Wrist/Profile/SetpointVelocityRadPerSec", 0.0);
+            Logger.recordOutput("Wrist/Profile/GoalPositionRad", 0.0);
             Logger.recordOutput("Wrist/AtGoal", true);
         }
 
-        Logger.recordOutput("Wrist/CurrentPositionRad", getRelativeAngleRad());
-        Logger.recordOutput("Wrist/AbsolutePositionRad", getAbsoluteAngleRad());
+        Logger.recordOutput("Wrist/CurrentRelativePositionRad", getRelativeAngleRad());
+        Logger.recordOutput("Wrist/CurrentAbsolutePositionRad", getAbsoluteAngleRad());
 
         // Record cycle time
         LoggedTracer.record("Wrist");
@@ -75,7 +89,7 @@ public class Wrist extends FFSubsystemBase {
     }
 
     // Actions
-    public void setEncoderPosition(double position) {
+    public void setRelativeEncoderPosition(double position) {
         io.setRelativeEncoderPosition(position);
     }
 
@@ -93,13 +107,13 @@ public class Wrist extends FFSubsystemBase {
         io.stop();
     }
 
-    public void runOpenLoop(double output) {
-        this.shouldRunPosition = false;
-        io.runOpenLoop(output);
+    public void runVolts(double volts) {
+        this.shouldRunProfile = false;
+        io.runVolts(volts);
     }
 
     public void setAngle(double angleRad) {
-        this.shouldRunPosition = true;
+        this.shouldRunProfile = true;
         this.targetAngleRad = angleRad;
     }
 

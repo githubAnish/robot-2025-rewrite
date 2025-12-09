@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.config.field;
+package org.frogforce503.robot2025.constants.field;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;

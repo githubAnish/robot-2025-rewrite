@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.config.subsystem.ArmConfig;
+import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ArmConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -29,12 +29,13 @@ public class ArmIOSpark implements ArmIO {
     // Config
     private SparkMaxConfig config = new SparkMaxConfig();
 
-    // Connected Debouncers
+    // Filters
     private final Debouncer connectedDebouncer = new Debouncer(.5);
 
     public ArmIOSpark() {
         final ArmConfig armConfig = Robot.bot.getArmConfig();
 
+        // Initialize motor
         motor = new SparkMax(armConfig.id(), MotorType.kBrushless);
         encoder = motor.getAbsoluteEncoder();
         controller = motor.getClosedLoopController();
@@ -48,8 +49,8 @@ public class ArmIOSpark implements ArmIO {
         config
             .absoluteEncoder
                 .zeroOffset(armConfig.zeroOffset())
-                .positionConversionFactor(2 * Math.PI) // convert rotations to radians
-                .velocityConversionFactor(2 * Math.PI / 60) // convert RPM to rad/sec
+                .positionConversionFactor((1 / armConfig.mechanismRatio()) * (2 * Math.PI)) // convert rotations to radians
+                .velocityConversionFactor((1 / armConfig.mechanismRatio()) * (2 * Math.PI) / 60) // convert RPM to rad/sec
                 .zeroCentered(true)
                 .averageDepth(2)
                 .setSparkMaxDataPortConfig();
