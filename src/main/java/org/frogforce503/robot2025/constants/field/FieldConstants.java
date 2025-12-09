@@ -40,18 +40,10 @@ public class FieldConstants {
         public static final double stationLength = Units.inchesToMeters(79.750);
         
         public static final Pose2d blueLeft = aprilTagFieldLayout.getTagPose(13).get().toPose2d();
+        public static final Pose2d blueRight = aprilTagFieldLayout.getTagPose(12).get().toPose2d();
 
-        public static final Pose2d rightCenterFace =
-            new Pose2d(
-                Units.inchesToMeters(33.526),
-                Units.inchesToMeters(25.824),
-                Rotation2d.fromDegrees(144.011 - 90));
-                
-        public static final Pose2d leftCenterFace =
-            new Pose2d(
-                rightCenterFace.getX(),
-                fieldWidth - rightCenterFace.getY(),
-                Rotation2d.fromRadians(-rightCenterFace.getRotation().getRadians()));
+        public static final Pose2d redLeft = aprilTagFieldLayout.getTagPose(1).get().toPose2d();
+        public static final Pose2d redRight = aprilTagFieldLayout.getTagPose(2).get().toPose2d();
     }
 
     // public static class Reef {
