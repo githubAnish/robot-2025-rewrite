@@ -49,8 +49,8 @@ public class ArmIOSpark implements ArmIO {
         config
             .absoluteEncoder
                 .zeroOffset(armConfig.zeroOffset())
-                .positionConversionFactor((1 / armConfig.mechanismRatio()) * (2 * Math.PI)) // convert rotations to radians
-                .velocityConversionFactor((1 / armConfig.mechanismRatio()) * (2 * Math.PI) / 60) // convert RPM to rad/sec
+                .positionConversionFactor(2 * Math.PI) // convert rotations to radians
+                .velocityConversionFactor(2 * Math.PI / 60) // convert RPM to rad/sec
                 .zeroCentered(true)
                 .averageDepth(2)
                 .setSparkMaxDataPortConfig();

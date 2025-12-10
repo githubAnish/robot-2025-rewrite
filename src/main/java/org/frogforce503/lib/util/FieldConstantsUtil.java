@@ -43,7 +43,12 @@ public final class FieldConstantsUtil {
         return Double.parseDouble(jsonEntryToString(key));
     }
 
-    /** Gets the value associated with {@code key} and converts it from inches to meters. */
+    /**
+     * <p> Gets the value associated with {@code key} and converts it from inches to meters. </p>
+     * <b> Make sure </b>
+     * 
+     * @param key The key of the value from the field json file
+     */
     public static double getFieldValueMeters(String key) {
         return Units.inchesToMeters(jsonEntryToDouble(key));
     }
