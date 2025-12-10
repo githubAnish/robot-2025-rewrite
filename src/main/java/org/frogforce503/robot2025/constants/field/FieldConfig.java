@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.frogforce503.lib.util.ErrorUtil;
+import org.frogforce503.lib.util.FieldConstantsUtil;
 import org.frogforce503.robot2025.Constants;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -263,7 +264,7 @@ public class FieldConfig {
     }
 
     private double convertJsonEntryToDouble(JSONObject map, String key) {
-        return Units.inchesToMeters(Double.parseDouble(map.get(key).toString()));
+        return Units.inchesToMeters(FieldConstantsUtil.jsonEntryToDouble(key));
     }
 
     public Translation2d getFieldDimensions() {

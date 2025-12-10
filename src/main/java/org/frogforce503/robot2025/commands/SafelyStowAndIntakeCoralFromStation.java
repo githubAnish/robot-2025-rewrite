@@ -172,7 +172,9 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
     @Override
     public boolean isFinished() {
-        return currentState == IntakingState.FINISHED;
+        return
+            currentState == IntakingState.FINISHED &&
+            driveToStation.isFinished();
     }
 
     @Override

@@ -1,44 +1,42 @@
 package org.frogforce503.robot2025.constants.field;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import org.frogforce503.lib.math.GeomUtil;
+import org.frogforce503.lib.util.FieldConstantsUtil;
+import org.frogforce503.robot2025.Constants;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
 public class FieldConstants {
-    private static final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+    public static final AprilTagFieldLayout aprilTagFieldLayout = Constants.fieldVenue.getAprilTagFieldLayout();
 
     public static final double fieldLength = aprilTagFieldLayout.getFieldLength();
     public static final double fieldWidth = aprilTagFieldLayout.getFieldWidth();
 
+    public static class Lines {
+        public static final double blueInitLineX;
+        public static final double redInitLineX;
+
+        static {
+            final double BlueInitLineToLeftCage = FieldConstantsUtil.getFieldValueMeters("BlueInitLineToLeftCage");
+            blueInitLineX = fieldLength / 2 - BlueInitLineToLeftCage;
+
+            final double RedInitLineToLeftCage = FieldConstantsUtil.getFieldValueMeters("RedInitLineToLeftCage");
+            redInitLineX = fieldLength / 2 + RedInitLineToLeftCage;
+        }
+    }
+
     public static class Processor {
-        public static final Pose2d blue =
-            new Pose2d(
-                aprilTagFieldLayout.getTagPose(16).get().getX(),
-                0,
-                Rotation2d.fromDegrees(90));
-                
-        public static final Pose2d red =
-            new Pose2d(
-                aprilTagFieldLayout.getTagPose(3).get().getX(),
-                fieldWidth,
-                Rotation2d.fromDegrees(-90));
+        public static final Pose2d blue = new Pose2d(aprilTagFieldLayout.getTagPose(16).get().getX(), 0, Rotation2d.fromDegrees(90));
+        public static final Pose2d red = new Pose2d(aprilTagFieldLayout.getTagPose(3).get().getX(), fieldWidth, Rotation2d.fromDegrees(-90));
     }
 
     public static class CoralStation {
         public static final double stationLength = Units.inchesToMeters(79.750);
-        
+
         public static final Pose2d blueLeft = aprilTagFieldLayout.getTagPose(13).get().toPose2d();
         public static final Pose2d blueRight = aprilTagFieldLayout.getTagPose(12).get().toPose2d();
 
@@ -46,93 +44,128 @@ public class FieldConstants {
         public static final Pose2d redRight = aprilTagFieldLayout.getTagPose(2).get().toPose2d();
     }
 
-    // public static class Reef {
-    //     public static final double faceLength = Units.inchesToMeters(36.792600);
-    //     public static final Translation2d center =
-    //         new Translation2d(Units.inchesToMeters(176.746), fieldWidth / 2.0);
-    //     public static final double faceToZoneLine =
-    //         Units.inchesToMeters(12); // Side of the reef to the inside of the reef zone line
+    public static class Reef {
+        public record BranchInfo(Pose2d leftBranch, Pose2d rightBranch) {}
 
-    //     public static final Pose2d[] centerFaces =
-    //         new Pose2d[6]; // Starting facing the driver station in clockwise order
-    //     public static final List<Map<ReefLevel, Pose3d>> branchPositions =
-    //         new ArrayList<>(); // Starting at the right branch facing the driver station in clockwise
-    //     public static final List<Map<ReefLevel, Pose2d>> branchPositions2d = new ArrayList<>();
+        // Blue reef
+        public static final Pose2d[] blueFaceCenters =
+            new Pose2d[] {
+                aprilTagFieldLayout.getTagPose(18).get().toPose2d(), // blueCenterAB
+                aprilTagFieldLayout.getTagPose(17).get().toPose2d(), // blueCenterCD 
+                aprilTagFieldLayout.getTagPose(22).get().toPose2d(), // blueCenterEF 
+                aprilTagFieldLayout.getTagPose(21).get().toPose2d(), // blueCenterGH 
+                aprilTagFieldLayout.getTagPose(20).get().toPose2d(), // blueCenterIJ 
+                aprilTagFieldLayout.getTagPose(19).get().toPose2d()  // blueCenterKL
+            };
 
-    //     static {
-    //     // Initialize faces
-    //     var aprilTagLayout = AprilTagLayoutType.OFFICIAL.getLayout();
-    //     centerFaces[0] = aprilTagLayout.getTagPose(18).get().toPose2d();
-    //     centerFaces[1] = aprilTagLayout.getTagPose(19).get().toPose2d();
-    //     centerFaces[2] = aprilTagLayout.getTagPose(20).get().toPose2d();
-    //     centerFaces[3] = aprilTagLayout.getTagPose(21).get().toPose2d();
-    //     centerFaces[4] = aprilTagLayout.getTagPose(22).get().toPose2d();
-    //     centerFaces[5] = aprilTagLayout.getTagPose(17).get().toPose2d();
+        public static final Translation2d blueReefCenter =
+            blueFaceCenters[0]
+                .getTranslation()
+                .interpolate(blueFaceCenters[3].getTranslation(), 0.5); // middle of AB and GH faces
 
-    //     // Initialize branch positions
-    //     for (int face = 0; face < 6; face++) {
-    //         Map<ReefLevel, Pose3d> fillRight = new HashMap<>();
-    //         Map<ReefLevel, Pose3d> fillLeft = new HashMap<>();
-    //         Map<ReefLevel, Pose2d> fillRight2d = new HashMap<>();
-    //         Map<ReefLevel, Pose2d> fillLeft2d = new HashMap<>();
-    //         for (var level : ReefLevel.values()) {
-    //         Pose2d poseDirection = new Pose2d(center, Rotation2d.fromDegrees(180 - (60 * face)));
-    //         double adjustX = Units.inchesToMeters(30.738);
-    //         double adjustY = Units.inchesToMeters(6.469);
+        public static final BranchInfo[] blueFaceBranches = new BranchInfo[6];
 
-    //         var rightBranchPose =
-    //             new Pose3d(
-    //                 new Translation3d(
-    //                     poseDirection
-    //                         .transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero))
-    //                         .getX(),
-    //                     poseDirection
-    //                         .transformBy(new Transform2d(adjustX, adjustY, Rotation2d.kZero))
-    //                         .getY(),
-    //                     level.height),
-    //                 new Rotation3d(
-    //                     0,
-    //                     Units.degreesToRadians(level.pitch),
-    //                     poseDirection.getRotation().getRadians()));
-    //         var leftBranchPose =
-    //             new Pose3d(
-    //                 new Translation3d(
-    //                     poseDirection
-    //                         .transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero))
-    //                         .getX(),
-    //                     poseDirection
-    //                         .transformBy(new Transform2d(adjustX, -adjustY, Rotation2d.kZero))
-    //                         .getY(),
-    //                     level.height),
-    //                 new Rotation3d(
-    //                     0,
-    //                     Units.degreesToRadians(level.pitch),
-    //                     poseDirection.getRotation().getRadians()));
+        // Red reef
+        public static final Pose2d[] redFaceCenters =
+            new Pose2d[] {
+                aprilTagFieldLayout.getTagPose(7).get().toPose2d(), // redCenterAB
+                aprilTagFieldLayout.getTagPose(8).get().toPose2d(), // redCenterCD 
+                aprilTagFieldLayout.getTagPose(9).get().toPose2d(), // redCenterEF 
+                aprilTagFieldLayout.getTagPose(10).get().toPose2d(), // redCenterGH 
+                aprilTagFieldLayout.getTagPose(11).get().toPose2d(), // redCenterIJ 
+                aprilTagFieldLayout.getTagPose(6).get().toPose2d()  // redCenterKL
+            };
 
-    //         fillRight.put(level, rightBranchPose);
-    //         fillLeft.put(level, leftBranchPose);
-    //         fillRight2d.put(level, rightBranchPose.toPose2d());
-    //         fillLeft2d.put(level, leftBranchPose.toPose2d());
-    //         }
-    //         branchPositions.add(fillRight);
-    //         branchPositions.add(fillLeft);
-    //         branchPositions2d.add(fillRight2d);
-    //         branchPositions2d.add(fillLeft2d);
-    //     }
-    //     }
-    // }
+        public static final Translation2d redReefCenter =
+            redFaceCenters[0]
+                .getTranslation()
+                .interpolate(redFaceCenters[3].getTranslation(), 0.5); // middle of AB and GH faces
 
-    // public static class StagingPositions {
-    //     // Measured from the center of the ice cream
-    //     public static final double separation = Units.inchesToMeters(72.0);
-    //     public static final Translation2d[] iceCreams = new Translation2d[3];
+        public static final BranchInfo[] redFaceBranches = new BranchInfo[6];
 
-    //     static {
-    //     for (int i = 0; i < 3; i++) {
-    //         iceCreams[i] =
-    //             new Translation2d(
-    //                 Units.inchesToMeters(48), fieldWidth / 2.0 - separation + separation * i);
-    //     }
-    //     }
-    // }
+        static {
+            final double adjustX = Units.inchesToMeters(2.007); // measured distance from face AprilTag X to branch X
+            final double adjustY = Units.inchesToMeters(6.469); // measured distance from face AprilTag Y to branch Y 
+
+            // Initialize blue branches
+            for (int i = 0; i < 6; i++) {
+                Pose2d faceCenter = Reef.blueFaceCenters[i];
+
+                Pose2d leftBranch = faceCenter.plus(GeomUtil.toTransform2d(adjustX, -adjustY));
+                Pose2d rightBranch = faceCenter.plus(GeomUtil.toTransform2d(adjustX, adjustY));
+
+                blueFaceBranches[i] = new BranchInfo(leftBranch, rightBranch);
+            }
+
+            // Initialize red branches
+            for (int i = 0; i < 6; i++) {
+                Pose2d faceCenter = Reef.redFaceCenters[i];
+
+                Pose2d leftBranch = faceCenter.plus(GeomUtil.toTransform2d(adjustX, -adjustY));
+                Pose2d rightBranch = faceCenter.plus(GeomUtil.toTransform2d(adjustX, adjustY));
+
+                redFaceBranches[i] = new BranchInfo(leftBranch, rightBranch);
+            }
+        }
+    }
+
+    public static class IceCream {
+        public static final Translation2d blueLeft;
+        public static final Translation2d blueCenter;
+        public static final Translation2d blueRight;
+
+        public static final Translation2d redLeft;
+        public static final Translation2d redCenter;
+        public static final Translation2d redRight;
+
+        static {
+            final double centerIcecreamToReefDist = Units.inchesToMeters(95.25);
+            final double iceCreamSeparationDist = Units.inchesToMeters(72);
+
+            // Initialize blue ice creams
+            blueCenter =
+                Reef.blueFaceCenters[0]
+                    .getTranslation()
+                    .plus(new Translation2d(-centerIcecreamToReefDist, 0));
+            blueLeft = blueCenter.plus(new Translation2d(0, iceCreamSeparationDist));
+            blueRight = blueCenter.plus(new Translation2d(0, -iceCreamSeparationDist));
+
+            // Initialize red ice creams
+            redCenter =
+                Reef.redFaceCenters[0]
+                    .getTranslation()
+                    .plus(new Translation2d(centerIcecreamToReefDist, 0));
+            redLeft = redCenter.plus(new Translation2d(0, -iceCreamSeparationDist));
+            redRight = redCenter.plus(new Translation2d(0, iceCreamSeparationDist));
+        }
+    }
+
+    public static class Cage {
+        public static final Translation2d blueLeft;
+        public static final Translation2d blueCenter;
+        public static final Translation2d blueRight;
+
+        public static final Translation2d redLeft;
+        public static final Translation2d redCenter;
+        public static final Translation2d redRight;
+
+        static {
+            final double cageSeparationDist = Units.inchesToMeters(43);
+            final double leftCageToWallDist = Units.inchesToMeters(31);
+
+            // Initialize blue cages
+            final double BlueInitLineToLeftCage = FieldConstantsUtil.getFieldValueMeters("BlueInitLineToLeftCage");
+
+            blueLeft = new Translation2d(Lines.blueInitLineX + BlueInitLineToLeftCage, fieldWidth - leftCageToWallDist);
+            blueCenter = blueLeft.plus(new Translation2d(0, -cageSeparationDist));
+            blueRight = blueCenter.plus(new Translation2d(0, -cageSeparationDist));
+
+            // Initialize red cages
+            final double RedInitLineToLeftCage = FieldConstantsUtil.getFieldValueMeters("RedInitLineToLeftCage");
+
+            redLeft = new Translation2d(Lines.redInitLineX - RedInitLineToLeftCage, leftCageToWallDist);
+            redCenter = redLeft.plus(new Translation2d(0, cageSeparationDist));
+            redRight = redCenter.plus(new Translation2d(0, cageSeparationDist));
+        }
+    }
 }

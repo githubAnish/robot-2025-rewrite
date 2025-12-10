@@ -1,4 +1,4 @@
-package org.frogforce503.lib.util;
+package org.frogforce503.lib.io;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.button.Trigger;

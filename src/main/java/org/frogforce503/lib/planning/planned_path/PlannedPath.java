@@ -33,32 +33,21 @@ public class PlannedPath {
 
         return
             new Pose2d(
-                sample
-                    .getFirst()
-                    .poseMeters
-                    .getTranslation(),
-                sample
-                    .getSecond()
-                    .position);
+                sample.getFirst().poseMeters.getTranslation(),
+                sample.getSecond().position);
     }
 
     public Pose2d getFinalHolonomicPose() {
         Pair<Trajectory.State, RotationSequence.State> sample = _sample(getTotalTimeSeconds());
+        
         return
             new Pose2d(
-                sample
-                    .getFirst()
-                    .poseMeters
-                    .getTranslation(),
-                sample
-                    .getSecond()
-                    .position);    
+                sample.getFirst().poseMeters.getTranslation(),
+                sample.getSecond().position);    
     }
 
     public Waypoint getFinalWaypoint() {
-        return
-            this.waypoints
-                .get(this.waypoints.size() - 1);
+        return this.waypoints.get(this.waypoints.size() - 1);
     }
 
     public List<Waypoint> sampleTimeRange(double ti, double tf, double intervals) {
@@ -98,9 +87,7 @@ public class PlannedPath {
     }
 
     public double getTotalTimeSeconds() {
-        return
-            getDriveTrajectory()
-                .getTotalTimeSeconds();
+        return getDriveTrajectory().getTotalTimeSeconds();
     }
 
     /**
