@@ -2,9 +2,9 @@ package org.frogforce503.robot2025.subsystems.superstructure;
 
 import java.util.function.Supplier;
 
+import org.frogforce503.lib.logging.LoggedTracer;
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.subsystem.VirtualSubsystem;
-import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.ArmConstants;
 import org.frogforce503.robot2025.subsystems.superstructure.claw.Claw;

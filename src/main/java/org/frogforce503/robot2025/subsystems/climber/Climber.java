@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.subsystems.climber;
 
+import org.frogforce503.lib.logging.LoggedTracer;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
-import org.frogforce503.lib.util.LoggedTracer;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.filter.Debouncer;

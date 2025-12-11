@@ -2,8 +2,8 @@ package org.frogforce503.robot2025.subsystems.offsets;
 
 import java.util.Map;
 
+import org.frogforce503.lib.logging.LoggedTracer;
 import org.frogforce503.lib.subsystem.VirtualSubsystem;
-import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.subsystems.offsets.io.OffsetsIO;
 import org.frogforce503.robot2025.subsystems.offsets.io.OffsetsIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;

@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.subsystems.leds;
 
+import org.frogforce503.lib.logging.LoggedTracer;
 import org.frogforce503.lib.logging.LoggerUtil;
-import org.frogforce503.lib.util.LoggedTracer;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.led.Animation;

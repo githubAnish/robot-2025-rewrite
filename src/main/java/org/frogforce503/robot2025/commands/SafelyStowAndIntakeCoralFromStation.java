@@ -1,10 +1,10 @@
 package org.frogforce503.robot2025.commands;
 
 import org.frogforce503.lib.auto.builder.PlannedPathGenerator;
+import org.frogforce503.lib.logging.LoggedTunableNumber;
 import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.lib.planning.planned_path.Waypoint;
-import org.frogforce503.lib.util.LoggedTunableNumber;
-import org.frogforce503.lib.util.ProximityUtil;
+import org.frogforce503.lib.reefscape.ProximityUtil;
 import org.frogforce503.robot2025.commands.drive.DrivePlannedPath;
 import org.frogforce503.robot2025.constants.field.FieldConstants;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
@@ -44,16 +44,16 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
     private final Leds leds;
     
+    // Constants
+    private final LoggedTunableNumber safeDistanceFromReefToStow =
+        new LoggedTunableNumber("Safe Distance From Reef To Stow Inches", Units.inchesToMeters(40)); // TODO make sure to tune this
+
     // State
     private Pose2d closestReefSide;
 
     private DrivePlannedPath driveToStation;
 
     private IntakingState currentState = IntakingState.SAFE_DISTANCE_FROM_REEF;
-
-    // Tunables
-    private final LoggedTunableNumber safeDistanceFromReefToStow =
-        new LoggedTunableNumber("Safe Distance From Reef To Stow Inches", Units.inchesToMeters(40)); // TODO make sure to tune this
 
     private enum IntakingState {
         SAFE_DISTANCE_FROM_REEF,
@@ -92,7 +92,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
         // Generate path to closest station
         closestReefSide = ProximityUtil.getClosestReefSide(drive);
 
-        Pose2d closestStation =
+        final Pose2d closestStation =
             ProximityUtil.getClosestPose(
                 drive,
                 FieldConstants.CoralStation.blueLeft,
@@ -114,7 +114,6 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
         driveToStation.initialize();
 
         vision.setDesiredAprilTagGoal(AprilTagGoal.CORAL_STATION_ALIGNMENT);
-        
         leds.runAnimation(Animations.INTAKE_CORAL);
     }
 

@@ -21,20 +21,36 @@ public class SysIdExecutor {
     private final Consumer<Voltage> consumer;
     private final SysIdRoutine routine;
 
-    public SysIdExecutor(FFSubsystemBase subsystem, Consumer<Voltage> consumer) {
+    public SysIdExecutor(
+        FFSubsystemBase subsystem,
+        Consumer<Voltage> consumer,
+        Velocity<VoltageUnit> rampRate,
+        Voltage stepVoltage,
+        Time timeout
+    ) {
         // Create routine
         this.consumer = consumer;
         this.routine =
             new SysIdRoutine(
                 new SysIdRoutine.Config(
-                    Volts.of(1).per(Second),
-                    Volts.of(7),
-                    Seconds.of(10),
+                    rampRate,
+                    stepVoltage,
+                    timeout,
                     state -> Logger.recordOutput(subsystem.getName() + "/SysIdState", state.toString())),
                 new SysIdRoutine.Mechanism(
                     consumer,
                     null, // No log consumer, since data is recorded by AdvantageKit
                     subsystem));
+    }
+
+    /** Use this constructor if you want to go with the default values for {@code rampRate}, {@code stepVoltage}, and {@code timeout} */
+    public SysIdExecutor(FFSubsystemBase subsystem, Consumer<Voltage> consumer) {
+        this(
+            subsystem,
+            consumer,
+            Volts.of(1).per(Second),
+            Volts.of(7),
+            Seconds.of(10));
     }
 
     /** Returns a command to run a quasistatic test in the specified direction. */

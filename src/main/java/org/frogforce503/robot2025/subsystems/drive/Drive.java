@@ -1,6 +1,6 @@
 package org.frogforce503.robot2025.subsystems.drive;
 
-import org.frogforce503.lib.util.LoggedTracer;
+import org.frogforce503.lib.logging.LoggedTracer;
 import org.frogforce503.lib.vision.apriltag_detection.VisionMeasurement;
 import org.frogforce503.robot2025.FieldInfo;
 import org.littletonrobotics.junction.Logger;

@@ -13,8 +13,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 import java.lang.reflect.Field;
 
+import org.frogforce503.lib.logging.LoggedTracer;
 import org.frogforce503.lib.subsystem.VirtualSubsystem;
-import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.lib.util.NTClientLogger;
 import org.frogforce503.robot2025.constants.hardware.RobotHardware;
 import org.frogforce503.robot2025.constants.hardware.RobotHardwareCompBot;

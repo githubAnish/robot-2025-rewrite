@@ -8,8 +8,8 @@ import edu.wpi.first.wpilibj.RobotState;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frogforce503.lib.logging.LoggedTracer;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
-import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
 import org.littletonrobotics.junction.Logger;

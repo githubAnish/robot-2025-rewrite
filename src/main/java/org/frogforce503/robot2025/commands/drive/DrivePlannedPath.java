@@ -16,44 +16,41 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import lombok.Setter;
 
 public class DrivePlannedPath extends Command {
+    // Requirements
     private final Drive drive;
 
+    // Control
     private final SwervePathFollower controller = DriveConstants.pathFollower;
     private final Timer timer;
-
     private final Supplier<PlannedPath> dynamicPath;
 
+    // State
     private final boolean willStopAtEnd;
-
     private double lastTime = 0;
-    private Rotation2d lastAngle = Rotation2d.kZero;
     private Translation2d lastPosition = Translation2d.kZero;
 
-    private Supplier<Rotation2d> headingOverride = null;
+    // Overrides
+    @Setter private Supplier<Rotation2d> headingOverride = null;
 
     public DrivePlannedPath(Drive drive, Supplier<PlannedPath> dynamicPath) {
         this.drive = drive;
-
-        this.dynamicPath = dynamicPath;
 
         this.controller.setPoseTolerance(
             new Pose2d(
                 new Translation2d(Units.inchesToMeters(0.1), Units.inchesToMeters(0.0254)),
                 Rotation2d.fromDegrees(1)));
-        
         this.timer = new Timer();
-        
+        this.dynamicPath = dynamicPath;
+
         this.willStopAtEnd =
-            this.dynamicPath
+            dynamicPath
                 .get()
                 .getDriveTrajectory()
-                .sample(
-                    this.dynamicPath
-                        .get()
-                        .getTotalTimeSeconds())
-                .velocityMetersPerSecond == 0.00; //originally 0.1
+                .sample(dynamicPath.get().getTotalTimeSeconds())
+                .velocityMetersPerSecond == 0.00; // originally 0.1
 
         addRequirements(drive);
     }
@@ -62,25 +59,19 @@ public class DrivePlannedPath extends Command {
         this(drive, () -> path);
     }
 
-    public DrivePlannedPath withHeadingOverride(Supplier<Rotation2d> rotationSupplier) {
-        this.headingOverride = rotationSupplier;
-        return this;
-    }
-
     @Override
     public void initialize() {       
         PlannedPath path = dynamicPath.get(); 
 
-        this.timer.reset();
-        this.controller.reset();
-        this.timer.start();
+        timer.reset();
+        controller.reset();
+        timer.start();
 
         lastPosition = path.getInitialHolonomicPose().getTranslation();
-        lastAngle = path.getInitialHolonomicPose().getRotation();
         lastTime = 0;
 
         var poses =
-            this.dynamicPath
+            dynamicPath
                 .get()
                 .getDriveTrajectory()
                 .getStates()
@@ -97,7 +88,7 @@ public class DrivePlannedPath extends Command {
     public void execute() {
         // Get inputs
         PlannedPath path = dynamicPath.get();
-        double currentTime = this.timer.get();
+        double currentTime = timer.get();
         Pose2d currentPose = drive.getCurrentPose();
 
         PlannedPath.HolonomicState desiredState = path.sample(currentTime);
@@ -119,7 +110,6 @@ public class DrivePlannedPath extends Command {
         // Apply speeds
         drive.runVelocity(targetChassisSpeeds);
 
-        lastAngle = desiredState.holonomicAngle(); 
         lastTime = currentTime;
         lastPosition = currentPose.getTranslation();
 
@@ -158,7 +148,7 @@ public class DrivePlannedPath extends Command {
 
         FieldInfo.getObject("CurrentTrajectory").setPoses();
 
-        if (this.willStopAtEnd) {
+        if (willStopAtEnd) {
             drive.stop();
         }
     }

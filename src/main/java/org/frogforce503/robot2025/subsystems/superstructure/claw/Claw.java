@@ -1,7 +1,7 @@
 package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
+import org.frogforce503.lib.logging.LoggedTracer;
 import org.frogforce503.lib.subsystem.FFSubsystemBase;
-import org.frogforce503.lib.util.LoggedTracer;
 import org.frogforce503.robot2025.Robot;
 import org.littletonrobotics.junction.Logger;
 
