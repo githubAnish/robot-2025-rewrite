@@ -1,8 +1,8 @@
-package org.frogforce503.robot2025.subsystems.drive.io;
+package org.frogforce503.robot2025.subsystems.drive;
 
 import org.frogforce503.lib.swerve.SwerveDriveCoast;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
+import org.frogforce503.robot2025.constants.subsystem.DriveConstants;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
