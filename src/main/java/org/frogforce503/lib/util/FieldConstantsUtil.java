@@ -31,23 +31,25 @@ public final class FieldConstantsUtil {
         return fieldJson.get(key).toString();
     }
 
+    /** <b> Make sure there is only 1 value associated with the {@code key}. </b> */
     public static boolean jsonEntryToBool(String key) {
         return Boolean.parseBoolean(jsonEntryToString(key));
     }
 
+    /** <b> Make sure there is only 1 value associated with the {@code key}. </b> */
     public static double jsonEntryToInt(String key) {
         return Integer.parseInt(jsonEntryToString(key));
     }
 
+    /** <b> Make sure there is only 1 value associated with the {@code key}. </b> */
     public static double jsonEntryToDouble(String key) {
         return Double.parseDouble(jsonEntryToString(key));
     }
 
     /**
      * <p> Gets the value associated with {@code key} and converts it from inches to meters. </p>
-     * <b> Make sure </b>
-     * 
-     * @param key The key of the value from the field json file
+     * <p> Make sure <b> there is only 1 value associated with the {@code key}. </b></p>
+     * <p> Make sure <b> the value associated with {@code key} is in inches in the field json file. </b></p>
      */
     public static double getFieldValueMeters(String key) {
         return Units.inchesToMeters(jsonEntryToDouble(key));

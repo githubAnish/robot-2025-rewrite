@@ -161,7 +161,7 @@ window.addEventListener("load", () => {
   const applyOffsetButton = document.querySelector(".lower-section .submit button");
   applyOffsetButton.addEventListener("click", () => {
     const offsetValueInput = parseFloat(offsetInput.value);
-    if (!isNaN(offsetValueInput)) {
+    if (!isNaN(offsetValueInput) && tuning) {
       offsetValue = offsetValueInput; // Update offset value state
       ntClient.addSample(toRobotPrefix + offsetValueTopicName, offsetValue); // Publish updated offset value
     } else {

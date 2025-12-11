@@ -1,7 +1,5 @@
-package org.frogforce503.robot2025.subsystems.offsets;
+package org.frogforce503.robot2025.subsystems.offsets.io;
 
-import org.frogforce503.lib.reefscape.Branch;
-import org.frogforce503.lib.reefscape.ReefSide;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface OffsetsIO {
@@ -17,12 +15,6 @@ public interface OffsetsIO {
         double value) {}
 
     default void updateInputs(OffsetsIOInputs inputs) {}
-
-    default void setTuning(boolean set) {}
-
-    default void setSelectedBranchId(ReefSide side, Branch branch) {}
-
-    default void setDirection(Direction direction) {}
 
     default void setValue(double value) {}
 }

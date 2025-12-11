@@ -3,7 +3,7 @@ package org.frogforce503.lib.auto.route;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.frogforce503.robot2025.Constants;
@@ -30,12 +30,11 @@ public class ChoreoRoute implements BaseRoute {
     }
 
     @Override
-    public Pose2d getInitialPoseOrElseGet(Supplier<Pose2d> overridePoseSupplier) {
+    public Optional<Pose2d> getInitialPose() {
         return
             paths
                 .get(0)
                 .getRawTrajectory()
-                .getInitialPose(Constants.useAllianceFlipping)
-                .orElseGet(overridePoseSupplier);
+                .getInitialPose(Constants.useAllianceFlipping);
     }
 }

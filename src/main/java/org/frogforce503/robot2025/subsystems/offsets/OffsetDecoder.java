@@ -1,16 +1,11 @@
 package org.frogforce503.robot2025.subsystems.offsets;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frogforce503.lib.util.ErrorUtil;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.frogforce503.lib.util.FieldConstantsUtil;
 
-import edu.wpi.first.wpilibj.Filesystem;
+import lombok.Getter;
 
 public class OffsetDecoder {
     private final String LEFT_RED_AB = "LEFT_RED_AB";
@@ -38,56 +33,40 @@ public class OffsetDecoder {
     private final String RIGHT_BLUE_IJ = "RIGHT_BLUE_IJ";
     private final String RIGHT_BLUE_KL = "RIGHT_BLUE_KL";
 
-    private JSONObject rawOffsets;
+    @Getter private final Map<String, Offset> mapper;
 
-    public OffsetDecoder(String fileName) {
-        try {
-            this.rawOffsets =
-                (JSONObject) new JSONParser()
-                    .parse(
-                        new FileReader(
-                            Filesystem.getDeployDirectory().getAbsolutePath() + "/offsets/" + fileName));
-        } catch (IOException | ParseException e) {
-            System.out.println("Error reading offsets file: " + fileName  + ErrorUtil.attachJavaClassName(OffsetDecoder.class));
-            e.printStackTrace();
-        }
+    public OffsetDecoder() {
+        mapper =
+            new HashMap<>() {{
+                put(LEFT_RED_AB, jsonEntryToOffset(LEFT_RED_AB));
+                put(LEFT_RED_CD, jsonEntryToOffset(LEFT_RED_CD));
+                put(LEFT_RED_EF, jsonEntryToOffset(LEFT_RED_EF));
+                put(LEFT_RED_GH, jsonEntryToOffset(LEFT_RED_GH));
+                put(LEFT_RED_IJ, jsonEntryToOffset(LEFT_RED_IJ));
+                put(LEFT_RED_KL, jsonEntryToOffset(LEFT_RED_KL));
+                put(LEFT_BLUE_AB, jsonEntryToOffset(LEFT_BLUE_AB));
+                put(LEFT_BLUE_CD, jsonEntryToOffset(LEFT_BLUE_CD));
+                put(LEFT_BLUE_EF, jsonEntryToOffset(LEFT_BLUE_EF));
+                put(LEFT_BLUE_GH, jsonEntryToOffset(LEFT_BLUE_GH));
+                put(LEFT_BLUE_IJ, jsonEntryToOffset(LEFT_BLUE_IJ));
+                put(LEFT_BLUE_KL, jsonEntryToOffset(LEFT_BLUE_KL));
+                put(RIGHT_RED_AB, jsonEntryToOffset(RIGHT_RED_AB));
+                put(RIGHT_RED_CD, jsonEntryToOffset(RIGHT_RED_CD));
+                put(RIGHT_RED_EF, jsonEntryToOffset(RIGHT_RED_EF));
+                put(RIGHT_RED_GH, jsonEntryToOffset(RIGHT_RED_GH));
+                put(RIGHT_RED_IJ, jsonEntryToOffset(RIGHT_RED_IJ));
+                put(RIGHT_RED_KL, jsonEntryToOffset(RIGHT_RED_KL));
+                put(RIGHT_BLUE_AB, jsonEntryToOffset(RIGHT_BLUE_AB));
+                put(RIGHT_BLUE_CD, jsonEntryToOffset(RIGHT_BLUE_CD));
+                put(RIGHT_BLUE_EF, jsonEntryToOffset(RIGHT_BLUE_EF));
+                put(RIGHT_BLUE_GH, jsonEntryToOffset(RIGHT_BLUE_GH));
+                put(RIGHT_BLUE_IJ, jsonEntryToOffset(RIGHT_BLUE_IJ));
+                put(RIGHT_BLUE_KL, jsonEntryToOffset(RIGHT_BLUE_KL));
+            }};
     }
 
-    public Map<String, Offset> getMapper() {
-        return new HashMap<>() {{
-            put(LEFT_RED_AB, convertJsonEntryToOffset(rawOffsets, LEFT_RED_AB));
-            put(LEFT_RED_CD, convertJsonEntryToOffset(rawOffsets, LEFT_RED_CD));
-            put(LEFT_RED_EF, convertJsonEntryToOffset(rawOffsets, LEFT_RED_EF));
-            put(LEFT_RED_GH, convertJsonEntryToOffset(rawOffsets, LEFT_RED_GH));
-            put(LEFT_RED_IJ, convertJsonEntryToOffset(rawOffsets, LEFT_RED_IJ));
-            put(LEFT_RED_KL, convertJsonEntryToOffset(rawOffsets, LEFT_RED_KL));
-            put(LEFT_BLUE_AB, convertJsonEntryToOffset(rawOffsets, LEFT_BLUE_AB));
-            put(LEFT_BLUE_CD, convertJsonEntryToOffset(rawOffsets, LEFT_BLUE_CD));
-            put(LEFT_BLUE_EF, convertJsonEntryToOffset(rawOffsets, LEFT_BLUE_EF));
-            put(LEFT_BLUE_GH, convertJsonEntryToOffset(rawOffsets, LEFT_BLUE_GH));
-            put(LEFT_BLUE_IJ, convertJsonEntryToOffset(rawOffsets, LEFT_BLUE_IJ));
-            put(LEFT_BLUE_KL, convertJsonEntryToOffset(rawOffsets, LEFT_BLUE_KL));
-            put(RIGHT_RED_AB, convertJsonEntryToOffset(rawOffsets, RIGHT_RED_AB));
-            put(RIGHT_RED_CD, convertJsonEntryToOffset(rawOffsets, RIGHT_RED_CD));
-            put(RIGHT_RED_EF, convertJsonEntryToOffset(rawOffsets, RIGHT_RED_EF));
-            put(RIGHT_RED_GH, convertJsonEntryToOffset(rawOffsets, RIGHT_RED_GH));
-            put(RIGHT_RED_IJ, convertJsonEntryToOffset(rawOffsets, RIGHT_RED_IJ));
-            put(RIGHT_RED_KL, convertJsonEntryToOffset(rawOffsets, RIGHT_RED_KL));
-            put(RIGHT_BLUE_AB, convertJsonEntryToOffset(rawOffsets, RIGHT_BLUE_AB));
-            put(RIGHT_BLUE_CD, convertJsonEntryToOffset(rawOffsets, RIGHT_BLUE_CD));
-            put(RIGHT_BLUE_EF, convertJsonEntryToOffset(rawOffsets, RIGHT_BLUE_EF));
-            put(RIGHT_BLUE_GH, convertJsonEntryToOffset(rawOffsets, RIGHT_BLUE_GH));
-            put(RIGHT_BLUE_IJ, convertJsonEntryToOffset(rawOffsets, RIGHT_BLUE_IJ));
-            put(RIGHT_BLUE_KL, convertJsonEntryToOffset(rawOffsets, RIGHT_BLUE_KL));
-        }};
-    }
-
-    private Offset convertJsonEntryToOffset(JSONObject map, String key) {
-        String[] jsonEntryValue =
-            map
-                .get(key)
-                .toString()
-                .split(", ");
+    private Offset jsonEntryToOffset(String key) {
+        String[] jsonEntryValue = FieldConstantsUtil.jsonEntryToString(key).split(", ");
 
         return
             new Offset(

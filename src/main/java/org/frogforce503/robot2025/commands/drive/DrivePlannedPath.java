@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 public class DrivePlannedPath extends Command {
     private final Drive drive;
-    private final FieldInfo field;
 
     private final SwervePathFollower controller = DriveConstants.pathFollower;
     private final Timer timer;
@@ -34,9 +33,8 @@ public class DrivePlannedPath extends Command {
 
     private Supplier<Rotation2d> headingOverride = null;
 
-    public DrivePlannedPath(Drive drive, FieldInfo field, Supplier<PlannedPath> dynamicPath) {
+    public DrivePlannedPath(Drive drive, Supplier<PlannedPath> dynamicPath) {
         this.drive = drive;
-        this.field = field;
 
         this.dynamicPath = dynamicPath;
 
@@ -60,8 +58,8 @@ public class DrivePlannedPath extends Command {
         addRequirements(drive);
     }
 
-    public DrivePlannedPath(Drive drive, FieldInfo field, PlannedPath path) {
-        this(drive, field, () -> path);
+    public DrivePlannedPath(Drive drive, PlannedPath path) {
+        this(drive, () -> path);
     }
 
     public DrivePlannedPath withHeadingOverride(Supplier<Rotation2d> rotationSupplier) {
@@ -90,7 +88,7 @@ public class DrivePlannedPath extends Command {
                 .map(state -> state.poseMeters)
                 .toArray(Pose2d[]::new);
 
-        field
+        FieldInfo
             .getObject("CurrentTrajectory")
             .setPoses(poses);
     }
@@ -158,7 +156,7 @@ public class DrivePlannedPath extends Command {
     public void end(boolean interrupted) {
         System.out.println("END " + interrupted);
 
-        field.getObject("CurrentTrajectory").setPoses();
+        FieldInfo.getObject("CurrentTrajectory").setPoses();
 
         if (this.willStopAtEnd) {
             drive.stop();

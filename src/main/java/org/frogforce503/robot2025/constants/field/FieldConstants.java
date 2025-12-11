@@ -1,6 +1,7 @@
 package org.frogforce503.robot2025.constants.field;
 
 import org.frogforce503.lib.math.GeomUtil;
+import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.lib.util.FieldConstantsUtil;
 import org.frogforce503.robot2025.Constants;
 
@@ -15,6 +16,14 @@ public class FieldConstants {
 
     public static final double fieldLength = aprilTagFieldLayout.getFieldLength();
     public static final double fieldWidth = aprilTagFieldLayout.getFieldWidth();
+
+    public static Pose2d getTagPose2d(int tagId) {
+        return
+            aprilTagFieldLayout
+                .getTagPose(tagId)
+                .orElseThrow(() -> new IllegalArgumentException("No tag with ID " + tagId + " found in layout" + ErrorUtil.attachJavaClassName(FieldConstants.class)))
+                .toPose2d();
+    }
 
     public static class Lines {
         public static final double blueInitLineX;

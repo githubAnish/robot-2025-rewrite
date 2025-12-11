@@ -32,7 +32,6 @@ public class DriveToPose extends Command {
     private final double ffMaxRadius = 0.4;
 
     private final Drive drive;
-    private final FieldInfo field;
 
     private final Supplier<Pose2d> target;
 
@@ -55,9 +54,8 @@ public class DriveToPose extends Command {
     private Supplier<Translation2d> linearFF = () -> Translation2d.kZero;
     private DoubleSupplier omegaFF = () -> 0.0;
 
-    public DriveToPose(Drive drive, FieldInfo field, Supplier<Pose2d> target) {
+    public DriveToPose(Drive drive, Supplier<Pose2d> target) {
         this.drive = drive;
-        this.field = field;
         this.target = target;
 
         driveController.setPID(drivePID.kP(), drivePID.kI(), drivePID.kD());
@@ -76,27 +74,24 @@ public class DriveToPose extends Command {
 
     public DriveToPose(
         Drive drive,
-        FieldInfo field,
         Supplier<Pose2d> target,
         Supplier<Translation2d> linearFF,
         DoubleSupplier omegaFF
     ) {
-        this(drive, field, target);
+        this(drive, target);
         this.linearFF = linearFF;
         this.omegaFF = omegaFF;
     }
 
     public DriveToPose(
         Drive drive,
-        FieldInfo field,
         Supplier<Pose2d> target,
         JoystickInputs inputs
     ) {
         this(
             drive,
-            field,
             target,
-            () -> inputs.getLinearVelocityFromJoysticks().times(field.onRedAlliance() ? -1.0 : 1.0),
+            () -> inputs.getLinearVelocityFromJoysticks().times(FieldInfo.isRed() ? -1.0 : 1.0),
             () -> inputs.getOmegaFromJoysticks());
     }
 

@@ -23,7 +23,6 @@ public class TeleopSwerveCommand extends Command {
 
     // Requirements
     private final Drive drive;
-    private final FieldInfo field;
     private final JoystickInputs inputs;
     private final BooleanSupplier robotRelative;
     private final BooleanSupplier slowMode;
@@ -38,13 +37,8 @@ public class TeleopSwerveCommand extends Command {
     private Rotation2d targetHeading = new Rotation2d();
     private double lastManualRotTime = 0.0;
 
-    public TeleopSwerveCommand(
-        Drive drive,
-        FieldInfo field,
-        JoystickInputs inputs
-    ) {
+    public TeleopSwerveCommand(Drive drive, JoystickInputs inputs) {
         this.drive = drive;
-        this.field = field;
         this.inputs = inputs;
         this.robotRelative = drive::isRobotRelative;
         this.slowMode = drive::isSlowMode;
@@ -114,7 +108,7 @@ public class TeleopSwerveCommand extends Command {
                 ? speeds
                 : ChassisSpeeds.fromFieldRelativeSpeeds(
                     speeds,
-                    field.onRedAlliance()
+                    FieldInfo.isRed()
                         ? drive.getAngle().plus(Rotation2d.kPi)
                         : drive.getAngle()));
     }

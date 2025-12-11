@@ -7,8 +7,6 @@ import java.util.function.Supplier;
 import org.frogforce503.lib.io.DoublePressTracker;
 import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.io.TriggerUtil;
-import org.frogforce503.lib.math.GeomUtil;
-import org.frogforce503.lib.reefscape.Branch;
 import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.lib.util.FFSelectCommand;
 import org.frogforce503.lib.util.LoggedJVM;
@@ -25,7 +23,6 @@ import org.frogforce503.robot2025.commands.ScoreAlgaeInProcessor;
 import org.frogforce503.robot2025.commands.ScoreCoralOnReef;
 import org.frogforce503.robot2025.commands.SafelyStowAndIntakeCoralFromStation;
 import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
-import org.frogforce503.robot2025.constants.field.FieldConstants;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSim;
@@ -37,8 +34,8 @@ import org.frogforce503.robot2025.subsystems.leds.Leds;
 import org.frogforce503.robot2025.subsystems.leds.LedsIO;
 import org.frogforce503.robot2025.subsystems.leds.LedsIOCANdle;
 import org.frogforce503.robot2025.subsystems.offsets.OffsetManager;
-import org.frogforce503.robot2025.subsystems.offsets.OffsetsIO;
-import org.frogforce503.robot2025.subsystems.offsets.OffsetsIOServer;
+import org.frogforce503.robot2025.subsystems.offsets.io.OffsetsIO;
+import org.frogforce503.robot2025.subsystems.offsets.io.OffsetsIOServer;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.SuperstructureMode;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
@@ -74,16 +71,14 @@ import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagI
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonVision;
 import org.frogforce503.robot2025.subsystems.vision.object_detection.ObjectDetectionIO;
 import org.frogforce503.test.UnitTest;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.ExtensionMethod;
 
@@ -96,9 +91,6 @@ public class RobotContainer implements UnitTest {
     private Climber climber;
     private Leds leds;
     private final OffsetManager offsetManager;
-
-    // Field Info
-    private final FieldInfo field = new FieldInfo();
 
     // Auto
     private final AutoChooser autoChooser;
@@ -138,7 +130,7 @@ public class RobotContainer implements UnitTest {
         // Initialize subsystems based on robot type
         switch (Constants.getRobot()) {
             case CompBot -> {
-                drive = new Drive(new DriveIOPhoenix(), field);
+                drive = new Drive(new DriveIOPhoenix());
                 vision =
                     new Vision(
                         visionEstimateConsumer,
@@ -160,7 +152,7 @@ public class RobotContainer implements UnitTest {
                 leds = new Leds(new LedsIOCANdle());
             }
             case PracticeBot -> {
-                drive = new Drive(new DriveIOPhoenix(), field);
+                drive = new Drive(new DriveIOPhoenix());
                 vision =
                     new Vision(
                         visionEstimateConsumer,
@@ -182,7 +174,7 @@ public class RobotContainer implements UnitTest {
                 leds = new Leds(new LedsIOCANdle());
             }
             case SimBot -> {
-                drive = new Drive(new DriveIOBasicSim(), field);
+                drive = new Drive(new DriveIOBasicSim());
                 vision =
                     new Vision(
                         visionEstimateConsumer,
@@ -204,7 +196,7 @@ public class RobotContainer implements UnitTest {
                 leds = new Leds(new LedsIO() {});
             }
             case ProgrammingBot -> {
-                drive = new Drive(new DriveIOPhoenix(), field);
+                drive = new Drive(new DriveIOPhoenix());
                 vision =
                     new Vision(
                         visionEstimateConsumer,
@@ -248,15 +240,14 @@ public class RobotContainer implements UnitTest {
         autoChooser =
             new AutoChooser(
                 drive,
-                field,
                 superstructure);
 
         // Create viz
-        gameViz = new GameViz(drive, field);
+        gameViz = new GameViz(drive);
 
         warmupExecutor = new WarmupExecutor(drive, autoChooser);
 
-        drive.setDefaultCommand(new TeleopSwerveCommand(drive, field, driverInputs.get()));
+        drive.setDefaultCommand(new TeleopSwerveCommand(drive, driverInputs.get()));
 
         // Triggers
         Trigger camerasConnected = new Trigger(() -> true); // TODO: Make a method for this in Vision.java
@@ -276,7 +267,7 @@ public class RobotContainer implements UnitTest {
         driver.leftTrigger().whileTrue(
             new FFSelectCommand<>(
                 Map.of(
-                    SuperstructureMode.CORAL_INTAKE, new SafelyStowAndIntakeCoralFromStation(drive, field, vision, superstructure, leds),
+                    SuperstructureMode.CORAL_INTAKE, new SafelyStowAndIntakeCoralFromStation(drive, vision, superstructure, leds),
                     SuperstructureMode.ALGAE_GROUND, new IntakeAlgaeFromGround(),
                     SuperstructureMode.ALGAE_HANDOFF, new IntakeAlgaeFromHandoff(),
                     SuperstructureMode.ALGAE_PLUCK_HIGH, new IntakeAlgaeFromReef(true),
@@ -357,6 +348,8 @@ public class RobotContainer implements UnitTest {
         }
 
         loggedJVM.update();
+
+        Logger.recordOutput("Alliance Color", FieldInfo.getAlliance());
     }
 
     public void autonomousInit() {
@@ -365,7 +358,7 @@ public class RobotContainer implements UnitTest {
 
     public void teleopInit() {
         superstructure.getClaw().stop(); // Make sure coral doesn't eject in case state goes to EJECT_CORAL
-        autoChooser.cleanup();
+        autoChooser.close();
     }
 
     public void disabledInit() {

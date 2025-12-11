@@ -6,7 +6,7 @@ public enum Direction {
     FORWARD,
     BACKWARD;
 
-    public boolean equalsTo(String direction) {
+    public boolean equals(String direction) {
         return this.name().equals(direction);
     }
 }

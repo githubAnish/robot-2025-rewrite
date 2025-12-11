@@ -3,11 +3,9 @@ package org.frogforce503.robot2025.commands;
 import org.frogforce503.lib.auto.builder.PlannedPathGenerator;
 import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.lib.planning.planned_path.Waypoint;
-import org.frogforce503.lib.reefscape.PrescoreBoundary;
-import org.frogforce503.lib.reefscape.ProximityUtil;
-import org.frogforce503.lib.reefscape.Station;
-import org.frogforce503.robot2025.FieldInfo;
+import org.frogforce503.lib.util.ProximityUtil;
 import org.frogforce503.robot2025.commands.drive.DrivePlannedPath;
+import org.frogforce503.robot2025.constants.field.FieldConstants;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.leds.Animations;
 import org.frogforce503.robot2025.subsystems.leds.Leds;
@@ -26,13 +24,13 @@ import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristConstants
 import org.frogforce503.robot2025.subsystems.vision.Vision;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagGoal;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class SafelyStowAndIntakeCoralFromStation extends Command {
     // Requirements
     private final Drive drive;
-    private final FieldInfo field;
     private final Vision vision;
 
     private final Superstructure superstructure;
@@ -44,8 +42,6 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
     private final IntakeRoller intakeRoller;
 
     private final Leds leds;
-
-    private final PrescoreBoundary prescoreBoundary;
 
     // State
     private DrivePlannedPath driveToStation;
@@ -63,9 +59,8 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
         FINISHED
     }
 
-    public SafelyStowAndIntakeCoralFromStation(Drive drive, FieldInfo field, Vision vision, Superstructure superstructure, Leds leds) {
+    public SafelyStowAndIntakeCoralFromStation(Drive drive, Vision vision, Superstructure superstructure, Leds leds) {
         this.drive = drive;
-        this.field = field;
         this.vision = vision;
 
         this.superstructure = superstructure;
@@ -78,8 +73,6 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
         this.leds = leds;
 
-        this.prescoreBoundary = new PrescoreBoundary(drive, field);
-
         addRequirements(drive, vision, elevator, arm, wrist, claw, intakePivot, intakeRoller, leds);
     }
 
@@ -90,7 +83,13 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
         }
 
         // Generate path to closest station
-        Station closestStation = ProximityUtil.getClosestStation(drive, field);
+        Pose2d closestStation =
+            ProximityUtil.getClosestPose(
+                drive,
+                FieldConstants.CoralStation.blueLeft,
+                FieldConstants.CoralStation.blueRight,
+                FieldConstants.CoralStation.redLeft,
+                FieldConstants.CoralStation.redRight);
         
         PlannedPath pathToStation =
             PlannedPathGenerator.generate(
@@ -99,15 +98,13 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 0,
                 0,
                 Waypoint.fromHolonomicPose(drive.getCurrentPose()),
-                Waypoint.fromHolonomicPose(closestStation.getTarget(field).get()));
+                Waypoint.fromHolonomicPose(closestStation));
         
-        driveToStation = new DrivePlannedPath(drive, field, pathToStation);
+        driveToStation = new DrivePlannedPath(drive, pathToStation);
 
         driveToStation.initialize();
 
         vision.setDesiredAprilTagGoal(AprilTagGoal.CORAL_STATION_ALIGNMENT);
-        
-        intakeRoller.stop();
         
         leds.runAnimation(Animations.INTAKE_CORAL);
     }
@@ -116,7 +113,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
     public void execute() {
         switch (currentState) {
             case SAFE_DISTANCE_FROM_REEF:
-                if (!prescoreBoundary.insideBoundary()) {
+                if (!false) {
                     currentState = IntakingState.PUT_INTAKEPIVOT_OUT;
                 }
                 break;

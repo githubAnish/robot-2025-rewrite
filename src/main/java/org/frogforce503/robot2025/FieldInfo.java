@@ -1,82 +1,48 @@
 package org.frogforce503.robot2025;
 
-import org.frogforce503.lib.math.Polygon2d;
-import org.frogforce503.robot2025.constants.field.FieldConfig;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import lombok.Getter;
+import lombok.Setter;
 
-/** Wrapper class for all field-related information. */
-public class FieldInfo extends Field2d {
-    // Config
-    @Getter private FieldConfig config = new FieldConfig();
+/** Class containing all field-related information. */
+public final class FieldInfo {
+    // Requirements
+    private static final Field2d field2d = new Field2d();
 
-    // Selectors
-    private final LoggedDashboardChooser<Alliance> allianceSelector = new LoggedDashboardChooser<>("Alliance Color");
+    // State
+    @Setter private static Alliance allianceOverride;
 
-    public FieldInfo() {
-        SmartDashboard.putData("Field", this);
+    private FieldInfo() {}
 
-        this.allianceSelector.addDefaultOption("Red", Alliance.Red);
-        this.allianceSelector.addOption("Blue", Alliance.Blue);
+    static {
+        SmartDashboard.putData("Field", field2d);
     }
 
-    public Alliance getAlliance() {
+    /** Returns current alliance. */
+    public static Alliance getAlliance() {
         return
             RobotBase.isSimulation() || DriverStation.getAlliance().isEmpty() // if in sim or alliance not known
-                ? allianceSelector.get()
+                ? allianceOverride
                 : DriverStation.getAlliance().get();
     }
 
-    public boolean onRedAlliance() {
+    /** Returns if currently on red alliance. */
+    public static boolean isRed() {
         return getAlliance() == Alliance.Red;
     }
 
-    public boolean onBlueAlliance() {
-        return getAlliance() == Alliance.Blue;
+    /** Sets the robot pose on Field2d. */
+    public static void setRobotPose(Pose2d robotPose) {
+        field2d.setRobotPose(robotPose);
     }
 
-    // Configuration
-    public Pose2d getTagById(int tagID) {
-        return config.getTagById(tagID);
-    }
-
-    public <T> T flip(T red, T blue) {
-        return onRedAlliance() ? red : blue;
-    }
-
-    // Reefscape-Specific objects
-    public Polygon2d getRedReef() {
-        return
-            new Polygon2d(
-                config.Red_Algae_AB.interpolate(config.Red_Algae_GH, 0.5),
-                config.RedReefSideLength + config.RedReefInnerToOuter,
-                6,
-                Rotation2d.fromDegrees(30));
-    }
-
-    public Polygon2d getBlueReef() {
-        return
-            new Polygon2d(
-                config.Blue_Algae_AB.interpolate(config.Blue_Algae_GH, 0.5),
-                config.BlueReefSideLength + config.BlueReefInnerToOuter,
-                6,
-                Rotation2d.fromDegrees(30));
-    }
-
-    public Translation2d getLeftStation() {
-        return flip(config.RedLeftStation, config.BlueLeftStation);
-    }
-
-    public Translation2d getRightStation() {
-        return flip(config.RedRightStation, config.BlueRightStation);
+    /** Gets or creates a field object on Field2d. */
+    public static FieldObject2d getObject(String name) {
+        return field2d.getObject(name);
     }
 }

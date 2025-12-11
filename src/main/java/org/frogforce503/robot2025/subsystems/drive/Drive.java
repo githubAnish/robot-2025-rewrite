@@ -20,8 +20,6 @@ public class Drive extends SubsystemBase {
     private final DriveIO io;
     private final DriveIOInputsAutoLogged inputs = new DriveIOInputsAutoLogged();
 
-    private final FieldInfo field;
-
     // State
     private ChassisSpeeds requestedSpeeds = new ChassisSpeeds();
 
@@ -30,9 +28,8 @@ public class Drive extends SubsystemBase {
     @Getter private boolean slowMode = false;
     @Setter @Getter private boolean coastAfterAutoEnd = false;
 
-    public Drive(DriveIO io, FieldInfo field) {
+    public Drive(DriveIO io) {
         this.io = io;
-        this.field = field;
 
         setPose(Pose2d.kZero);
     }
@@ -73,17 +70,8 @@ public class Drive extends SubsystemBase {
         }
 
         // Field
-        Logger.recordOutput("Alliance Color", field.getAlliance());
         Logger.recordOutput("Current Global Pose", getCurrentPose());
-        field.setRobotPose(getCurrentPose());
-    }
-
-    public Pose2d getCurrentPose() {
-        return inputs.data.poseMeters();
-    }
-
-    public ChassisSpeeds getCurrentVelocity() {
-        return inputs.data.velocityMeters();
+        FieldInfo.setRobotPose(getCurrentPose());
     }
 
     // Toggles
@@ -106,7 +94,7 @@ public class Drive extends SubsystemBase {
 
     public void resetRotation() {
         setAngle(
-            field.onRedAlliance()
+            FieldInfo.isRed()
                 ? Rotation2d.kZero
                 : Rotation2d.kPi);
     }
@@ -120,6 +108,14 @@ public class Drive extends SubsystemBase {
     }
 
     // Getters
+    public Pose2d getCurrentPose() {
+        return inputs.data.poseMeters();
+    }
+
+    public ChassisSpeeds getCurrentVelocity() {
+        return inputs.data.velocityMeters();
+    }
+
     public Rotation2d getAngle() {
         return getCurrentPose().getRotation();
     }
@@ -185,6 +181,6 @@ public class Drive extends SubsystemBase {
         FrontLeft,
         FrontRight,
         BackLeft,
-        BackRight;
+        BackRight
     }
 }

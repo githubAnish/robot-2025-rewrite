@@ -33,7 +33,6 @@ public class DriveToPose1323 extends Command {
     private double maxSpeed = 0.0; // Determined in initialize() method
 
     private final Drive drive;
-    private final FieldInfo field;
 
     private final Supplier<Pose2d> target;
 
@@ -59,9 +58,8 @@ public class DriveToPose1323 extends Command {
     private Supplier<Translation2d> linearFF = () -> Translation2d.kZero;
     private DoubleSupplier omegaFF = () -> 0.0;
 
-    public DriveToPose1323(Drive drive, FieldInfo field, Supplier<Pose2d> target) {
+    public DriveToPose1323(Drive drive, Supplier<Pose2d> target) {
         this.drive = drive;
-        this.field = field;
         this.target = target;
 
         xController.setPID(drivePID.kP(), drivePID.kI(), drivePID.kD());
@@ -82,27 +80,24 @@ public class DriveToPose1323 extends Command {
 
     public DriveToPose1323(
         Drive drive,
-        FieldInfo field,
         Supplier<Pose2d> target,
         Supplier<Translation2d> linearFF,
         DoubleSupplier omegaFF
     ) {
-        this(drive, field, target);
+        this(drive, target);
         this.linearFF = linearFF;
         this.omegaFF = omegaFF;
     }
 
     public DriveToPose1323(
         Drive drive,
-        FieldInfo field,
         Supplier<Pose2d> target,
         JoystickInputs inputs
     ) {
         this(
             drive,
-            field,
             target,
-            () -> inputs.getLinearVelocityFromJoysticks().times(field.onRedAlliance() ? -1.0 : 1.0),
+            () -> inputs.getLinearVelocityFromJoysticks().times(FieldInfo.isRed() ? -1.0 : 1.0),
             () -> inputs.getOmegaFromJoysticks());
     }
 

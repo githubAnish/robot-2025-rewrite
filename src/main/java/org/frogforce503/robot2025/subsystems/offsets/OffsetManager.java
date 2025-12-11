@@ -4,7 +4,8 @@ import java.util.Map;
 
 import org.frogforce503.lib.subsystem.VirtualSubsystem;
 import org.frogforce503.lib.util.LoggedTracer;
-import org.frogforce503.robot2025.Constants;
+import org.frogforce503.robot2025.subsystems.offsets.io.OffsetsIO;
+import org.frogforce503.robot2025.subsystems.offsets.io.OffsetsIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.util.Units;
@@ -16,18 +17,9 @@ public class OffsetManager extends VirtualSubsystem {
 
     @Getter private final Map<String, Offset> offsetData;
 
-    public OffsetManager(String fileName, OffsetsIO io) {
-        this.io = io;
-        this.offsetData = new OffsetDecoder(fileName).getMapper();
-    }
-
-    /**
-     * <p> Gets the offsets file based on the selected field config venue. </p>
-     * <p> Add the word "Offsets" between the field config file name and .json suffix to get the offsets file name. </p>
-     * <p> For example, if the field config file path = "Shop.json," then the offsets file path should be "ShopOffsets.json". </p>
-     */
     public OffsetManager(OffsetsIO io) {
-        this(Constants.fieldVenue.getFilePath().split(".json")[0] + "Offsets.json", io);
+        this.io = io;
+        this.offsetData = new OffsetDecoder().getMapper();
     }
 
     @Override
@@ -35,23 +27,25 @@ public class OffsetManager extends VirtualSubsystem {
         io.updateInputs(inputs);
         Logger.processInputs("Offsets", inputs);
 
-        if (inputs.data.tuning() &&
-            inputs.data.branch() != null &&
-            inputs.data.direction() != null &&
-            inputs.data.value() != 0.0
+        boolean tuning = inputs.data.tuning();
+        String branch = inputs.data.branch();
+        String direction = inputs.data.direction();
+        double value = inputs.data.value();
+
+        if (tuning &&
+            branch != null &&
+            direction != null &&
+            value != 0.0
         ) {
             offsetData.put(
-                inputs.data.branch(),
+                branch,
                 getNewOffset(
-                    offsetData
-                        .get(inputs.data.branch())
-                        .horizontal(),
-                    offsetData
-                        .get(inputs.data.branch())
-                        .vertical(),
-                    inputs.data.direction(),
-                    Units.inchesToMeters(inputs.data.value())));
+                    offsetData.get(branch).horizontal(),
+                    offsetData.get(branch).vertical(),
+                    direction,
+                    Units.inchesToMeters(value)));
 
+            // Reset value to prevent continually applying nonzero offset
             io.setValue(0.0);
         }
 
@@ -74,15 +68,16 @@ public class OffsetManager extends VirtualSubsystem {
     }
 
     private Offset getNewOffset(double oldHorizontal, double oldVertical, String direction, double value) {
-        return new Offset(
-            oldHorizontal + handleValueBasedOnHorizontalDirection(direction, value),
-            oldVertical + handleValueBasedOnVerticalDirection(direction, value));
+        return
+            new Offset(
+                oldHorizontal + handleValueBasedOnHorizontalDirection(direction, value),
+                oldVertical + handleValueBasedOnVerticalDirection(direction, value));
     }
 
     private double handleValueBasedOnHorizontalDirection(String wantedDirection, double value) {
-        if (Direction.LEFT.equalsTo(wantedDirection)) {
+        if (Direction.LEFT.equals(wantedDirection)) {
             return value;
-        } else if (Direction.RIGHT.equalsTo(wantedDirection)) {
+        } else if (Direction.RIGHT.equals(wantedDirection)) {
             return -value;
         } else {
             return 0.0;
@@ -90,9 +85,9 @@ public class OffsetManager extends VirtualSubsystem {
     }
 
     private double handleValueBasedOnVerticalDirection(String wantedDirection, double value) {
-        if (Direction.FORWARD.equalsTo(wantedDirection)) {
+        if (Direction.FORWARD.equals(wantedDirection)) {
             return -value;
-        } else if (Direction.BACKWARD.equalsTo(wantedDirection)) {
+        } else if (Direction.BACKWARD.equals(wantedDirection)) {
             return value;
         } else {
             return 0.0;

@@ -1,9 +1,6 @@
-package org.frogforce503.robot2025.subsystems.offsets;
+package org.frogforce503.robot2025.subsystems.offsets.io;
 
 import java.nio.file.Paths;
-
-import org.frogforce503.lib.reefscape.Branch;
-import org.frogforce503.lib.reefscape.ReefSide;
 
 import edu.wpi.first.net.WebServer;
 import edu.wpi.first.networktables.BooleanPublisher;
@@ -89,33 +86,10 @@ public class OffsetsIOServer implements OffsetsIO {
     public void updateInputs(OffsetsIOInputs inputs) {
         inputs.data =
             new OffsetsIOData(
-                // tuningIn.readQueue().length > 0
-                    tuningIn.get(),
-                    // : false,
-                // selectedBranchIn.readQueue().length > 0
-                    selectedBranchIn.get(),
-                    // : "",
-                // directionIn.readQueue().length > 0
-                    directionIn.get(),
-                    // : "",
-                // valueIn.readQueue().length > 0
-                    valueIn.get());
-                    // : 0.0);
-    }
-
-    @Override
-    public void setTuning(boolean set) {
-        tuningOut.set(set);
-    }
-
-    @Override
-    public void setSelectedBranchId(ReefSide side, Branch branch) {
-        selectedBranchOut.set(branch.name() + "_" + side.name());
-    }
-
-    @Override
-    public void setDirection(Direction direction) {
-        directionOut.set(direction.name());
+                tuningIn.get(),
+                selectedBranchIn.get(),
+                directionIn.get(),
+                valueIn.get());
     }
 
     @Override
