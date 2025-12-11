@@ -3,6 +3,7 @@ package org.frogforce503.robot2025.commands;
 import org.frogforce503.lib.auto.builder.PlannedPathGenerator;
 import org.frogforce503.lib.planning.planned_path.PlannedPath;
 import org.frogforce503.lib.planning.planned_path.Waypoint;
+import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.lib.util.ProximityUtil;
 import org.frogforce503.robot2025.commands.drive.DrivePlannedPath;
 import org.frogforce503.robot2025.constants.field.FieldConstants;
@@ -42,11 +43,17 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
     private final IntakeRoller intakeRoller;
 
     private final Leds leds;
-
+    
     // State
+    private Pose2d closestReefSide;
+
     private DrivePlannedPath driveToStation;
 
     private IntakingState currentState = IntakingState.SAFE_DISTANCE_FROM_REEF;
+
+    // Tunables
+    private final LoggedTunableNumber safeDistanceFromReefToStow =
+        new LoggedTunableNumber("Safe Distance From Reef To Stow Inches", Units.inchesToMeters(40)); // TODO make sure to tune this
 
     private enum IntakingState {
         SAFE_DISTANCE_FROM_REEF,
@@ -83,6 +90,8 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
         }
 
         // Generate path to closest station
+        closestReefSide = ProximityUtil.getClosestReefSide(drive);
+
         Pose2d closestStation =
             ProximityUtil.getClosestPose(
                 drive,
@@ -113,7 +122,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
     public void execute() {
         switch (currentState) {
             case SAFE_DISTANCE_FROM_REEF:
-                if (!false) {
+                if (ProximityUtil.getDistanceFromPose(drive, closestReefSide) > safeDistanceFromReefToStow.get()) {
                     currentState = IntakingState.PUT_INTAKEPIVOT_OUT;
                 }
                 break;
