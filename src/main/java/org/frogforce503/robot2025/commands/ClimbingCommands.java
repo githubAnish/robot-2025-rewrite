@@ -20,7 +20,7 @@ public class ClimbingCommands {
         return Commands.runOnce(() -> superstructure.getIntakePivot().runVolts(0.2 * RobotController.getBatteryVoltage()));
     }
 
-    public static Command fastWind(Climber climber) { // Climb step 3
+    public static Command fastWind(Climber climber) { // Climb step 3, when button pressed
         return Commands.runOnce(() -> climber.setCurrentState(ClimberState.FAST_WIND));
     }
 
