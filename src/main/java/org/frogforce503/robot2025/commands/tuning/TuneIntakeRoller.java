@@ -4,7 +4,7 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.IntakeRollerConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.IntakeRollerConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRoller;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;

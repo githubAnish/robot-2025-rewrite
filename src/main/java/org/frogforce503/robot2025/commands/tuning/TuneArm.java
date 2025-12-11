@@ -4,7 +4,7 @@ import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.util.LoggedTunableNumber;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ArmConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.ArmConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
 
 import edu.wpi.first.math.controller.ArmFeedforward;

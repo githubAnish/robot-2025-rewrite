@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.constants.subsystem.subsystemconfig;
+package org.frogforce503.robot2025.constants.hardware.subsystem_config;
 
 import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;

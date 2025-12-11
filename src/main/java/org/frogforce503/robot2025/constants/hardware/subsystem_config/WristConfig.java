@@ -1,21 +1,21 @@
-package org.frogforce503.robot2025.constants.subsystem.subsystemconfig;
+package org.frogforce503.robot2025.constants.hardware.subsystem_config;
 
 import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 
-public record ElevatorConfig(
+public record WristConfig(
     int id,
     double mechanismRatio,
-    double sprocketPitchDiameter,
 
     boolean inverted,
     int statorCurrentLimit,
+    double zeroOffset,
 
     PIDConfig kPID,
     FFConfig kFF,
     Constraints kConstraints,
-    
-    double minHeight,
-    double maxHeight) {}
+
+    double minAngle,
+    double maxAngle) {}

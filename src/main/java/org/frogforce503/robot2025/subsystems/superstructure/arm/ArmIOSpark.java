@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.arm;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ArmConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.ArmConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.ClosedLoopSlot;

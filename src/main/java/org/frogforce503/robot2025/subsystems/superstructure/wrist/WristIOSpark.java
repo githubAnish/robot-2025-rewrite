@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.wrist;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.WristConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.WristConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;

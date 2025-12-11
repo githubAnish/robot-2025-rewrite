@@ -3,7 +3,7 @@ package org.frogforce503.robot2025.subsystems.drive;
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.swerve.SwervePathFollower;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.DriveConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.DriveConfig;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;

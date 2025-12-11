@@ -3,7 +3,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.sensors;
 import java.time.Duration;
 
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.SensorConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.SensorConfig;
 
 import edu.wpi.first.wpilibj.DigitalGlitchFilter;
 import edu.wpi.first.wpilibj.DigitalInput;

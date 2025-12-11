@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.claw;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ClawConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.ClawConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;

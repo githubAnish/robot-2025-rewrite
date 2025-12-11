@@ -4,8 +4,8 @@ import java.time.Duration;
 
 import org.frogforce503.lib.motorcontrol.SparkUtil;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ClimberConfig;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.SensorConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.ClimberConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.SensorConfig;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkLowLevel.MotorType;

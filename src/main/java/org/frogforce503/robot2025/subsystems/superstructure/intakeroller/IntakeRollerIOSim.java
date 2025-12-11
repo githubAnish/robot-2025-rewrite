@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.intakeroller;
 
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.IntakeRollerConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.IntakeRollerConfig;
 
 import com.revrobotics.spark.SparkSim;
 

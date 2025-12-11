@@ -1,8 +1,8 @@
-package org.frogforce503.robot2025.constants.subsystem;
+package org.frogforce503.robot2025.constants.hardware;
 
 import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.*;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.*;
 import org.frogforce503.robot2025.constants.tuner.TunerConstantsCompBot;
 
 import edu.wpi.first.math.geometry.Rotation3d;

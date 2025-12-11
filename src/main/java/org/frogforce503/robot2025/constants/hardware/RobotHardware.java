@@ -1,7 +1,7 @@
-package org.frogforce503.robot2025.constants.subsystem;
+package org.frogforce503.robot2025.constants.hardware;
 
 import org.frogforce503.lib.motorcontrol.PIDConfig;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.*;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.*;
 
 import lombok.Getter;
 

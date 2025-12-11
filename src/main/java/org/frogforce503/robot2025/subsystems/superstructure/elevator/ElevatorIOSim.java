@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.superstructure.elevator;
 
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
-import org.frogforce503.robot2025.constants.subsystem.subsystemconfig.ElevatorConfig;
+import org.frogforce503.robot2025.constants.hardware.subsystem_config.ElevatorConfig;
 
 import com.revrobotics.sim.SparkMaxSim;
 

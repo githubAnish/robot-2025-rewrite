@@ -1,11 +1,11 @@
-package org.frogforce503.robot2025.constants.subsystem.subsystemconfig;
+package org.frogforce503.robot2025.constants.hardware.subsystem_config;
 
 import org.frogforce503.lib.motorcontrol.FFConfig;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 
-public record WristConfig(
+public record ArmConfig(
     int id,
     double mechanismRatio,
 
@@ -16,6 +16,6 @@ public record WristConfig(
     PIDConfig kPID,
     FFConfig kFF,
     Constraints kConstraints,
-
+    
     double minAngle,
     double maxAngle) {}
