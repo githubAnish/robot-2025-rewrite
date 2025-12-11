@@ -1,7 +1,5 @@
 package org.frogforce503.robot2025.subsystems.drive;
 
-import org.frogforce503.robot2025.constants.subsystem.DriveConstants;
-
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
