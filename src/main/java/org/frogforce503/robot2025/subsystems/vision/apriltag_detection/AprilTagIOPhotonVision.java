@@ -38,6 +38,7 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
 
     private PhotonPipelineResult latestResult; // The latest result from the PhotonCamera, which contains information about detected AprilTags.
     private List<PhotonTrackedTarget> allTrackedAprilTags; // The list of tracked april tags from the latest result, including ignored ones.
+    private EstimatedRobotPose lastEstimatedRobotPose; // The last estimated robot pose from the pose estimator.
 
     // Corresponds to pose strategies used by the PhotonPoseEstimator.
     private PoseObservationType primaryPoseObservationType;
@@ -119,6 +120,7 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
             allTrackedAprilTags = null;
             inputs.hasTargets = false;
             inputs.trackedAprilTags = new TrackedAprilTag[0];
+            lastEstimatedRobotPose = null;
         } else {
             inputs.persistingOldResults = true;
         }
@@ -172,13 +174,15 @@ public class AprilTagIOPhotonVision implements AprilTagIO {
             Optional<EstimatedRobotPose> optionalRobotPose = poseEstimator.update(latestResult);
 
             if (optionalRobotPose.isPresent()) {
-                EstimatedRobotPose estimatedRobotPose = optionalRobotPose.get(); 
+                lastEstimatedRobotPose = optionalRobotPose.get(); 
+            }
 
+            if (lastEstimatedRobotPose != null) {
                 poseObservation = new PoseObservation(
-                    estimatedRobotPose.timestampSeconds,
-                    estimatedRobotPose.estimatedPose,
-                    estimatedRobotPose.targetsUsed.size() > 1 ? primaryPoseObservationType : secondaryPoseObservationType, // Use primary if multiple tags are used, otherwise use secondary
-                    estimatedRobotPose.targetsUsed.stream()
+                    lastEstimatedRobotPose.timestampSeconds,
+                    lastEstimatedRobotPose.estimatedPose,
+                    lastEstimatedRobotPose.targetsUsed.size() > 1 ? primaryPoseObservationType : secondaryPoseObservationType, // Use primary if multiple tags are used, otherwise use secondary
+                    lastEstimatedRobotPose.targetsUsed.stream()
                         .map(tag -> new TrackedAprilTag(
                                 tag.getFiducialId(),
                                 tag.getPitch(),
