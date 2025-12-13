@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import lombok.Getter;
 import lombok.Setter;
 
-/** Wrapper class for {@link Elevator}, {@link Arm}, {@link Wrist}, {@link Claw}, {@link Intake}, and {@link CoralSensorIO} */
+/** Wrapper class for {@link Elevator}, {@link Arm}, {@link Wrist}, {@link Claw}, {@link IntakePivot}, {@link IntakeRoller}, and {@link CoralSensorIO} */
 public class Superstructure extends VirtualSubsystem {
     // Subsystems
     @Getter private final Elevator elevator;

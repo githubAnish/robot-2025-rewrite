@@ -18,6 +18,10 @@ public record PIDConfig(
         this(kP, kI, kD, Double.POSITIVE_INFINITY);
     }
 
+    public PIDConfig() {
+        this(0.0, 0.0, 0.0);
+    }
+
     public PIDController toPIDController() {
         PIDController controller = new PIDController(kP, kI, kD);
         controller.setIZone(kIZone);

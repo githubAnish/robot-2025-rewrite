@@ -125,6 +125,11 @@ public class SuperstructureViz {
     }
 
     private void update3dViz(double elevatorHeightMeters, double armAngleRad, double wristAngleRad, double intakePivotAngleRad) {
-        Logger.recordOutput("SuperstructureViz/3D/Components", Pose3d.kZero, Pose3d.kZero, Pose3d.kZero, Pose3d.kZero);
+        Pose3d elevatorPose = Pose3d.kZero;
+        Pose3d armPose = Pose3d.kZero;
+        Pose3d wristPose = Pose3d.kZero;
+        Pose3d intakePivotPose = Pose3d.kZero;
+
+        Logger.recordOutput("SuperstructureViz/3D/Components", elevatorPose, armPose, wristPose, intakePivotPose);
     }
 }

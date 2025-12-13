@@ -13,7 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryParameterizer.TrajectoryGenerationException;
 
-/** Wrapper class for the {@link CustomTrajectoryGenerator}. */
+/** Wrapper class for the {@link CustomTrajectoryGenerator} to create a {@link PlannedPath} easier. */
 public class PlannedPathGenerator {
     private static final CustomTrajectoryGenerator trajectoryGenerator;
 

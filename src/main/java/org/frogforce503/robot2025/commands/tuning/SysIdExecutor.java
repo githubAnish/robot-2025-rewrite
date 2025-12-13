@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
+/** Use this executor to tune any game-spec subsystem (should be a subclass of {@link FFSubsystemBase}) with SysId. */
 public class SysIdExecutor {
     private final Consumer<Voltage> consumer;
     private final SysIdRoutine routine;
@@ -62,12 +63,7 @@ public class SysIdExecutor {
     }
     
     /** Returns a command to run a dynamic test in the specified direction. */
-    public Command sysIdDynamic(
-        Velocity<VoltageUnit> rampRate,
-        Voltage stepVoltage,
-        Time timeout,
-        SysIdRoutine.Direction direction
-    ) {
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
         return
             Commands.run(() -> consumer.accept(Volts.of(0.0)))
                 .withTimeout(1.0)

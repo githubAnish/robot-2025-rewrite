@@ -19,6 +19,7 @@ public class WarmupExecutor {
         this.autoChooser = autoChooser;
     }
 
+    /** Wrap this method under another method to find its warmup time. */
     private void printWarmupTime(Runnable action) {
         long startTime = System.nanoTime();
         action.run();
@@ -52,7 +53,7 @@ public class WarmupExecutor {
     }
 
     private void warmupPaths() {
-        
+        // var autoMap = autoChooser.getAutoMap();
     }
 
     private void warmupDrive() {

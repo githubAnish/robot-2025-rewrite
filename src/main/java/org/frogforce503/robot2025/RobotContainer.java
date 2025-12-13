@@ -18,19 +18,20 @@ import org.frogforce503.robot2025.commands.EjectCoralOnReefAndStow;
 import org.frogforce503.robot2025.commands.IntakeAlgaeFromGround;
 import org.frogforce503.robot2025.commands.IntakeAlgaeFromHandoff;
 import org.frogforce503.robot2025.commands.IntakeAlgaeFromReef;
+import org.frogforce503.robot2025.commands.SafelyStowAndIntakeCoralFromStation;
 import org.frogforce503.robot2025.commands.ScoreAlgaeInBarge;
 import org.frogforce503.robot2025.commands.ScoreAlgaeInProcessor;
 import org.frogforce503.robot2025.commands.ScoreCoralOnReef;
-import org.frogforce503.robot2025.commands.SafelyStowAndIntakeCoralFromStation;
 import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
+import org.frogforce503.robot2025.commands.tuning.TuneArm;
 import org.frogforce503.robot2025.commands.tuning.TuneElevator;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSim;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSpark;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
-import org.frogforce503.robot2025.subsystems.drive.DriveIOPhoenix;
 import org.frogforce503.robot2025.subsystems.drive.DriveIOBasicSim;
+import org.frogforce503.robot2025.subsystems.drive.DriveIOPhoenix;
 import org.frogforce503.robot2025.subsystems.leds.Leds;
 import org.frogforce503.robot2025.subsystems.leds.LedsIO;
 import org.frogforce503.robot2025.subsystems.leds.LedsIOCANdle;
@@ -65,8 +66,8 @@ import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIO;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIOSim;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIOSpark;
 import org.frogforce503.robot2025.subsystems.vision.Vision;
-import org.frogforce503.robot2025.subsystems.vision.VisionSimulator;
 import org.frogforce503.robot2025.subsystems.vision.VisionConstants.CameraName;
+import org.frogforce503.robot2025.subsystems.vision.VisionSimulator;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIO;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonSim;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagIOPhotonVision;
@@ -219,7 +220,7 @@ public class RobotContainer implements UnitTest {
             }
         }
 
-        // Create superstructure
+        // Create virtual subsystems
         superstructure =
             new Superstructure(
                 elevator,
@@ -230,33 +231,32 @@ public class RobotContainer implements UnitTest {
                 intakeRoller,
                 new CoralSensorIOBeamBreak(),
                 drive::getCurrentPose);
-    
-        // Create offset manager
+
         offsetManager =
             new OffsetManager(
                 Constants.getMode() == Constants.Mode.REPLAY
                     ? new OffsetsIO() {}
                     : new OffsetsIOServer());
 
-        // Create auto chooser
-        autoChooser =
-            new AutoChooser(
-                drive,
-                superstructure);
-
-        // Create viz
-        gameViz = new GameViz(drive);
-
+        // Create auto requirements
+        autoChooser = new AutoChooser(drive, superstructure);
         warmupExecutor = new WarmupExecutor(drive, autoChooser);
+
+        // Create sim requirements
+        gameViz = new GameViz(drive);
 
         drive.setDefaultCommand(new TeleopSwerveCommand(drive, driverInputs.get()));
 
         // Triggers
         Trigger camerasConnected = new Trigger(() -> true); // TODO: Make a method for this in Vision.java
 
-        // If cameras disconnected for 5 seconds, then leds will blink red for the rest of the match
+        // If cameras disconnected for 5 seconds, then leds will blink red until cameras re-connected
         camerasConnected
             .debounce(5.0, DebounceType.kBoth)
+            .onTrue(
+                Commands.runOnce(
+                    () -> leds.setCameraDisconnected(false))
+                        .ignoringDisable(true))
             .onFalse(
                 Commands.runOnce(
                     () -> leds.setCameraDisconnected(true))
@@ -272,8 +272,7 @@ public class RobotContainer implements UnitTest {
                     SuperstructureMode.CORAL_INTAKE, new SafelyStowAndIntakeCoralFromStation(drive, vision, superstructure, leds),
                     SuperstructureMode.ALGAE_GROUND, new IntakeAlgaeFromGround(),
                     SuperstructureMode.ALGAE_HANDOFF, new IntakeAlgaeFromHandoff(),
-                    SuperstructureMode.ALGAE_PLUCK_HIGH, new IntakeAlgaeFromReef(true),
-                    SuperstructureMode.ALGAE_PLUCK_LOW, new IntakeAlgaeFromReef(false)
+                    SuperstructureMode.ALGAE_PLUCK, new IntakeAlgaeFromReef()
                 ),
                 superstructure::getCurrentMode));
 
@@ -293,9 +292,9 @@ public class RobotContainer implements UnitTest {
                 superstructure::getCurrentMode));
 
         // Preset Selection
-        bindPresets(driver.y(), SuperstructureMode.L1, SuperstructureMode.BARGE, SuperstructureMode.ALGAE_PLUCK_HIGH);
+        bindPresets(driver.y(), SuperstructureMode.L1, SuperstructureMode.BARGE, SuperstructureMode.CORAL_INTAKE);
         bindPresets(driver.b(), SuperstructureMode.L2, null, SuperstructureMode.ALGAE_HANDOFF);
-        bindPresets(driver.a(), SuperstructureMode.L3, SuperstructureMode.PROCESSOR, SuperstructureMode.ALGAE_PLUCK_LOW);
+        bindPresets(driver.a(), SuperstructureMode.L3, SuperstructureMode.PROCESSOR, SuperstructureMode.ALGAE_PLUCK);
         bindPresets(driver.x(), SuperstructureMode.L4, null, SuperstructureMode.ALGAE_GROUND);
 
         // Climbing commands
@@ -337,7 +336,7 @@ public class RobotContainer implements UnitTest {
     private void bindClimbing(Trigger trigger, Command climbCommand) {
         trigger
             .whileTrue(climbCommand)
-            .whileFalse(
+            .onFalse(
                 Commands.runOnce(() -> {
                     superstructure.stop();
                     climber.stop();
@@ -397,7 +396,7 @@ public class RobotContainer implements UnitTest {
         // );
 
         RobotModeTriggers.teleop().onTrue(
-            new TuneElevator(superstructure.getElevator())
+            new TuneArm(superstructure.getArm())
         );
     }
 }

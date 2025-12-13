@@ -45,8 +45,8 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
     private final Leds leds;
     
     // Constants
-    private final LoggedTunableNumber safeDistanceFromReefToStow =
-        new LoggedTunableNumber("Safe Distance From Reef To Stow Inches", Units.inchesToMeters(40)); // TODO make sure to tune this
+    private final LoggedTunableNumber safeDistanceFromReefToStowInches =
+        new LoggedTunableNumber("SafelyStowAndIntakeFromCoralStation/Safe Distance From Reef To Stow Inches", 40); // TODO make sure to tune this
 
     // State
     private Pose2d closestReefSide;
@@ -85,8 +85,17 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
     @Override
     public void initialize() {
+        // Finishes command if robot already has coral
         if (superstructure.isHasCoral()) {
             currentState = IntakingState.FINISHED;
+            return;
+        }
+
+        // If elevator & arm close to stowed, no need to move intake pivot
+        if (elevator.isAtHeight(ElevatorConstants.minHeight, Units.inchesToMeters(5.0)) &&
+            arm.isAtAngle(ArmConstants.STOW_ANGLE, Units.degreesToRadians(5.0))
+        ) {
+            currentState = IntakingState.PARTIAL_STOW;
         }
 
         // Generate path to closest station
@@ -121,7 +130,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
     public void execute() {
         switch (currentState) {
             case SAFE_DISTANCE_FROM_REEF:
-                if (ProximityUtil.getDistanceFromPose(drive, closestReefSide) > safeDistanceFromReefToStow.get()) {
+                if (ProximityUtil.getDistanceFromPose(drive, closestReefSide) > Units.inchesToMeters(safeDistanceFromReefToStowInches.get())) {
                     currentState = IntakingState.PUT_INTAKEPIVOT_OUT;
                 }
                 break;
@@ -145,7 +154,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 claw.setVelocity(ClawConstants.INTAKE_CORAL);
 
                 if (arm.isAtAngle(ArmConstants.STOW_ANGLE, ArmConstants.kTolerance) && wrist.isAtAngle(WristConstants.INTAKE_CORAL, WristConstants.kTolerance)) {
-                    currentState = IntakingState.WAIT_FOR_LOWER_TRUE;
+                    currentState = IntakingState.PUT_INTAKEPIVOT_IN;
                 }
                 break;
 
@@ -172,14 +181,14 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 break;    
         }
 
-        driveToStation.execute();
+        if (currentState != IntakingState.FINISHED) {
+            driveToStation.execute();
+        }
     }
 
     @Override
     public boolean isFinished() {
-        return
-            currentState == IntakingState.FINISHED &&
-            driveToStation.isFinished();
+        return currentState == IntakingState.FINISHED;
     }
 
     @Override

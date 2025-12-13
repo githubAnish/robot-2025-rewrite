@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import lombok.Getter;
 
 public class AutoChooser {
     // Requirements
@@ -35,7 +36,7 @@ public class AutoChooser {
     private SwitchableChooser routineSelector = new SwitchableChooser("Autochooser/Routine");
 
     // Auto Map
-    private final Map<Alliance, Map<StartingLocation, Map<String, Supplier<AutoMode>>>> autoMap = new EnumMap<>(Alliance.class);
+    @Getter private final Map<Alliance, Map<StartingLocation, Map<String, Supplier<AutoMode>>>> autoMap = new EnumMap<>(Alliance.class);
 
     // State
     private AutoMode auto;

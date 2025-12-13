@@ -9,8 +9,7 @@ public enum SuperstructureMode {
 
     ALGAE_GROUND,
     ALGAE_HANDOFF,
-    ALGAE_PLUCK_HIGH,
-    ALGAE_PLUCK_LOW,
+    ALGAE_PLUCK,
     PROCESSOR,
     BARGE
 }
