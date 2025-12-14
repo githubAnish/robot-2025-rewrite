@@ -103,8 +103,8 @@ public class DriveToPose1323 extends Command {
 
     @Override
     public void initialize() {
-        Pose2d currentPose = drive.getCurrentPose();
-        ChassisSpeeds currentRobotVel = drive.getCurrentVelocity();
+        Pose2d currentPose = drive.getPose();
+        ChassisSpeeds currentRobotVel = drive.getRobotVelocity();
         ChassisSpeeds currentFieldVel = drive.getFieldVelocity();
             
         maxSpeed =
@@ -123,7 +123,7 @@ public class DriveToPose1323 extends Command {
 
     @Override
     public void execute() {
-        Pose2d currentPose = drive.getCurrentPose();
+        Pose2d currentPose = drive.getPose();
         Pose2d targetPose = target.get();
 
         double currentDistance =

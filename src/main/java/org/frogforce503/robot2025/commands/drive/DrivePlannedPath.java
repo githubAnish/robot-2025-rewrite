@@ -2,7 +2,8 @@ package org.frogforce503.robot2025.commands.drive;
 
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.planning.planned_path.PlannedPath;
+import org.frogforce503.lib.auto.planned_path.PlannedPath;
+import org.frogforce503.lib.auto.planned_path.PlannedPath.HolonomicState;
 import org.frogforce503.lib.swerve.SwervePathFollower;
 import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
@@ -25,17 +26,15 @@ public class DrivePlannedPath extends Command {
     // Control
     private final SwervePathFollower controller = DriveConstants.pathFollower;
     private final Timer timer;
-    private final Supplier<PlannedPath> dynamicPath;
+    private final PlannedPath trajectory;
 
     // State
     private final boolean willStopAtEnd;
-    private double lastTime = 0;
-    private Translation2d lastPosition = Translation2d.kZero;
 
     // Overrides
-    @Setter private Supplier<Rotation2d> headingOverride = null;
+    @Setter private Supplier<Rotation2d> headingOverride;
 
-    public DrivePlannedPath(Drive drive, Supplier<PlannedPath> dynamicPath) {
+    public DrivePlannedPath(Drive drive, PlannedPath trajectory) {
         this.drive = drive;
 
         this.controller.setPoseTolerance(
@@ -43,36 +42,25 @@ public class DrivePlannedPath extends Command {
                 new Translation2d(Units.inchesToMeters(0.1), Units.inchesToMeters(0.0254)),
                 Rotation2d.fromDegrees(1)));
         this.timer = new Timer();
-        this.dynamicPath = dynamicPath;
+        this.trajectory = trajectory;
 
         this.willStopAtEnd =
-            dynamicPath
-                .get()
+            trajectory
                 .getDriveTrajectory()
-                .sample(dynamicPath.get().getTotalTimeSeconds())
+                .sample(trajectory.getTotalTimeSeconds())
                 .velocityMetersPerSecond == 0.00; // originally 0.1
 
         addRequirements(drive);
     }
 
-    public DrivePlannedPath(Drive drive, PlannedPath path) {
-        this(drive, () -> path);
-    }
-
     @Override
-    public void initialize() {       
-        PlannedPath path = dynamicPath.get(); 
-
+    public void initialize() { 
         timer.reset();
         controller.reset();
         timer.start();
 
-        lastPosition = path.getInitialHolonomicPose().getTranslation();
-        lastTime = 0;
-
         var poses =
-            dynamicPath
-                .get()
+            trajectory
                 .getDriveTrajectory()
                 .getStates()
                 .stream()
@@ -87,66 +75,54 @@ public class DrivePlannedPath extends Command {
     @Override
     public void execute() {
         // Get inputs
-        PlannedPath path = dynamicPath.get();
         double currentTime = timer.get();
-        Pose2d currentPose = drive.getCurrentPose();
+        Pose2d currentPose = drive.getPose();
 
-        PlannedPath.HolonomicState desiredState = path.sample(currentTime);
+        // Get state
+        HolonomicState desiredState = trajectory.sample(currentTime);
 
         if (headingOverride != null) {
-            desiredState
-                .withNewHolonomicAngle(headingOverride.get());
+            desiredState.withNewHolonomicAngle(headingOverride.get());
         }
         
         // Calculate speeds
         ChassisSpeeds targetChassisSpeeds = controller.calculate(currentPose, desiredState);
 
-        Translation2d measuredVelocity =
-            currentPose
-                .getTranslation()
-                .minus(lastPosition)
-                .div(currentTime - lastTime);
-
         // Apply speeds
         drive.runVelocity(targetChassisSpeeds);
 
-        lastTime = currentTime;
-        lastPosition = currentPose.getTranslation();
-
         // Log inputs & outputs
-        Logger.recordOutput("FollowPlannedPath/Timestamp", currentTime);
+        Logger.recordOutput("DrivePlannedPath/Timestamp", currentTime);
 
-        Logger.recordOutput("FollowPlannedPath/Current Pose", currentPose);
-        Logger.recordOutput("FollowPlannedPath/Desired Pose", desiredState.poseMeters());
+        Logger.recordOutput("DrivePlannedPath/Current Pose", currentPose);
+        Logger.recordOutput("DrivePlannedPath/Desired Pose", desiredState.poseMeters());
 
-        Logger.recordOutput("FollowPlannedPath/Current Angle", drive.getAngle());
-        Logger.recordOutput("FollowPlannedPath/Desired Angle", desiredState.holonomicAngle());
+        Logger.recordOutput("DrivePlannedPath/Current Angle", drive.getAngle());
+        Logger.recordOutput("DrivePlannedPath/Desired Angle", desiredState.holonomicAngle());
         
-        Logger.recordOutput("FollowPlannedPath/Current Velocity", measuredVelocity);
-        Logger.recordOutput("FollowPlannedPath/Desired Velocity", new Translation2d(targetChassisSpeeds.vxMetersPerSecond, targetChassisSpeeds.vyMetersPerSecond));
+        Logger.recordOutput("DrivePlannedPath/Current Velocity", drive.getRobotVelocity());
+        Logger.recordOutput("DrivePlannedPath/Desired Velocity", targetChassisSpeeds);
 
-        Logger.recordOutput("FollowPlannedPath/Drive Error", controller.getPoseError().getTranslation());
-        Logger.recordOutput("FollowPlannedPath/Theta Error", controller.getRotationError());
-
-        Logger.recordOutput("FollowPlannedPath/IsFinished", isFinished());
+        Logger.recordOutput("DrivePlannedPath/Drive Error", controller.getPoseError().getTranslation());
+        Logger.recordOutput("DrivePlannedPath/Theta Error", controller.getRotationError());
     }
 
     @Override
     public boolean isFinished() {
-        PlannedPath path = dynamicPath.get();
+        double totalTime = trajectory.getTotalTimeSeconds();
 
-        boolean timeHasFinished = timer.hasElapsed(path.getTotalTimeSeconds());
+        boolean timeHasFinished = timer.hasElapsed(totalTime);
         boolean poseTolerance = controller.atReference();
-        boolean tooLong = timeHasFinished && timer.hasElapsed(path.getTotalTimeSeconds() + 0.5);
+        boolean tooLong = timer.hasElapsed(totalTime + 0.5);
 
         return (timeHasFinished && poseTolerance) || tooLong;
     }
 
     @Override
     public void end(boolean interrupted) {
-        System.out.println("END " + interrupted);
-
-        FieldInfo.getObject("CurrentTrajectory").setPoses();
+        FieldInfo
+            .getObject("CurrentTrajectory")
+            .setPoses();
 
         if (willStopAtEnd) {
             drive.stop();

@@ -1,11 +1,11 @@
-package org.frogforce503.lib.auto.builder;
+package org.frogforce503.lib.auto.planned_path;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.frogforce503.lib.planning.planned_path.PlannedPath;
-import org.frogforce503.lib.planning.planned_path.Waypoint;
+import org.frogforce503.lib.auto.planned_path.components.Waypoint;
+import org.frogforce503.lib.auto.planned_path.generator.CustomTrajectoryGenerator;
 import org.frogforce503.lib.util.ErrorUtil;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 
@@ -14,14 +14,10 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryParameterizer.TrajectoryGenerationException;
 
 /** Wrapper class for the {@link CustomTrajectoryGenerator} to create a {@link PlannedPath} easier. */
-public class PlannedPathGenerator {
-    private static final CustomTrajectoryGenerator trajectoryGenerator;
+public class PlannedPathFactory {
+    private static final CustomTrajectoryGenerator trajectoryGenerator = new CustomTrajectoryGenerator();
 
-    private PlannedPathGenerator() {}
-
-    static {
-        trajectoryGenerator = new CustomTrajectoryGenerator();   
-    }
+    private PlannedPathFactory() {}
 
     public static TrajectoryConfig config(double vMax, double aMax, double vInitial, double vFinal) {
         return
@@ -34,9 +30,9 @@ public class PlannedPathGenerator {
     public static PlannedPath generate(TrajectoryConfig config, List<Waypoint> waypoints) {
         try {
             trajectoryGenerator.generate(config, waypoints);
-        } catch (TrajectoryGenerationException exception) {
-            System.out.print("Trajectory generation failed" + ErrorUtil.attachJavaClassName(PlannedPathGenerator.class));
-            exception.printStackTrace();
+        } catch (TrajectoryGenerationException e) {
+            System.out.print("Trajectory generation failed" + ErrorUtil.attachJavaClassName(PlannedPathFactory.class));
+            e.printStackTrace();
             return null;
         }
         
@@ -55,7 +51,7 @@ public class PlannedPathGenerator {
     }
 
     /** Re-generate an existing {@link PlannedPath} with a new trajectory configuration. */
-    public static PlannedPath regenerate(double vMax, double aMax, double vi, double vf, PlannedPath existing) {
+    public static PlannedPath regenerate(PlannedPath existing, double vMax, double aMax, double vi, double vf) {
         return generate(vMax, aMax, vi, vf, existing.getWaypoints());
     }
 

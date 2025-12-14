@@ -16,15 +16,15 @@ public final class ProximityUtil {
     }
 
     public static double getDistanceFromPose(Drive drive, Pose2d target) {
-        return getDistanceBetweenPoses(drive.getCurrentPose(), target);
-    } 
+        return getDistanceBetweenPoses(drive.getPose(), target);
+    }
 
     public static Pose2d getClosestPose(Drive drive, Pose2d... options) {
         if (options.length == 0) {
             return null;
         }
 
-        final Pose2d robotPose = drive.getCurrentPose();
+        final Pose2d robotPose = drive.getPose();
 
         Pose2d closestPose = Pose2d.kZero;
         double closestDist = Double.MAX_VALUE;

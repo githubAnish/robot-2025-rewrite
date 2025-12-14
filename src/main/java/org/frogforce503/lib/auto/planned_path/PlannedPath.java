@@ -1,7 +1,10 @@
-package org.frogforce503.lib.planning.planned_path;
+package org.frogforce503.lib.auto.planned_path;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.frogforce503.lib.auto.planned_path.components.RotationSequence;
+import org.frogforce503.lib.auto.planned_path.components.Waypoint;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
@@ -56,7 +59,7 @@ public class PlannedPath {
         for (double i = 0; i <= intervals; i++) {
             result.add(
                 Waypoint.fromPlannedPathState(
-                    this.sample(
+                    sample(
                         MathUtil.interpolate(
                             ti,
                             tf,

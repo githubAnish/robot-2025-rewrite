@@ -1,4 +1,4 @@
-package org.frogforce503.lib.auto.builder;
+package org.frogforce503.lib.auto.planned_path.generator;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,9 +14,9 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.frogforce503.lib.planning.planned_path.PlannedPath;
-import org.frogforce503.lib.planning.planned_path.RotationSequence;
-import org.frogforce503.lib.planning.planned_path.Waypoint;
+import org.frogforce503.lib.auto.planned_path.PlannedPath;
+import org.frogforce503.lib.auto.planned_path.components.RotationSequence;
+import org.frogforce503.lib.auto.planned_path.components.Waypoint;
 
 /** Generator for creating a drive trajectory and rotation sequence from a series of waypoints. */
 public class CustomTrajectoryGenerator {

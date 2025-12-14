@@ -49,9 +49,9 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("Drive/Toggles/RobotRelative", robotRelative);
 
         // Inputs
-        Logger.recordOutput("Drive/Inputs/Pose", getCurrentPose());
-        Logger.recordOutput("Drive/Inputs/Velocity", getCurrentVelocity());
-        Logger.recordOutput("Drive/Inputs/Velocity/Magnitude", Math.hypot(getCurrentVelocity().vxMetersPerSecond, getCurrentVelocity().vyMetersPerSecond));
+        Logger.recordOutput("Drive/Inputs/Pose", getPose());
+        Logger.recordOutput("Drive/Inputs/Velocity", getRobotVelocity());
+        Logger.recordOutput("Drive/Inputs/Velocity/Magnitude", Math.hypot(getRobotVelocity().vxMetersPerSecond, getRobotVelocity().vyMetersPerSecond));
 
         // Status
         Logger.recordOutput("Drive/State/AttainedWheelSpeed", Units.metersToFeet(inputs.data.state().ModuleStates[0].speedMetersPerSecond));
@@ -68,8 +68,8 @@ public class Drive extends SubsystemBase {
         }
 
         // Field
-        Logger.recordOutput("Current Global Pose", getCurrentPose());
-        FieldInfo.setRobotPose(getCurrentPose());
+        Logger.recordOutput("Current Global Pose", getPose());
+        FieldInfo.setRobotPose(getPose());
     }
 
     // Toggles
@@ -106,20 +106,20 @@ public class Drive extends SubsystemBase {
     }
 
     // Getters
-    public Pose2d getCurrentPose() {
+    public Pose2d getPose() {
         return inputs.data.poseMeters();
     }
 
-    public ChassisSpeeds getCurrentVelocity() {
+    public ChassisSpeeds getRobotVelocity() {
         return inputs.data.velocityMeters();
     }
 
     public Rotation2d getAngle() {
-        return getCurrentPose().getRotation();
+        return getPose().getRotation();
     }
 
     public ChassisSpeeds getFieldVelocity() {
-        return ChassisSpeeds.fromRobotRelativeSpeeds(getCurrentVelocity(), getAngle());
+        return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotVelocity(), getAngle());
     }
 
     /** Returns the position of each module in radians. */

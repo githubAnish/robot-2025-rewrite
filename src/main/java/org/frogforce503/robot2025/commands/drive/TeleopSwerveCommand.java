@@ -84,7 +84,7 @@ public class TeleopSwerveCommand extends Command {
         // Manual heading stabilization
         boolean driverRotating = Math.abs(driverOmega) > DEADBAND;
         boolean withinHeadingHoldDelay = Timer.getFPGATimestamp() - lastManualRotTime < HEADING_HOLD_DELAY;
-        boolean robotRotating = Math.abs(drive.getCurrentVelocity().omegaRadiansPerSecond) > ANGULAR_VELOCITY_THRESHOLD;
+        boolean robotRotating = Math.abs(drive.getRobotVelocity().omegaRadiansPerSecond) > ANGULAR_VELOCITY_THRESHOLD;
 
         if (driverRotating || (withinHeadingHoldDelay && robotRotating)) {
             // Driver is rotating

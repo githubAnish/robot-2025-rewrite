@@ -1,9 +1,9 @@
 package org.frogforce503.robot2025.commands;
 
-import org.frogforce503.lib.auto.builder.PlannedPathGenerator;
+import org.frogforce503.lib.auto.planned_path.PlannedPath;
+import org.frogforce503.lib.auto.planned_path.PlannedPathFactory;
+import org.frogforce503.lib.auto.planned_path.components.Waypoint;
 import org.frogforce503.lib.logging.LoggedTunableNumber;
-import org.frogforce503.lib.planning.planned_path.PlannedPath;
-import org.frogforce503.lib.planning.planned_path.Waypoint;
 import org.frogforce503.lib.reefscape.ProximityUtil;
 import org.frogforce503.robot2025.commands.drive.DrivePlannedPath;
 import org.frogforce503.robot2025.constants.field.FieldConstants;
@@ -50,7 +50,6 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
     // State
     private Pose2d closestReefSide;
-
     private DrivePlannedPath driveToStation;
 
     private IntakingState currentState = IntakingState.SAFE_DISTANCE_FROM_REEF;
@@ -93,7 +92,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
         // If elevator & arm close to stowed, no need to move intake pivot
         if (elevator.isAtHeight(ElevatorConstants.minHeight, Units.inchesToMeters(5.0)) &&
-            arm.isAtAngle(ArmConstants.STOW_ANGLE, Units.degreesToRadians(5.0))
+            arm.isAtAngle(ArmConstants.STOW, Units.degreesToRadians(5.0))
         ) {
             currentState = IntakingState.PARTIAL_STOW;
         }
@@ -101,7 +100,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
         // Generate path to closest station
         closestReefSide = ProximityUtil.getClosestReefSide(drive);
 
-        final Pose2d closestStation =
+        Pose2d closestStation =
             ProximityUtil.getClosestPose(
                 drive,
                 FieldConstants.CoralStation.blueLeft,
@@ -109,18 +108,22 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 FieldConstants.CoralStation.redLeft,
                 FieldConstants.CoralStation.redRight);
         
+        double linearVelocity =
+            Math.hypot(
+                drive.getRobotVelocity().vxMetersPerSecond,
+                drive.getRobotVelocity().vyMetersPerSecond);
+
         PlannedPath pathToStation =
-            PlannedPathGenerator.generate(
+            PlannedPathFactory.generate(
                 0,
                 0,
+                linearVelocity,
                 0,
-                0,
-                Waypoint.fromHolonomicPose(drive.getCurrentPose()),
+                Waypoint.fromHolonomicPose(drive.getPose()),
                 Waypoint.fromHolonomicPose(closestStation));
         
         driveToStation = new DrivePlannedPath(drive, pathToStation);
-
-        driveToStation.initialize();
+        driveToStation.schedule();
 
         vision.setDesiredAprilTagGoal(AprilTagGoal.CORAL_STATION_ALIGNMENT);
         leds.runAnimation(Animations.INTAKE_CORAL);
@@ -136,9 +139,9 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 break;
 
             case PUT_INTAKEPIVOT_OUT:
-                intakePivot.setAngle(IntakePivotConstants.SCORE_CLEARANCE);
+                intakePivot.setAngle(IntakePivotConstants.ARM_STOW_CLEARANCE);
                 
-                if (intakePivot.isAtAngle(IntakePivotConstants.SCORE_CLEARANCE, Units.degreesToRadians(5.0))) { // just needs to be enough out of way for arm
+                if (intakePivot.isAtAngle(IntakePivotConstants.ARM_STOW_CLEARANCE, Units.degreesToRadians(5.0))) { // just needs to be enough out of way for arm
                     currentState = IntakingState.PARTIAL_STOW;
                 }
                 break;
@@ -149,17 +152,17 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 break;
 
             case STOW:
-                arm.setAngle(ArmConstants.STOW_ANGLE);
+                arm.setAngle(ArmConstants.STOW);
                 wrist.setAngle(WristConstants.INTAKE_CORAL);
                 claw.setVelocity(ClawConstants.INTAKE_CORAL);
 
-                if (arm.isAtAngle(ArmConstants.STOW_ANGLE, ArmConstants.kTolerance) && wrist.isAtAngle(WristConstants.INTAKE_CORAL, WristConstants.kTolerance)) {
+                if (arm.isAtAngle(ArmConstants.STOW, ArmConstants.kTolerance) && wrist.isAtAngle(WristConstants.INTAKE_CORAL, WristConstants.kTolerance)) {
                     currentState = IntakingState.PUT_INTAKEPIVOT_IN;
                 }
                 break;
 
             case PUT_INTAKEPIVOT_IN:
-                intakePivot.setAngle(IntakePivotConstants.LOW_CLEARANCE);
+                intakePivot.setAngle(IntakePivotConstants.INTAKE_CLEARANCE);
                 currentState = IntakingState.WAIT_FOR_LOWER_TRUE;
                 break;
                 
@@ -178,11 +181,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
             case FINISHED:
                 claw.stop();
                 superstructure.setHasCoral(true);
-                break;    
-        }
-
-        if (currentState != IntakingState.FINISHED) {
-            driveToStation.execute();
+                break;
         }
     }
 
@@ -193,7 +192,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        driveToStation.end(interrupted);
+        driveToStation.cancel();
         vision.setDesiredAprilTagGoal(AprilTagGoal.GLOBAL_LOCALIZATION);
         leds.stop();
     }

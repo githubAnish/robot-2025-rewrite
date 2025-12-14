@@ -23,7 +23,6 @@ public abstract class RobotHardware {
     @Getter protected LedsConfig ledsConfig;
 
     // Other
-    @Getter protected PIDConfig followerXPID;
-    @Getter protected PIDConfig followerYPID;
+    @Getter protected PIDConfig followerLinearPID;
     @Getter protected PIDConfig followerThetaPID;
 }

@@ -1,8 +1,8 @@
 package org.frogforce503.robot2025.auto;
 
-import org.frogforce503.lib.auto.builder.PlannedPathGenerator;
-import org.frogforce503.lib.planning.planned_path.PlannedPath;
-import org.frogforce503.lib.planning.planned_path.Waypoint;
+import org.frogforce503.lib.auto.planned_path.PlannedPath;
+import org.frogforce503.lib.auto.planned_path.PlannedPathFactory;
+import org.frogforce503.lib.auto.planned_path.components.Waypoint;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 
@@ -27,21 +27,10 @@ public class WarmupExecutor {
         System.out.println("Warmup took " + (endTime - startTime)/1e9 + " s");
     }
 
-    public void disabledInit() {
-        // NetworkTableInstance.getDefault().flush();
-        // System.gc();
-    }
-
-    public void disabledPeriodic() {
-        warmupPlannedPathGenerator();
-        warmupPaths();
-        warmupDrive();
-    }
-
-    /** Warmups the {@link PlannedPathGenerator} to speed up {@link PlannedPath} generation. */
+    /** Warmups the {@link PlannedPathFactory} to speed up {@link PlannedPath} generation. */
     private void warmupPlannedPathGenerator() {
         // Random values inserted in for path constraints & waypoints
-        PlannedPathGenerator
+        PlannedPathFactory
             .generate(
                 Units.inchesToMeters(13),
                 Units.inchesToMeters(19),
@@ -59,10 +48,22 @@ public class WarmupExecutor {
     private void warmupDrive() {
         // Warmup path follower
         DriveConstants.pathFollower.calculate(
-            drive.getCurrentPose(),
+            drive.getPose(),
             Pose2d.kZero,
             0.1,
             0.1,
             0.1);
+    }
+
+    // Public methods
+    public void disabledInit() {
+        // NetworkTableInstance.getDefault().flush();
+        // System.gc();
+    }
+
+    public void disabledPeriodic() {
+        warmupPlannedPathGenerator();
+        warmupPaths();
+        warmupDrive();
     }
 }

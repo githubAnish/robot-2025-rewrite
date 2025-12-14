@@ -1,6 +1,6 @@
 package org.frogforce503.lib.swerve;
 
-import org.frogforce503.lib.planning.planned_path.PlannedPath.HolonomicState;
+import org.frogforce503.lib.auto.planned_path.PlannedPath.HolonomicState;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;

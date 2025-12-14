@@ -97,7 +97,7 @@ public class DriveToPose extends Command {
 
     @Override
     public void initialize() {
-        Pose2d currentPose = drive.getCurrentPose();
+        Pose2d currentPose = drive.getPose();
         ChassisSpeeds currentVel = drive.getFieldVelocity();
         Translation2d linearFieldVelocity =
             new Translation2d(currentVel.vxMetersPerSecond, currentVel.vyMetersPerSecond);
@@ -126,7 +126,7 @@ public class DriveToPose extends Command {
 
     @Override
     public void execute() {
-        Pose2d currentPose = drive.getCurrentPose();
+        Pose2d currentPose = drive.getPose();
         Pose2d targetPose = target.get();
 
         double currentDistance =
@@ -241,7 +241,7 @@ public class DriveToPose extends Command {
     @Override
     public boolean isFinished() {
         return
-            target.get().equals(null) ||
+            target.get() == null ||
             (driveController.atGoal() && thetaController.atGoal());
     }
 

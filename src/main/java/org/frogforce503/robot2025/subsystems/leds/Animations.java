@@ -22,6 +22,9 @@ public final class Animations {
     public static final Animation BLUE_STROBE =
         new StrobeAnimation(0, 0, 255, 0, 0.25, -1, 0);
 
+    public static final Animation YELLOW_STROBE =
+        new StrobeAnimation(255, 255, 0, 0, 0.25, -1, 0);
+
     public static final Animation GREEN_STROBE =
         new StrobeAnimation(255, 0, 0, 0, 0.25, -1, 0);
 
@@ -48,7 +51,12 @@ public final class Animations {
 
     public static final Animation FLASH_RED =
         new SingleFadeAnimation(255, 0, 0, 100, 0.5, -1, 0);
-    
+
+    // Pre-auto animations
+    public static final Animation TOO_FAR_FROM_AUTO_START = Animations.RED_STROBE;
+    public static final Animation NEAR_TO_AUTO_START = Animations.YELLOW_STROBE;
+    public static final Animation AT_AUTO_START = Animations.GREEN_STROBE;
+
     // Season-specific animations
     public static final Animation NEUTRAL_CORAL = Animations.BREATHE_PURPLE;
     public static final Animation INTAKE_CORAL = Animations.FLASH_PURPLE;

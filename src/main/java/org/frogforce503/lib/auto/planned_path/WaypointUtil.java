@@ -1,10 +1,10 @@
-package org.frogforce503.lib.auto;
+package org.frogforce503.lib.auto.planned_path;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.frogforce503.lib.planning.planned_path.Waypoint;
+import org.frogforce503.lib.auto.planned_path.components.Waypoint;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,11 +18,7 @@ public final class WaypointUtil {
     }
 
     private static List<Waypoint> changeAllWaypoints(List<Waypoint> input, Function<Waypoint, Waypoint> editor) {
-        return
-            input
-                .stream()
-                .map(editor)
-                .collect(Collectors.toList());
+        return input.stream().map(editor).collect(Collectors.toList());
     }
 
     public static List<Waypoint> shift(List<Waypoint> input, Translation2d delta) {

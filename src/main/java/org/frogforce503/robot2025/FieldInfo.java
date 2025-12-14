@@ -2,20 +2,14 @@ package org.frogforce503.robot2025;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import lombok.Setter;
 
-/** Class containing all field-related information. */
+/** Class handling alliance context and {@link Field2d} visualization. */
 public final class FieldInfo {
-    // Requirements
     private static final Field2d field2d = new Field2d();
-
-    // State
-    @Setter private static Alliance allianceOverride;
 
     private FieldInfo() {}
 
@@ -25,10 +19,7 @@ public final class FieldInfo {
 
     /** Returns current alliance. */
     public static Alliance getAlliance() {
-        return
-            RobotBase.isSimulation() || DriverStation.getAlliance().isEmpty() // if in sim or alliance not known
-                ? allianceOverride
-                : DriverStation.getAlliance().get();
+        return DriverStation.getAlliance().orElse(Alliance.Blue);
     }
 
     /** Returns if currently on red alliance. */

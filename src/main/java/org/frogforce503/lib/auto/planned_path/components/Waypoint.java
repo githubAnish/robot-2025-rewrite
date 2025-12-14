@@ -1,4 +1,4 @@
-package org.frogforce503.lib.planning.planned_path;
+package org.frogforce503.lib.auto.planned_path.components;
 
 import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 
@@ -8,6 +8,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import lombok.Getter;
 
 import java.util.Optional;
+
+import org.frogforce503.lib.auto.planned_path.PlannedPath;
+import org.frogforce503.lib.auto.planned_path.PlannedPath.HolonomicState;
 
 /** A trajectory waypoint, including a translation and optional drive/holonomic rotations. */
 public class Waypoint {
@@ -99,7 +102,7 @@ public class Waypoint {
         return new Waypoint(pose.getTranslation(), driveRotation, pose.getRotation());
     }
     
-    public static Waypoint fromPlannedPathState(PlannedPath.HolonomicState state) {
+    public static Waypoint fromPlannedPathState(HolonomicState state) {
         return new Waypoint(state.poseMeters().getTranslation(), null, state.holonomicAngle());
     }
 

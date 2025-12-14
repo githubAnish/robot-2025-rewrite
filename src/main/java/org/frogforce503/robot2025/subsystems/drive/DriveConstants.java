@@ -1,6 +1,7 @@
 package org.frogforce503.robot2025.subsystems.drive;
 
 import org.frogforce503.lib.math.MathUtils;
+import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.lib.swerve.SwervePathFollower;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.constants.hardware.subsystem_config.DriveConfig;
@@ -54,10 +55,13 @@ public final class DriveConstants {
                     backLeftModuleTranslation,
                     backRightModuleTranslation});
 
+        final PIDConfig linearPID = Robot.bot.getFollowerLinearPID();
+        final PIDConfig thetaPID = Robot.bot.getFollowerThetaPID();
+
         pathFollower =
             new SwervePathFollower(
-                Robot.bot.getFollowerXPID().toPIDController(),
-                Robot.bot.getFollowerYPID().toPIDController(),
-                Robot.bot.getFollowerThetaPID().toPIDController());
+                linearPID.toPIDController(),
+                linearPID.toPIDController(),
+                thetaPID.toPIDController());
     }
 }

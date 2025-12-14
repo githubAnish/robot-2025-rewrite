@@ -138,8 +138,7 @@ public class RobotHardwareCompBot extends RobotHardware {
         this.ledsConfig =
             new LedsConfig(11);
 
-        this.followerXPID = new PIDConfig(5.0, 0.0, 0.0);
-        this.followerYPID = new PIDConfig(5.0, 0.0, 0.0);
+        this.followerLinearPID = new PIDConfig(5.0, 0.0, 0.0);
         this.followerThetaPID = new PIDConfig(4.0, 0.0, 0.0);
     }
 }
