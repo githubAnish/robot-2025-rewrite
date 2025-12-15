@@ -1,4 +1,4 @@
-package org.frogforce503.lib.auto.choreo;
+package org.frogforce503.lib.auto;
 
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;

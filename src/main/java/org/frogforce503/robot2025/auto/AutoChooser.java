@@ -1,8 +1,10 @@
 package org.frogforce503.robot2025.auto;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.frogforce503.lib.auto.choreo.AutoFactoryConfigurator;
+import org.frogforce503.lib.auto.AutoFactoryConfigurator;
+import org.frogforce503.lib.math.GeomUtil;
 import org.frogforce503.lib.reefscape.ProximityUtil;
 import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
@@ -12,8 +14,10 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 public class AutoChooser {
     // Requirements
@@ -39,7 +43,21 @@ public class AutoChooser {
     }
 
     private void configureAutos() {
-        routineChooser.addDefaultOption("Test", null);
+        routineChooser.addDefaultOption(
+            "Test",
+            new AutoMode(drive, superstructure) {
+
+                @Override
+                public Command getCommand() {
+                    return Commands.runOnce(() -> drive.setPose(GeomUtil.toPose2d(new Translation2d(5,5))));
+                }
+
+                @Override
+                public List<Pose2d> getPoses() {
+                    return new ArrayList<>(List.of(Pose2d.kZero));
+                }
+            
+        });
     }
 
     private void logTrajectory(Pose2d... trajectory) {
@@ -67,11 +85,12 @@ public class AutoChooser {
 
         if (selectedAuto == null) {
             logTrajectory(); // Clear poses
-        } else if (selectedAuto != lastSelectedAuto) {
-            List<Pose2d> trajPoses = selectedAuto.getPoses();
-            Pose2d start = trajPoses.get(0);
 
-            logTrajectory(trajPoses.toArray(Pose2d[]::new));
+        } else if (selectedAuto != lastSelectedAuto) {
+            List<Pose2d> trajectoryPoses = selectedAuto.getPoses();
+            Pose2d start = trajectoryPoses.get(0);
+
+            logTrajectory(trajectoryPoses.toArray(Pose2d[]::new));
         
             // Reset pose if drive close to trajectory start
             if (ProximityUtil.getDistanceFromPose(drive, start) <= Units.inchesToMeters(6)) {
@@ -83,6 +102,8 @@ public class AutoChooser {
     }
 
     public void close() {
+        logTrajectory();
+
         if (autoCommand != null) {
             autoCommand.cancel();
         }

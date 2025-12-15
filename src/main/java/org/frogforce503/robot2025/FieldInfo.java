@@ -1,8 +1,10 @@
 package org.frogforce503.robot2025;
 
+import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,6 +16,10 @@ public final class FieldInfo {
     private FieldInfo() {}
 
     static {
+        // Set default alliance
+        DriverStationSim.setDsAttached(true);
+        DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+
         SmartDashboard.putData("Field", field2d);
     }
 

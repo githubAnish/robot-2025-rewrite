@@ -27,6 +27,7 @@ import org.ironmaple.utils.mathutils.MapleCommonMath;
 
 import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -44,6 +45,10 @@ public class IntakeAlgaeFromReef extends Command { // use the reef faces from Fi
     private final IntakeRoller intakeRoller;
 
     private final Leds leds;
+
+    // Constants
+    private final Transform2d reefSideToIntake = GeomUtil.toTransform2d(Units.inchesToMeters(12.5), 0);
+    private final Transform2d reefSideToBackup = GeomUtil.toTransform2d(Units.inchesToMeters(18.5), 0);
 
     // State
     private boolean highAlgae; // based off of tag ID / reef face
@@ -98,8 +103,8 @@ public class IntakeAlgaeFromReef extends Command { // use the reef faces from Fi
             closestReefSide.equals(FieldConstants.Reef.redFaceCenters[2]) ||
             closestReefSide.equals(FieldConstants.Reef.redFaceCenters[4]);
 
-        driveToAlgae = new DriveToPose(drive, () -> closestReefSide.plus(GeomUtil.toTransform2d(Units.inchesToMeters(12.5), 0)));
-        backupFromAlgae = new DriveToPose(drive, () -> closestReefSide.plus(GeomUtil.toTransform2d(Units.inchesToMeters(18.5), 0)));
+        driveToAlgae = new DriveToPose(drive, () -> closestReefSide.plus(reefSideToIntake));
+        backupFromAlgae = new DriveToPose(drive, () -> closestReefSide.plus(reefSideToBackup));
 
         vision.setDesiredAprilTagGoal(AprilTagGoal.REEF_ALIGNMENT);
         leds.runAnimation(Animations.INTAKE_ALGAE);
@@ -143,10 +148,12 @@ public class IntakeAlgaeFromReef extends Command { // use the reef faces from Fi
                 if (claw.algaeCurrentThresholdForHoldMet()) {
                     superstructure.setHasAlgaeInClaw(true);
                     driveToAlgae.cancel();
+                    currentState = IntakingState.BACK_UP_WITH_ALGAE;
                 }
                 break;
 
             case BACK_UP_WITH_ALGAE:
+                
                 break;
 
             case STOW:

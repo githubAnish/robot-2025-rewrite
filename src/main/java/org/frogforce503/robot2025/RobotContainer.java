@@ -23,6 +23,7 @@ import org.frogforce503.robot2025.commands.ScoreAlgaeInBarge;
 import org.frogforce503.robot2025.commands.ScoreAlgaeInProcessor;
 import org.frogforce503.robot2025.commands.ScoreCoralOnReef;
 import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
+import org.frogforce503.robot2025.commands.tuning.TuneArm;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSim;
@@ -75,10 +76,14 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.simulation.XboxControllerSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.ExtensionMethod;
 
@@ -395,6 +400,17 @@ public class RobotContainer implements UnitTest {
 
         // RobotModeTriggers.teleop().onTrue(
         //     new TuneArm(superstructure.getArm())
+        // );
+
+        // XboxControllerSim x = new XboxControllerSim(driver.getHID());
+        // x.setLeftTriggerAxis(0.5);
+        
+        // RobotModeTriggers.teleop().onTrue(
+        //     Commands.sequence(
+        //         Commands.runOnce(() -> drive.setPose(new Pose2d(3, 4,Rotation2d.kZero))),
+        //         Commands.waitSeconds(5),
+        //         new SafelyStowAndIntakeCoralFromStation(drive, vision, superstructure, leds)
+        //     )
         // );
     }
 }

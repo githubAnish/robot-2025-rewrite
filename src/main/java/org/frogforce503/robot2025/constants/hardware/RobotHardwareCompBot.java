@@ -66,7 +66,7 @@ public class RobotHardwareCompBot extends RobotHardware {
                 6,
                 150,
                 false,
-                30,
+                80,
                 0.0,
                 new PIDConfig(),
                 new FFConfig(),

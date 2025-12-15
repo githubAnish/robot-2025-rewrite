@@ -1,11 +1,11 @@
 package org.frogforce503.robot2025.subsystems.vision;
 
+import org.frogforce503.robot2025.Constants;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import lombok.Getter;
@@ -35,7 +35,7 @@ public class VisionSimulator {
     }
 
     public VisionSimulator() {
-        this(AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded));
+        this(Constants.fieldVenue.getAprilTagFieldLayout());
     }
 
     /**
