@@ -11,8 +11,8 @@ public final class ArmConstants {
     public static final double maxAngle = Robot.bot.getArmConfig().maxAngle();
 
     public static final double START = Units.degreesToRadians(-89);
-    public static final double STOW = 0.0;
+    public static final double STOW = START;
 
-    public static final double ALGAE_PLUCK_LOW = Units.inchesToMeters(START);
-    public static final double ALGAE_PLUCK_HIGH = Units.inchesToMeters(START);
+    public static final double ALGAE_PLUCK_LOW = START;
+    public static final double ALGAE_PLUCK_HIGH = START;
 }

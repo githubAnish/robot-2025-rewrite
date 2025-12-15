@@ -12,6 +12,6 @@ public final class ElevatorConstants {
 
     public static final double START = minHeight;
 
-    public static final double ALGAE_PLUCK_LOW = Units.inchesToMeters(START);
-    public static final double ALGAE_PLUCK_HIGH = Units.inchesToMeters(START);
+    public static final double ALGAE_PLUCK_LOW = START;
+    public static final double ALGAE_PLUCK_HIGH = START;
 }

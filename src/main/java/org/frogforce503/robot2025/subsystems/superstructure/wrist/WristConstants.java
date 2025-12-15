@@ -13,6 +13,6 @@ public final class WristConstants {
     public static final double START = Units.degreesToRadians(0.0);
     public static final double INTAKE_CORAL = Units.degreesToRadians(-36.0);
 
-    public static final double ALGAE_PLUCK_LOW = Units.inchesToMeters(START);
-    public static final double ALGAE_PLUCK_HIGH = Units.inchesToMeters(START);
+    public static final double ALGAE_PLUCK_LOW = START;
+    public static final double ALGAE_PLUCK_HIGH = START;
 }
