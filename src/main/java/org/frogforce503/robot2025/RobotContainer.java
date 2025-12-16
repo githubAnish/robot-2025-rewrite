@@ -35,8 +35,8 @@ import org.frogforce503.robot2025.subsystems.leds.Leds;
 import org.frogforce503.robot2025.subsystems.leds.LedsIO;
 import org.frogforce503.robot2025.subsystems.leds.LedsIOCANdle;
 import org.frogforce503.robot2025.subsystems.offsets.OffsetManager;
-import org.frogforce503.robot2025.subsystems.offsets.io.OffsetsIO;
-import org.frogforce503.robot2025.subsystems.offsets.io.OffsetsIOServer;
+import org.frogforce503.robot2025.subsystems.offsets.OffsetsIO;
+import org.frogforce503.robot2025.subsystems.offsets.OffsetsIOServer;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.SuperstructureMode;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
@@ -398,9 +398,9 @@ public class RobotContainer implements UnitTest {
         //     Commands.waitSeconds(3).alongWith(e.sysIdQuasistatic(Direction.kForward))
         // );
 
-        // RobotModeTriggers.teleop().onTrue(
-        //     new TuneArm(superstructure.getArm())
-        // );
+        RobotModeTriggers.teleop().onTrue(
+            new TuneArm(superstructure.getArm())
+        );
 
         // XboxControllerSim x = new XboxControllerSim(driver.getHID());
         // x.setLeftTriggerAxis(0.5);

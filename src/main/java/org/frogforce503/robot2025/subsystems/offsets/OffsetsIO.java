@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.subsystems.offsets.io;
+package org.frogforce503.robot2025.subsystems.offsets;
 
 import org.littletonrobotics.junction.AutoLog;
 

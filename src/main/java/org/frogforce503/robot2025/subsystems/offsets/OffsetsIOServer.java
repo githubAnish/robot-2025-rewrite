@@ -1,4 +1,4 @@
-package org.frogforce503.robot2025.subsystems.offsets.io;
+package org.frogforce503.robot2025.subsystems.offsets;
 
 import java.nio.file.Paths;
 
