@@ -54,8 +54,6 @@ public class FieldConstants {
     }
 
     public static class Reef {
-        public record BranchInfo(Pose2d leftBranch, Pose2d rightBranch) {}
-
         // Blue reef
         public static final Pose2d[] blueFaceCenters =
             new Pose2d[] {
@@ -72,7 +70,8 @@ public class FieldConstants {
                 .getTranslation()
                 .interpolate(blueFaceCenters[3].getTranslation(), 0.5); // middle of AB and GH faces
 
-        public static final BranchInfo[] blueFaceBranches = new BranchInfo[6];
+        public static final Pose2d[] blueLeftBranches = new Pose2d[6];
+        public static final Pose2d[] blueRightBranches = new Pose2d[6];
 
         // Red reef
         public static final Pose2d[] redFaceCenters =
@@ -90,7 +89,8 @@ public class FieldConstants {
                 .getTranslation()
                 .interpolate(redFaceCenters[3].getTranslation(), 0.5); // middle of AB and GH faces
 
-        public static final BranchInfo[] redFaceBranches = new BranchInfo[6];
+        public static final Pose2d[] redLeftBranches = new Pose2d[6];
+        public static final Pose2d[] redRightBranches = new Pose2d[6];
 
         static {
             final double adjustX = Units.inchesToMeters(2.007); // measured distance from face AprilTag X to branch X
@@ -103,7 +103,8 @@ public class FieldConstants {
                 Pose2d leftBranch = faceCenter.plus(GeomUtil.toTransform2d(adjustX, -adjustY));
                 Pose2d rightBranch = faceCenter.plus(GeomUtil.toTransform2d(adjustX, adjustY));
 
-                blueFaceBranches[i] = new BranchInfo(leftBranch, rightBranch);
+                blueLeftBranches[i] = leftBranch;
+                blueRightBranches[i] = rightBranch;
             }
 
             // Initialize red branches
@@ -113,7 +114,8 @@ public class FieldConstants {
                 Pose2d leftBranch = faceCenter.plus(GeomUtil.toTransform2d(adjustX, -adjustY));
                 Pose2d rightBranch = faceCenter.plus(GeomUtil.toTransform2d(adjustX, adjustY));
 
-                redFaceBranches[i] = new BranchInfo(leftBranch, rightBranch);
+                redLeftBranches[i] = leftBranch;
+                redRightBranches[i] = rightBranch;
             }
         }
     }

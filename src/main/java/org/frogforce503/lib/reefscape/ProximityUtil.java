@@ -2,7 +2,6 @@ package org.frogforce503.lib.reefscape;
 
 import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.constants.field.FieldConstants;
-import org.frogforce503.robot2025.constants.field.FieldConstants.Reef.BranchInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -69,24 +68,22 @@ public final class ProximityUtil {
                     : FieldConstants.Reef.blueFaceCenters);
     }
 
-    public static Pose2d getClosestBranch(Drive drive, boolean leftBranch) {
-        // Get alliance branches
-        final BranchInfo[] branches =
-            FieldInfo.isRed()
-                ? FieldConstants.Reef.redFaceBranches
-                : FieldConstants.Reef.blueFaceBranches;
+    public static Pose2d getClosestLeftBranch(Drive drive) {
+        return
+            getClosestPose(
+                drive,
+                FieldInfo.isRed()
+                    ? FieldConstants.Reef.redLeftBranches
+                    : FieldConstants.Reef.blueLeftBranches);
+    }
 
-        // Create array of branch poses (left or right only)
-        final Pose2d[] branchPoses = new Pose2d[branches.length];
-
-        for (int i = 0; i < branches.length; i++) {
-            branchPoses[i] =
-                leftBranch
-                    ? branches[i].leftBranch()
-                    : branches[i].rightBranch();
-        }
-
-        return getClosestPose(drive, branchPoses);
+    public static Pose2d getClosestRightBranch(Drive drive) {
+        return
+            getClosestPose(
+                drive,
+                FieldInfo.isRed()
+                    ? FieldConstants.Reef.redRightBranches
+                    : FieldConstants.Reef.blueRightBranches);
     }
 
     public static double getClosestBargeX(Drive drive) {
