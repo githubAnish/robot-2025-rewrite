@@ -2,6 +2,10 @@ package org.frogforce503.lib.motorcontrol;
 
 import edu.wpi.first.wpilibj.Timer;
 
+/**
+ * Create a very basic motor simulation which can take in several setpoints and take some time to reach them.
+ * This is physically not very accurate, but can be useful for testing.
+ */
 public class SimpleMotorSim {
     private final double timeForOne; // Number of seconds to complete a full revolution
     private final double timeConstantFactor; // MOTOR IS MODELED AS LOGARITHMIC GROWTH, LIKE A CHARGING CAPACITOR

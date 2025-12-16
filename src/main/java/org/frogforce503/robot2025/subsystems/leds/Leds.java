@@ -28,7 +28,7 @@ public class Leds extends SubsystemBase {
         Logger.processInputs("Leds", inputs);
 
         if (cameraDisconnected) {
-            io.runAnimation(Animations.CAMERA_DISCONNECTED);   
+            io.runAnimation(Animations.CAMERA_DISCONNECTED);
         }
 
         // Record cycle time

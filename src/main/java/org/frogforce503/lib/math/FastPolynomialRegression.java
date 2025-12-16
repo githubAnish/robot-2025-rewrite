@@ -5,18 +5,12 @@ import java.util.TreeSet;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 /**
- * The {@code FastPolynomialRegression} class performs a linear regression
+ * The {@link FastPolynomialRegression} class performs a linear regression
  * between every two points on an set of <em>N</em> data points
  * (<em>x<sub>i</sub></em>, <em>y<sub>i</sub></em>) of type {@code double}
- * so that it approximates a polynomial regresison, but takes less time for computation.
- * <p>
- * ( Due to not using matrices or using any complex calculations )
- * <p>
- * <b> NOTE: THIS IS ONLY AN APPROXIMATION OF A POLYNOMIAL REGRESSION. </b>
- * <p>
- * If you need a more accurate model, use the {@code PolynomialRegression} class. Know that it will take more time, though.
- * 
- * @author Anish Malraj
+ * so that it approximates a polynomial regresison, but takes significantly less compute time (since it doesn't use any complex calculations).
+ * <p><b> NOTE: THIS IS ONLY AN APPROXIMATION OF A POLYNOMIAL REGRESSION. </b></p>
+ * If you need a more accurate model, use the {@link PolynomialRegression} class. Remember that a {@link PolynomialRegression} will take more compute time.
  */
 public class FastPolynomialRegression {
   public HashMap<Double, Double> m_map = new HashMap<Double, Double>();
@@ -66,7 +60,7 @@ public class FastPolynomialRegression {
   }
 
   /**
-   * Unit tests the {@code FastPolynomialRegression} data type.
+   * Unit tests the {@link FastPolynomialRegression} data type.
    * It does this by creating a map of distance vs. arm angle, and
    * testing the result all three types of regressions ({@link InterpolatingDoubleTreeMap}, {@link PolynomialRegression}, {@link FastPolynomialRegression})
    * given a set of test distances.

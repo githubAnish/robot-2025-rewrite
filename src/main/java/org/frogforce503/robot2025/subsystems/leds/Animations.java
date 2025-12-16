@@ -10,46 +10,46 @@ import com.ctre.phoenix.led.StrobeAnimation;
 /** List of commonly used animations for a CTRE CANdle. */
 public final class Animations {
     // Generic animations
-    public static final Animation PURPLE_STROBE =
+    private static final Animation PURPLE_STROBE =
         new StrobeAnimation(208, 89, 227, 100, 0.25, -1, 0);
 
-    public static final Animation RED_STROBE =
+    private static final Animation RED_STROBE =
         new StrobeAnimation(255, 0, 0, 0, 0.25, -1, 0);
 
-    public static final Animation LIGHTBLUE_STROBE =
+    private static final Animation LIGHTBLUE_STROBE =
         new StrobeAnimation(173, 216, 230, 0, 0.25, -1, 0);
 
-    public static final Animation BLUE_STROBE =
+    private static final Animation BLUE_STROBE =
         new StrobeAnimation(0, 0, 255, 0, 0.25, -1, 0);
 
-    public static final Animation YELLOW_STROBE =
+    private static final Animation YELLOW_STROBE =
         new StrobeAnimation(255, 255, 0, 0, 0.25, -1, 0);
 
-    public static final Animation GREEN_STROBE =
+    private static final Animation GREEN_STROBE =
         new StrobeAnimation(255, 0, 0, 0, 0.25, -1, 0);
 
-    public static final Animation GREEN_FLOW =
+    private static final Animation GREEN_FLOW =
         new ColorFlowAnimation(0, 255, 0, 0, 0.6, 45, Direction.Forward); 
 
-    public static final Animation BREATHE_GREEN =
+    private static final Animation BREATHE_GREEN =
         new SingleFadeAnimation(0, 255, 0, 100, 0.25, -1, 0);
 
-    public static final Animation BREATHE_PURPLE =
+    private static final Animation BREATHE_PURPLE =
         new SingleFadeAnimation(255, 0, 255, 100, 0.25, -1, 0);
 
-    public static final Animation BREATHE_BLUE =
+    private static final Animation BREATHE_BLUE =
         new SingleFadeAnimation(0, 0, 255, 100, 0.25, -1, 0);
         
-    public static final Animation FLASH_GREEN =
+    private static final Animation FLASH_GREEN =
         new SingleFadeAnimation(0, 255, 0, 100, 0.5, -1, 0);
 
-    public static final Animation FLASH_PURPLE =
+    private static final Animation FLASH_PURPLE =
         new SingleFadeAnimation(255, 0, 255, 100, 0.5, -1, 0);
 
-    public static final Animation FLASH_BLUE =
+    private static final Animation FLASH_BLUE =
         new SingleFadeAnimation(0, 0, 255, 100, 0.5, -1, 0);
 
-    public static final Animation FLASH_RED =
+    private static final Animation FLASH_RED =
         new SingleFadeAnimation(255, 0, 0, 100, 0.5, -1, 0);
 
     // Pre-auto animations

@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import lombok.Getter;
 
 public class AutoChooser {
     // Requirements
@@ -26,7 +27,7 @@ public class AutoChooser {
     private final AutoFactory autoFactory;
 
     // Dashboard
-    private final LoggedDashboardChooser<AutoMode> routineChooser = new LoggedDashboardChooser<>("Auto");
+    @Getter private final LoggedDashboardChooser<AutoMode> routineChooser = new LoggedDashboardChooser<>("Auto");
 
     // State
     private Command autoCommand;
