@@ -33,12 +33,15 @@ public record JoystickInputs(
     }
 
     public Translation2d getLinearVelocityFromJoysticks() {
+        double x = xSupplier.getAsDouble();
+        double y = ySupplier.getAsDouble();
+
         // Apply deadband
-        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(xSupplier.getAsDouble(), ySupplier.getAsDouble()), kDeadband);
-        Rotation2d linearDirection = new Rotation2d(Math.atan2(ySupplier.getAsDouble(), xSupplier.getAsDouble()));
+        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), kDeadband);
+        Rotation2d linearDirection = new Rotation2d(x, y);
 
         // Square magnitude for more precise control
-        linearMagnitude = Math.pow(linearMagnitude, 2);
+        linearMagnitude = linearMagnitude * linearMagnitude;
 
         // Return new linear velocity
         return

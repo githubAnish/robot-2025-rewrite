@@ -28,9 +28,9 @@ public class TeleopSwerveCommand extends Command {
     private final BooleanSupplier slowMode;
 
     // Rate limiters
-    private final SlewRateLimiter xLimiter = new SlewRateLimiter(3.0);
-    private final SlewRateLimiter yLimiter = new SlewRateLimiter(3.0);
-    private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(6.0);
+    private final SlewRateLimiter xLimiter = new SlewRateLimiter(18.0);
+    private final SlewRateLimiter yLimiter = new SlewRateLimiter(18.0);
+    private final SlewRateLimiter omegaLimiter = new SlewRateLimiter(36.0);
 
     // Heading control
     private final PIDController headingController = new PIDController(4.0, 0.0, 0.15);
@@ -74,8 +74,8 @@ public class TeleopSwerveCommand extends Command {
                 : DriveConstants.maxOmega;
 
         // Apply rate limiting
-        double xVelocity = xLimiter.calculate(driverLinearVelocity.getX()) * maxLinearVelocity;
-        double yVelocity = yLimiter.calculate(driverLinearVelocity.getY()) * maxLinearVelocity;
+        double xVelocity = xLimiter.calculate(driverLinearVelocity.getX() * maxLinearVelocity);
+        double yVelocity = yLimiter.calculate(driverLinearVelocity.getY() * maxLinearVelocity);
         double omega = 0.0;
 
         // Determine angular velocity
