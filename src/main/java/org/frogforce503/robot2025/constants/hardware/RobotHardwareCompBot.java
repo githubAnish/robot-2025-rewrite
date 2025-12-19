@@ -55,9 +55,9 @@ public class RobotHardwareCompBot extends RobotHardware {
                 Units.inchesToMeters(1.74),
                 false,
                 RobotBase.isSimulation() ? 160 : 80,
-                new PIDConfig(2.2, 0.0, 0.8),
-                new FFConfig(0.01, 1.54, 5.37, 0.0),
-                new Constraints(Units.inchesToMeters(60), Units.inchesToMeters(60)),
+                new PIDConfig(),
+                new FFConfig(),
+                new Constraints(Units.inchesToMeters(0), Units.inchesToMeters(0)),
                 Units.inchesToMeters(0),
                 Units.inchesToMeters(30)); // 30 inches max height according to JVN Calc
 

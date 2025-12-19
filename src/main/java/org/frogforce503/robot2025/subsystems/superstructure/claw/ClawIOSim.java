@@ -31,6 +31,10 @@ public class ClawIOSim extends ClawIOSpark {
 
         leftRollerSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(motorModel, moi, clawConfig.mechanismRatio()), motorModel);
         rightRollerSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(motorModel, moi, clawConfig.mechanismRatio()), motorModel);
+
+        // Sync physics and motor sim positions
+        leftMotorSim.setVelocity(ClawConstants.START);
+        rightMotorSim.setVelocity(ClawConstants.START);
     }
 
     @Override

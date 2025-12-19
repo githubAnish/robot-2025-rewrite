@@ -24,6 +24,7 @@ import org.frogforce503.robot2025.commands.ScoreAlgaeInProcessor;
 import org.frogforce503.robot2025.commands.ScoreCoralOnReef;
 import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
 import org.frogforce503.robot2025.commands.tuning.TuneArm;
+import org.frogforce503.robot2025.commands.tuning.TuneElevator;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSim;
@@ -396,7 +397,7 @@ public class RobotContainer implements UnitTest {
         // );
 
         RobotModeTriggers.teleop().onTrue(
-            new TuneArm(superstructure.getArm())
+            new TuneElevator(superstructure.getElevator())
         );
 
         // XboxControllerSim x = new XboxControllerSim(driver.getHID());

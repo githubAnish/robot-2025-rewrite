@@ -3,7 +3,6 @@ package org.frogforce503.robot2025.subsystems.superstructure.arm;
 import org.frogforce503.robot2025.Constants;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.constants.hardware.subsystem_config.ArmConfig;
-import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.sim.SparkMaxSim;
 
@@ -36,6 +35,10 @@ public class ArmIOSim extends ArmIOSpark {
                 armConfig.maxAngle(),
                 true,
                 ArmConstants.START);
+
+        // Sync physics and motor sim positions
+        motorSim.setPosition(ArmConstants.START);
+        motorSim.setVelocity(0.0);
     }
 
     @Override
@@ -48,9 +51,6 @@ public class ArmIOSim extends ArmIOSpark {
 
         // Update motor simulation
         motorSim.iterate(armSim.getVelocityRadPerSec(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
-
-        // motorSim.setPosition(armSim.getAngleRads());
-        // motorSim.setVelocity(armSim.getVelocityRadPerSec());
 
         inputs.data =
             new ArmIOData(

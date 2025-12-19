@@ -35,6 +35,10 @@ public class WristIOSim extends WristIOSpark {
                 wristConfig.maxAngle(),
                 true,
                 WristConstants.START);
+
+        // Sync physics and motor sim positions
+        motorSim.setPosition(WristConstants.START);
+        motorSim.setVelocity(0.0);
     }
 
     @Override

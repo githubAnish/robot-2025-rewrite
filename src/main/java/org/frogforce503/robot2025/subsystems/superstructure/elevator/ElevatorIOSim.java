@@ -34,6 +34,10 @@ public class ElevatorIOSim extends ElevatorIOSpark {
                 elevatorConfig.maxHeight(),
                 true,
                 ElevatorConstants.START);
+
+        // Sync physics and motor sim positions
+        motorSim.setPosition(ElevatorConstants.START);
+        motorSim.setVelocity(0.0);
     }
 
     @Override

@@ -25,6 +25,9 @@ public class IntakeRollerIOSim extends IntakeRollerIOSpark {
 
         motorSim = new SparkSim(super.getMotor(), motorModel);
         rollerSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(motorModel, moi, rollerConfig.mechanismRatio()), motorModel);
+
+        // Sync physics and motor sim positions
+        motorSim.setVelocity(IntakeRollerConstants.START);
     }
 
     @Override

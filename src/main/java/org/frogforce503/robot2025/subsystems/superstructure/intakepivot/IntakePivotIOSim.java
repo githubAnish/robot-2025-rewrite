@@ -35,6 +35,10 @@ public class IntakePivotIOSim extends IntakePivotIOSpark {
                 pivotConfig.maxAngle(),
                 true,
                 IntakePivotConstants.START);
+
+        // Sync physics and motor sim positions
+        motorSim.setPosition(IntakePivotConstants.START);
+        motorSim.setVelocity(0.0);
     }
 
     @Override
