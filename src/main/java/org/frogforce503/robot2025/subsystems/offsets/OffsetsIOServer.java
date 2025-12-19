@@ -84,12 +84,10 @@ public class OffsetsIOServer implements OffsetsIO {
 
     @Override
     public void updateInputs(OffsetsIOInputs inputs) {
-        inputs.data =
-            new OffsetsIOData(
-                tuningIn.get(),
-                selectedBranchIn.get(),
-                directionIn.get(),
-                valueIn.get());
+        inputs.tuning = tuningIn.get();
+        inputs.branch = selectedBranchIn.get();
+        inputs.direction = directionIn.get();
+        inputs.value = valueIn.get();
     }
 
     @Override

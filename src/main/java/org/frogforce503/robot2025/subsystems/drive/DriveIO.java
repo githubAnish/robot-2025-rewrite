@@ -13,39 +13,23 @@ import edu.wpi.first.math.numbers.N3;
 
 public interface DriveIO {
     @AutoLog
-    class DriveIOInputs {
-        public DriveIOData data =
-            new DriveIOData(
-                new SwerveDriveState(),
-                Pose2d.kZero,
-                new ChassisSpeeds());
-    }
+    class DriveIOInputs extends SwerveDriveState {
+        public double[] drivePositionsRad = new double[4];
+        public double[] driveVelocitiesRadPerSec = new double[4];
+        public Rotation2d gyroAngle = Rotation2d.kZero;
 
-    record DriveIOData(
-        SwerveDriveState state,
-        Pose2d poseMeters,
-        ChassisSpeeds velocityMeters) {}
-
-    record CharacterizationIOData(
-        double drivePositionRad,
-        double driveVelocityRadPerSec
-    ) {
-        public CharacterizationIOData() {
-            this(0.0, 0.0);
+        public void fromSwerveDriveState(SwerveDriveState other) {
+            this.Pose = other.Pose;
+            this.SuccessfulDaqs = other.SuccessfulDaqs;
+            this.FailedDaqs = other.FailedDaqs;
+            this.ModuleStates = other.ModuleStates;
+            this.ModuleTargets = other.ModuleTargets;
+            this.Speeds = other.Speeds;
+            this.OdometryPeriod = other.OdometryPeriod;
         }
     }
 
     default void updateInputs(DriveIOInputs inputs) {}
-
-    // Required in only some cases, doesn't need to be retrieved during normal operation.
-    default CharacterizationIOData getCharacterizationData(int moduleIndex) {
-        return new CharacterizationIOData();
-    }
-
-    // Required in only some cases, doesn't need to be retrieved during normal operation.
-    default Rotation2d getGyroYaw() {
-        return Rotation2d.kZero;
-    }
 
     default void setPose(Pose2d pose) {}
 

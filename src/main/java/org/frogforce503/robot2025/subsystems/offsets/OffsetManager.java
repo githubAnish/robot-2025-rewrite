@@ -25,10 +25,10 @@ public class OffsetManager extends VirtualSubsystem {
         io.updateInputs(inputs);
         Logger.processInputs("Offsets", inputs);
 
-        boolean tuning = inputs.data.tuning();
-        String branch = inputs.data.branch();
-        String direction = inputs.data.direction();
-        double value = inputs.data.value();
+        boolean tuning = inputs.tuning;
+        String branch = inputs.branch;
+        String direction = inputs.direction;
+        double value = inputs.value;
 
         if (tuning &&
             branch != null &&

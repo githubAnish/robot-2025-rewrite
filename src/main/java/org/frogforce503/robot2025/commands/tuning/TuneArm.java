@@ -73,29 +73,30 @@ public class TuneArm extends Command {
 
     @Override
     public void execute() {
-        // Update PID only if changed
-        LoggedTunableNumber.ifChanged(
-            hashCode(),
-            () -> arm.setPID(kP.get(), kI.get(), kD.get()),
-            kP, kI, kD);
+        // // Update PID only if changed
+        // LoggedTunableNumber.ifChanged(
+        //     hashCode(),
+        //     () -> arm.setPID(kP.get(), kI.get(), kD.get()),
+        //     kP, kI, kD);
         
-        // Update FF only if changed
-        LoggedTunableNumber.ifChanged(
-            hashCode(),
-            () -> arm.setFeedforward(new ArmFeedforward(kS.get(), kG.get(), kV.get(), kA.get())),
-            kS, kG, kV, kA);
+        // // Update FF only if changed
+        // LoggedTunableNumber.ifChanged(
+        //     hashCode(),
+        //     () -> arm.setFeedforward(new ArmFeedforward(kS.get(), kG.get(), kV.get(), kA.get())),
+        //     kS, kG, kV, kA);
 
-        // Update trapezoid profile only if changed
-        LoggedTunableNumber.ifChanged(
-            hashCode(),
-            () -> arm.setProfile(new TrapezoidProfile(new Constraints(Units.degreesToRadians(maxVelocityDegPerSec.get()), Units.degreesToRadians(maxAccelerationDegPerSec2.get())))),
-            maxVelocityDegPerSec, maxAccelerationDegPerSec2);
+        // // Update trapezoid profile only if changed
+        // LoggedTunableNumber.ifChanged(
+        //     hashCode(),
+        //     () -> arm.setProfile(new TrapezoidProfile(new Constraints(Units.degreesToRadians(maxVelocityDegPerSec.get()), Units.degreesToRadians(maxAccelerationDegPerSec2.get())))),
+        //     maxVelocityDegPerSec, maxAccelerationDegPerSec2);
 
-        // Update setpoint only if changed
-        LoggedTunableNumber.ifChanged(
-            hashCode(),
-            () -> arm.setAngle(Units.degreesToRadians(setpointAngleDeg.get())),
-            setpointAngleDeg);
+        // // Update setpoint only if changed
+        // LoggedTunableNumber.ifChanged(
+        //     hashCode(),
+        //     () -> arm.setAngle(Units.degreesToRadians(setpointAngleDeg.get())),
+        //     setpointAngleDeg);
+        arm.runVolts(1.0 * (0 - arm.getAngleRad()));
     }
 
     @Override

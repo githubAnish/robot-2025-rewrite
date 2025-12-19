@@ -9,11 +9,8 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest.SwerveDriveBrake;
-import com.ctre.phoenix6.swerve.SwerveRequest.SysIdSwerveTranslation;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,95 +20,59 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
 
 public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> implements DriveIO {
-    // Signals
-    private final StatusSignal<Angle> rawGyroYaw;
-    private final CharacterizationSignals[] characterizationSignals = new CharacterizationSignals[4];
+    private final BaseStatusSignal[] drivePositionSignals = new BaseStatusSignal[4];
+    private final BaseStatusSignal[] driveVelocitySignals = new BaseStatusSignal[4];
+    private final StatusSignal<Angle> gyroYaw;
 
-    // State
-    private ChassisSpeeds currentVelocity;
-
-    // Requests
-    private final ApplyRobotSpeeds RUN_CHASSIS_SPEEDS =
-        new ApplyRobotSpeeds()
-            .withCenterOfRotation(DriveConstants.centerOfRotation)
-            .withDriveRequestType(DriveRequestType.Velocity)
-            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-            .withDesaturateWheelSpeeds(true);
-
-    private final SysIdSwerveTranslation RUN_CHARACTERIZATION = new SysIdSwerveTranslation();
-
-    public DriveIOPhoenix() {
+    public DriveIOPhoenix(SwerveModuleConstants<?, ?, ?>... modules) {
         super(
             TalonFX::new, TalonFX::new, CANcoder::new,
             Robot.bot.getDriveConfig().drivetrainConstants(),
-            Robot.bot.getDriveConfig().frontLeft(), Robot.bot.getDriveConfig().frontRight(), Robot.bot.getDriveConfig().backLeft(), Robot.bot.getDriveConfig().backRight());
+            modules);
 
-        rawGyroYaw = super.getPigeon2().getYaw();
+        gyroYaw = super.getPigeon2().getYaw();
 
-        for (int i = 0; i < characterizationSignals.length; i++) {
+        for (int i = 0; i < 4; i++) {
             TalonFX driveMotor = super.getModule(i).getDriveMotor();
 
-            characterizationSignals[i] =
-                new CharacterizationSignals(
-                    driveMotor.getPosition(),
-                    driveMotor.getVelocity());
+            drivePositionSignals[i] = driveMotor.getPosition();
+            driveVelocitySignals[i] = driveMotor.getVelocity();
         }
+    }
+
+    public DriveIOPhoenix() {
+        this(
+            Robot.bot.getDriveConfig().frontLeft(),
+            Robot.bot.getDriveConfig().frontRight(),
+            Robot.bot.getDriveConfig().backLeft(),
+            Robot.bot.getDriveConfig().backRight());
     }
 
     @Override
     public void updateInputs(DriveIOInputs inputs) {
         // Refresh all signals
-        BaseStatusSignal.refreshAll(rawGyroYaw);
+        BaseStatusSignal.refreshAll(gyroYaw);
+        BaseStatusSignal.refreshAll(drivePositionSignals);
+        BaseStatusSignal.refreshAll(driveVelocitySignals);
 
-        for (CharacterizationSignals data : characterizationSignals) {
-            BaseStatusSignal.refreshAll(
-                data.drivePosition,
-                data.driveVelocity);
+        // Update drive inputs
+        inputs.fromSwerveDriveState(super.getState());
+        
+        for (int i = 0; i < 4; i++) {
+            inputs.drivePositionsRad[i] = Units.rotationsToRadians(drivePositionSignals[0].getValueAsDouble());
+            inputs.driveVelocitiesRadPerSec[i] = Units.rotationsToRadians(driveVelocitySignals[0].getValueAsDouble());
         }
-
-        // Get chassis state & update drive inputs
-        SwerveDriveState currentState = super.getState();
-        Pose2d currentPose = currentState.Pose;
-
-        currentVelocity =
-            super
-                .getKinematics()
-                .toChassisSpeeds(currentState.ModuleStates);
-
-        inputs.data =
-            new DriveIOData(
-                currentState,
-                currentPose,
-                currentVelocity);
-    }
-
-    @Override
-    public Rotation2d getGyroYaw() {
-        return Rotation2d.fromDegrees(rawGyroYaw.getValueAsDouble());
-    }
-
-    @Override
-    public CharacterizationIOData getCharacterizationData(int moduleIndex) {
-        CharacterizationSignals signals = characterizationSignals[moduleIndex];
-
-        return
-            new CharacterizationIOData(
-                Units.rotationsToRadians(signals.drivePosition.getValueAsDouble()),
-                Units.rotationsToRadians(signals.driveVelocity.getValueAsDouble()));
     }
 
     @Override
     public void setPose(Pose2d pose) {
-        System.out.println("Setting pose to " + pose);
         super.resetPose(pose);
     }
 
     @Override
     public void setAngle(Rotation2d angle) {
-        System.out.println("Setting angle to " + angle);
         super.resetRotation(angle);
     }
 
@@ -138,13 +99,13 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
 
     @Override
     public void runVelocity(ChassisSpeeds speeds) {
-        super.setControl(RUN_CHASSIS_SPEEDS.withSpeeds(speeds));
+        super.setControl(DriveRequests.APPLY_ROBOT_SPEEDS.withSpeeds(speeds));
     }
 
     @Override
     public void runVelocity(ChassisSpeeds speeds, double[] moduleForcesX, double[] moduleForcesY) {
         super.setControl(
-            RUN_CHASSIS_SPEEDS
+            DriveRequests.APPLY_ROBOT_SPEEDS
                 .withSpeeds(speeds)
                 .withWheelForceFeedforwardsX(moduleForcesX)
                 .withWheelForceFeedforwardsY(moduleForcesY));
@@ -152,10 +113,6 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
 
     @Override
     public void runCharacterization(double output) {
-        super.setControl(RUN_CHARACTERIZATION.withVolts(output));
+        super.setControl(DriveRequests.RUN_CHARACTERIZATION.withVolts(output));
     }
-
-    private record CharacterizationSignals(
-        StatusSignal<Angle> drivePosition,
-        StatusSignal<AngularVelocity> driveVelocity) {}
 }

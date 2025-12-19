@@ -28,8 +28,6 @@ public class Drive extends SubsystemBase {
 
     public Drive(DriveIO io) {
         this.io = io;
-
-        setPose(Pose2d.kZero);
     }
 
     @Override
@@ -54,10 +52,10 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("Drive/Inputs/Velocity/Magnitude", Math.hypot(getRobotVelocity().vxMetersPerSecond, getRobotVelocity().vyMetersPerSecond));
 
         // Status
-        Logger.recordOutput("Drive/State/AttainedWheelSpeed", Units.metersToFeet(inputs.data.state().ModuleStates[0].speedMetersPerSecond));
+        Logger.recordOutput("Drive/State/AttainedWheelSpeed", Units.metersToInches(inputs.ModuleStates[0].speedMetersPerSecond));
         Logger.recordOutput("Drive/State/Current Speeds", requestedSpeeds);
 
-        SwerveModuleState[] states = inputs.data.state().ModuleStates;
+        SwerveModuleState[] states = inputs.ModuleStates;
         Logger.recordOutput("Drive/State/ModuleStates", states);
 
         for (int i = 0; i < states.length; i++) {
@@ -107,11 +105,11 @@ public class Drive extends SubsystemBase {
 
     // Getters
     public Pose2d getPose() {
-        return inputs.data.poseMeters();
+        return inputs.Pose;
     }
 
     public ChassisSpeeds getRobotVelocity() {
-        return inputs.data.velocityMeters();
+        return inputs.Speeds;
     }
 
     public Rotation2d getAngle() {
@@ -126,7 +124,7 @@ public class Drive extends SubsystemBase {
     public double[] getWheelRadiusCharacterizationPositions() {
         double[] values = new double[4];
         for (int i = 0; i < 4; i++) {
-            values[i] = io.getCharacterizationData(i).drivePositionRad();
+            values[i] = inputs.drivePositionsRad[i];
         }
         return values;
     }
@@ -136,13 +134,13 @@ public class Drive extends SubsystemBase {
         double output = 0.0;
         for (int i = 0; i < 4; i++) {
             output +=
-                Units.radiansToRotations(io.getCharacterizationData(i).driveVelocityRadPerSec()) / 4.0;
+                Units.radiansToRotations(inputs.driveVelocitiesRadPerSec[i]) / 4.0;
         }
         return output;
     }
 
     public Rotation2d getGyroRotation() {
-        return io.getGyroYaw();
+        return inputs.gyroAngle;
     }
 
     // Actions

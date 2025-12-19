@@ -38,7 +38,7 @@ public record JoystickInputs(
 
         // Apply deadband
         double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), kDeadband);
-        Rotation2d linearDirection = new Rotation2d(x, y);
+        Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
         // Square magnitude for more precise control
         linearMagnitude = linearMagnitude * linearMagnitude;

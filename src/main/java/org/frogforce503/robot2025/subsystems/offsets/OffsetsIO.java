@@ -5,14 +5,11 @@ import org.littletonrobotics.junction.AutoLog;
 public interface OffsetsIO {
     @AutoLog
     class OffsetsIOInputs {
-        public OffsetsIOData data = new OffsetsIOData(false, "", "", 0.0);
+        public boolean tuning = false;
+        public String branch = "";
+        public String direction = "";
+        public double value = 0.0;
     }
-
-    record OffsetsIOData(
-        boolean tuning,
-        String branch,
-        String direction,
-        double value) {}
 
     default void updateInputs(OffsetsIOInputs inputs) {}
 
