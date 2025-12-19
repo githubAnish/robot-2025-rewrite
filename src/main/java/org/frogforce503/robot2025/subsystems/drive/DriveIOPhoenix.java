@@ -58,7 +58,7 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         BaseStatusSignal.refreshAll(driveVelocitySignals);
 
         // Update drive inputs
-        inputs.fromSwerveDriveState(super.getState());
+        inputs.fromSwerveDriveState(super.getStateCopy());
         
         for (int i = 0; i < 4; i++) {
             inputs.drivePositionsRad[i] = Units.rotationsToRadians(drivePositionSignals[0].getValueAsDouble());
