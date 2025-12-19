@@ -18,7 +18,7 @@ public class ElevatorIOSim extends ElevatorIOSpark {
 
     // Constants
     private final DCMotor motorModel = DCMotor.getNEO(1);
-    private final double simCarriageMass = Units.lbsToKilograms(20.163);
+    private final double simCarriageMass = Units.lbsToKilograms(16.895); // from CAD (elevator carriage (6.423 lb) + shoulder (3.000 lb) + arm (2.229 lb) + gripper (5.243 lb))
 
     public ElevatorIOSim() {
         final ElevatorConfig elevatorConfig = Robot.bot.getElevatorConfig();

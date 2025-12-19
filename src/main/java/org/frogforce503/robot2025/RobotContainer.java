@@ -397,7 +397,7 @@ public class RobotContainer implements UnitTest {
         // );
 
         RobotModeTriggers.teleop().onTrue(
-            new TuneElevator(superstructure.getElevator())
+            new TuneArm(superstructure.getArm())
         );
 
         // XboxControllerSim x = new XboxControllerSim(driver.getHID());
