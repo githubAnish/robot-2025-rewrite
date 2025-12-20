@@ -68,9 +68,9 @@ public class RobotHardwareCompBot extends RobotHardware {
                 false,
                 80,
                 0.0,
-                new PIDConfig(),
-                new FFConfig(),
-                new Constraints(0, 0),
+                new PIDConfig(7, 0, 0),
+                new FFConfig(0.1, 5, 5, 0),
+                new Constraints(Units.degreesToRadians(360), Units.degreesToRadians(720)),
                 Units.degreesToRadians(-90),
                 Units.degreesToRadians(90));
 
