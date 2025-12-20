@@ -6,7 +6,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import java.util.function.Consumer;
 
-import org.frogforce503.lib.subsystem.FFSubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.units.VoltageUnit;
@@ -15,15 +14,16 @@ import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-/** Use this executor to tune any game-spec subsystem (should be a subclass of {@link FFSubsystemBase}) with SysId. */
+/** Use this executor to tune any subsystem (should be a subclass of {@link SubsystemBase}) with SysId. */
 public class SysIdExecutor {
     private final Consumer<Voltage> consumer;
     private final SysIdRoutine routine;
 
     public SysIdExecutor(
-        FFSubsystemBase subsystem,
+        SubsystemBase subsystem,
         Consumer<Voltage> consumer,
         Velocity<VoltageUnit> rampRate,
         Voltage stepVoltage,
@@ -45,7 +45,7 @@ public class SysIdExecutor {
     }
 
     /** Use this constructor if you want to go with the default values for {@code rampRate}, {@code stepVoltage}, and {@code timeout} */
-    public SysIdExecutor(FFSubsystemBase subsystem, Consumer<Voltage> consumer) {
+    public SysIdExecutor(SubsystemBase subsystem, Consumer<Voltage> consumer) {
         this(
             subsystem,
             consumer,

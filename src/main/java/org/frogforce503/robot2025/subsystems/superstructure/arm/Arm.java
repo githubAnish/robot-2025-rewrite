@@ -76,6 +76,8 @@ public class Arm extends FFSubsystemBase {
         }
 
         Logger.recordOutput("Arm/CurrentPositionRad", getAngleRad());
+        Logger.recordOutput("Arm/CurrentVelocityRadPerSec", inputs.data.velocityRadPerSec());
+        Logger.recordOutput("Arm/CurrentAppliedVolts", inputs.data.appliedVolts());
 
         // Record cycle time
         LoggedTracer.record("Arm");

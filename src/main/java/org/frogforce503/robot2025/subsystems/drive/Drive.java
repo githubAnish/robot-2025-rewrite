@@ -66,7 +66,7 @@ public class Drive extends SubsystemBase {
         }
 
         // Field
-        Logger.recordOutput("Current Global Pose", getPose());
+        Logger.recordOutput("Drive/Current Global Pose", getPose());
         FieldInfo.setRobotPose(getPose());
     }
 

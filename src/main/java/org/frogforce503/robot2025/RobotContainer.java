@@ -1,5 +1,7 @@
 package org.frogforce503.robot2025;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -23,6 +25,7 @@ import org.frogforce503.robot2025.commands.ScoreAlgaeInBarge;
 import org.frogforce503.robot2025.commands.ScoreAlgaeInProcessor;
 import org.frogforce503.robot2025.commands.ScoreCoralOnReef;
 import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
+import org.frogforce503.robot2025.commands.tuning.SysIdExecutor;
 import org.frogforce503.robot2025.commands.tuning.TuneArm;
 import org.frogforce503.robot2025.commands.tuning.TuneElevator;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
@@ -83,6 +86,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import lombok.experimental.ExtensionMethod;
 
 @ExtensionMethod({DoublePressTracker.class, TriggerUtil.class})
@@ -396,7 +400,15 @@ public class RobotContainer implements UnitTest {
         //     Commands.waitSeconds(3).alongWith(e.sysIdQuasistatic(Direction.kForward))
         // );
 
+        // SysIdExecutor executor = new SysIdExecutor(superstructure.getArm(), volts -> superstructure.getArm().runVolts(volts.in(Volts)));
+
         RobotModeTriggers.teleop().onTrue(
+            // Commands.sequence(
+            //     executor.sysIdQuasistatic(Direction.kForward),
+            //     executor.sysIdQuasistatic(Direction.kReverse),
+            //     executor.sysIdDynamic(Direction.kForward),
+            //     executor.sysIdDynamic(Direction.kReverse)
+            // )
             new TuneArm(superstructure.getArm())
         );
 

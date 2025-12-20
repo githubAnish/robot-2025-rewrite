@@ -1,6 +1,4 @@
-package org.frogforce503.robot2025.commands.drive;
-
-import static edu.wpi.first.units.Units.Volts;
+package org.frogforce503.robot2025.commands.tuning;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -15,84 +13,27 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.VoltageUnit;
-import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Velocity;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-/** Instantiate an object of {@code CharacterizationExecutor} to execute characterization commands. */
-public class DriveCharacterizationExecutor {
+/** <p> Commands to run wheel radius characterization & FF characterization (measures kS and kV). </p>
+ *  <p> Use the {@link SysIdExecutor} if you want to run SysId on the drivetrain. </p>
+ */
+public class DriveCharacterizationCommands {
     private final double FF_START_DELAY = 2.0; // Secs
     private final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
-    private final Drive drive;
-
-    public DriveCharacterizationExecutor(Drive drive) {
-        this.drive = drive;
-    }
-
-    private SysIdRoutine generateNewRoutine(
-        Velocity<VoltageUnit> rampRate,
-        Voltage stepVoltage,
-        Time timeout
-    ) {
-        return
-            new SysIdRoutine(
-                new SysIdRoutine.Config(
-                    rampRate,
-                    stepVoltage,
-                    timeout,
-                    state -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-                new SysIdRoutine.Mechanism(
-                    voltage -> drive.runCharacterization(voltage.in(Volts)),
-                    null, // No log consumer, since data is recorded by AdvantageKit
-                    drive));
-    }
-    
-    /** Returns a command to run a quasistatic test in the specified direction. */
-    public Command sysIdQuasistatic(
-        Velocity<VoltageUnit> rampRate,
-        Voltage stepVoltage,
-        Time timeout,
-        SysIdRoutine.Direction direction
-    ) {
-        SysIdRoutine routine =
-            generateNewRoutine(rampRate, stepVoltage, timeout);
-
-        return
-            Commands.run(() -> drive.runCharacterization(0.0))
-                .withTimeout(1.0)
-                .andThen(routine.quasistatic(direction));
-    }
-    
-    /** Returns a command to run a dynamic test in the specified direction. */
-    public Command sysIdDynamic(
-        Velocity<VoltageUnit> rampRate,
-        Voltage stepVoltage,
-        Time timeout,
-        SysIdRoutine.Direction direction
-    ) {
-        SysIdRoutine routine =
-            generateNewRoutine(rampRate, stepVoltage, timeout);
-
-        return
-            Commands.run(() -> drive.runCharacterization(0.0))
-                .withTimeout(1.0)
-                .andThen(routine.dynamic(direction));
-    }
+    private DriveCharacterizationCommands() {}
 
     /**
      * Measures the velocity feedforward constants for the drive motors.
      *
      * <p>This command should only be used in voltage control mode.
      */
-    public Command feedforwardCharacterization() {
+    public Command feedforwardCharacterization(Drive drive) {
         List<Double> velocitySamples = new LinkedList<>();
         List<Double> voltageSamples = new LinkedList<>();
         Timer timer = new Timer();
@@ -146,7 +87,7 @@ public class DriveCharacterizationExecutor {
     }
 
     /** Measures the robot's wheel radius by spinning in a circle. */
-    public Command wheelRadiusCharacterization() {
+    public Command wheelRadiusCharacterization(Drive drive) {
         SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
         WheelRadiusCharacterizationState state = new WheelRadiusCharacterizationState();
 

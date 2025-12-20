@@ -5,7 +5,7 @@ import org.frogforce503.robot2025.Robot;
 import edu.wpi.first.math.util.Units;
 
 public final class ArmConstants {
-    public static final double kTolerance = Units.degreesToRadians(0.5);
+    public static final double kTolerance = Units.degreesToRadians(3.0);
 
     public static final double minAngle = Robot.bot.getArmConfig().minAngle();
     public static final double maxAngle = Robot.bot.getArmConfig().maxAngle();
