@@ -24,7 +24,7 @@ public class Wrist extends FFSubsystemBase {
     // Control
     private double targetAngleRad = WristConstants.START;
     
-    private boolean shouldRunProfile = false;
+    private boolean shouldRunProfile = true;
     @Setter private TrapezoidProfile profile;
     @Getter private State setpoint = new State();
     private boolean atGoal = false;
@@ -33,6 +33,7 @@ public class Wrist extends FFSubsystemBase {
         this.io = io;
 
         feedforward = Robot.bot.getWristConfig().kFF().getArmFF();
+        profile = new TrapezoidProfile(Robot.bot.getWristConfig().kConstraints());
     }
 
     @Override

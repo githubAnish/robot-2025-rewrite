@@ -39,32 +39,37 @@ public class ClawIOSim extends ClawIOSpark {
 
     @Override
     public void updateInputs(ClawIOInputs inputs) {
-        double appliedVolts = leftMotorSim.getAppliedOutput() * RobotController.getBatteryVoltage();
+        double leftAppliedVolts = leftMotorSim.getAppliedOutput() * RobotController.getBatteryVoltage();
+        double rightAppliedVolts = rightMotorSim.getAppliedOutput() * RobotController.getBatteryVoltage();
         
         // Apply physics
-        leftRollerSim.setInputVoltage(appliedVolts);
+        leftRollerSim.setInputVoltage(leftAppliedVolts);
         leftRollerSim.update(Constants.loopPeriodSecs);
-        rightRollerSim.setInputVoltage(appliedVolts);
+
+        rightRollerSim.setInputVoltage(rightAppliedVolts);
         rightRollerSim.update(Constants.loopPeriodSecs);
 
         // Update motor simulation
         leftMotorSim.iterate(leftRollerSim.getAngularVelocityRadPerSec(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        leftMotorSim.setVelocity(leftRollerSim.getAngularVelocityRadPerSec());
+
         rightMotorSim.iterate(rightRollerSim.getAngularVelocityRadPerSec(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        rightMotorSim.setVelocity(rightRollerSim.getAngularVelocityRadPerSec());
 
         inputs.leftData =
             new ClawIOData(
                 true,
-                leftRollerSim.getAngularVelocityRadPerSec(),
-                appliedVolts,
-                leftRollerSim.getCurrentDrawAmps(),
+                leftMotorSim.getVelocity(),
+                leftAppliedVolts,
+                leftMotorSim.getMotorCurrent(),
                 24.0);
 
         inputs.rightData =
             new ClawIOData(
                 true,
-                rightRollerSim.getAngularVelocityRadPerSec(),
-                appliedVolts,
-                rightRollerSim.getCurrentDrawAmps(),
+                rightMotorSim.getVelocity(),
+                rightAppliedVolts,
+                rightMotorSim.getMotorCurrent(),
                 24.0);
     }
 }

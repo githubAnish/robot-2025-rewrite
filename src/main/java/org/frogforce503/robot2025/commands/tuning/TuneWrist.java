@@ -6,8 +6,12 @@ import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.constants.hardware.subsystem_config.WristConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
+import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristConstants;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class TuneWrist extends Command {
@@ -20,8 +24,10 @@ public class TuneWrist extends Command {
     private final LoggedTunableNumber kG;
     private final LoggedTunableNumber kV;
     private final LoggedTunableNumber kA;
+    private final LoggedTunableNumber maxVelocityDegPerSec;
+    private final LoggedTunableNumber maxAccelerationDegPerSec2;
 
-    private final LoggedTunableNumber setpointAngleRad;
+    private final LoggedTunableNumber setpointAngleDeg;
 
     public TuneWrist(Wrist wrist) {
         this.wrist = wrist;
@@ -31,6 +37,7 @@ public class TuneWrist extends Command {
 
         final PIDConfig initialPID = wristConfig.kPID();
         final FFConfig initialFF = wristConfig.kFF();
+        final Constraints initialConstraints = wristConfig.kConstraints();
 
         // Create tunable numbers
         this.kP = new LoggedTunableNumber("Wrist/kP", initialPID.kP());
@@ -41,7 +48,10 @@ public class TuneWrist extends Command {
         this.kV = new LoggedTunableNumber("Wrist/kV", initialFF.kV());
         this.kA = new LoggedTunableNumber("Wrist/kA", initialFF.kA());
 
-        this.setpointAngleRad = new LoggedTunableNumber("Wrist/SetpointRad", wrist.getRelativeAngleRad());
+        this.maxVelocityDegPerSec = new LoggedTunableNumber("Wrist/MaxVelocityDegPerSec", Units.radiansToDegrees(initialConstraints.maxVelocity));
+        this.maxAccelerationDegPerSec2 = new LoggedTunableNumber("Wrist/MaxAccelerationDegPerSec2", Units.radiansToDegrees(initialConstraints.maxAcceleration));
+
+        this.setpointAngleDeg = new LoggedTunableNumber("Wrist/SetpointDeg", Units.radiansToDegrees(WristConstants.START));
 
         addRequirements(wrist);
     }
@@ -56,7 +66,9 @@ public class TuneWrist extends Command {
         this.kG.setTuningMode(true);
         this.kV.setTuningMode(true);
         this.kA.setTuningMode(true);
-        this.setpointAngleRad.setTuningMode(true);
+        this.maxVelocityDegPerSec.setTuningMode(true);
+        this.maxAccelerationDegPerSec2.setTuningMode(true);
+        this.setpointAngleDeg.setTuningMode(true);
     }
 
     @Override
@@ -73,11 +85,17 @@ public class TuneWrist extends Command {
             () -> wrist.setFeedforward(new ArmFeedforward(kS.get(), kG.get(), kV.get(), kA.get())),
             kS, kG, kV, kA);
 
+        // Update trapezoid profile only if changed
+        LoggedTunableNumber.ifChanged(
+            hashCode(),
+            () -> wrist.setProfile(new TrapezoidProfile(new Constraints(Units.degreesToRadians(maxVelocityDegPerSec.get()), Units.degreesToRadians(maxAccelerationDegPerSec2.get())))),
+            maxVelocityDegPerSec, maxAccelerationDegPerSec2);
+
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> wrist.setAngle(setpointAngleRad.get()),
-            setpointAngleRad);
+            () -> wrist.setAngle(Units.degreesToRadians(setpointAngleDeg.get())),
+            setpointAngleDeg);
     }
 
     @Override

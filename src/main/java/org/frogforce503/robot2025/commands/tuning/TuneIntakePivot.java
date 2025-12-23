@@ -6,10 +6,12 @@ import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.constants.hardware.subsystem_config.IntakePivotConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.intakepivot.IntakePivot;
+import org.frogforce503.robot2025.subsystems.superstructure.intakepivot.IntakePivotConstants;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class TuneIntakePivot extends Command {
@@ -22,10 +24,10 @@ public class TuneIntakePivot extends Command {
     private final LoggedTunableNumber kG;
     private final LoggedTunableNumber kV;
     private final LoggedTunableNumber kA;
-    private final LoggedTunableNumber maxVel;
-    private final LoggedTunableNumber maxAcc;
+    private final LoggedTunableNumber maxVelocityDegPerSec;
+    private final LoggedTunableNumber maxAccelerationDegPerSec2;
 
-    private final LoggedTunableNumber setpointAngleRad;
+    private final LoggedTunableNumber setpointAngleDeg;
 
     public TuneIntakePivot(IntakePivot intakePivot) {
         this.intakePivot = intakePivot;
@@ -46,10 +48,10 @@ public class TuneIntakePivot extends Command {
         this.kV = new LoggedTunableNumber("IntakePivot/kV", initialFF.kV());
         this.kA = new LoggedTunableNumber("IntakePivot/kA", initialFF.kA());
 
-        this.maxVel = new LoggedTunableNumber("IntakePivot/MaxVelocityRadPerSec", initialConstraints.maxVelocity);
-        this.maxAcc = new LoggedTunableNumber("IntakePivot/MaxAccelerationRadPerSec2", initialConstraints.maxAcceleration);
+        this.maxVelocityDegPerSec = new LoggedTunableNumber("IntakePivot/MaxVelocityDegPerSec", Units.radiansToDegrees(initialConstraints.maxVelocity));
+        this.maxAccelerationDegPerSec2 = new LoggedTunableNumber("IntakePivot/MaxAccelerationDegPerSec2", Units.radiansToDegrees(initialConstraints.maxAcceleration));
 
-        this.setpointAngleRad = new LoggedTunableNumber("IntakePivot/SetpointRad", intakePivot.getAngleRad());
+        this.setpointAngleDeg = new LoggedTunableNumber("IntakePivot/SetpointDeg", Units.radiansToDegrees(IntakePivotConstants.START));
 
         addRequirements(intakePivot);
     }
@@ -64,9 +66,9 @@ public class TuneIntakePivot extends Command {
         this.kG.setTuningMode(true);
         this.kV.setTuningMode(true);
         this.kA.setTuningMode(true);
-        this.maxVel.setTuningMode(true);
-        this.maxAcc.setTuningMode(true);
-        this.setpointAngleRad.setTuningMode(true);
+        this.maxVelocityDegPerSec.setTuningMode(true);
+        this.maxAccelerationDegPerSec2.setTuningMode(true);
+        this.setpointAngleDeg.setTuningMode(true);
     }
 
     @Override
@@ -86,14 +88,14 @@ public class TuneIntakePivot extends Command {
         // Update trapezoid profile only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> intakePivot.setProfile(new TrapezoidProfile(new Constraints(maxVel.get(), maxAcc.get()))),
-            maxVel, maxAcc);
+            () -> intakePivot.setProfile(new TrapezoidProfile(new Constraints(Units.degreesToRadians(maxVelocityDegPerSec.get()), Units.degreesToRadians(maxAccelerationDegPerSec2.get())))),
+            maxVelocityDegPerSec, maxAccelerationDegPerSec2);
 
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> intakePivot.setAngle(setpointAngleRad.get()),
-            setpointAngleRad);
+            () -> intakePivot.setAngle(Units.degreesToRadians(setpointAngleDeg.get())),
+            setpointAngleDeg);
     }
 
     @Override

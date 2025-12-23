@@ -1,10 +1,7 @@
 package org.frogforce503.robot2025;
 
-import static edu.wpi.first.units.Units.Volts;
-
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.frogforce503.lib.io.DoublePressTracker;
 import org.frogforce503.lib.io.JoystickInputs;
@@ -24,10 +21,7 @@ import org.frogforce503.robot2025.commands.SafelyStowAndIntakeCoralFromStation;
 import org.frogforce503.robot2025.commands.ScoreAlgaeInBarge;
 import org.frogforce503.robot2025.commands.ScoreAlgaeInProcessor;
 import org.frogforce503.robot2025.commands.ScoreCoralOnReef;
-import org.frogforce503.robot2025.commands.drive.TeleopSwerveCommand;
-import org.frogforce503.robot2025.commands.tuning.SysIdExecutor;
-import org.frogforce503.robot2025.commands.tuning.TuneArm;
-import org.frogforce503.robot2025.commands.tuning.TuneElevator;
+import org.frogforce503.robot2025.commands.drive.TeleopDriveCommand;
 import org.frogforce503.robot2025.subsystems.climber.Climber;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIO;
 import org.frogforce503.robot2025.subsystems.climber.ClimberIOSim;
@@ -84,9 +78,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import lombok.experimental.ExtensionMethod;
 
 @ExtensionMethod({DoublePressTracker.class, TriggerUtil.class})
@@ -111,7 +103,7 @@ public class RobotContainer implements UnitTest {
     private final CommandXboxController operator = new CommandXboxController(1);
     private final Trigger driverLeftPaddle = driver.leftPaddle();
     private final Trigger driverRightPaddle = driver.rightPaddle();
-    private final Supplier<JoystickInputs> driverInputs = () -> new JoystickInputs(driver);
+    private final JoystickInputs driverInputs = new JoystickInputs(driver);
 
     // Other
     private final WarmupExecutor warmupExecutor;
@@ -250,7 +242,7 @@ public class RobotContainer implements UnitTest {
         gameViz = new GameViz(drive);
 
         // Set default commands
-        drive.setDefaultCommand(new TeleopSwerveCommand(drive, driverInputs.get()));
+        drive.setDefaultCommand(new TeleopDriveCommand(drive, driverInputs));
 
         // Triggers
         Trigger camerasConnected = new Trigger(() -> true); // TODO: Make a method for this in Vision.java
@@ -382,45 +374,6 @@ public class RobotContainer implements UnitTest {
 
     @Override
     public void test() {
-        // // Uncomment to test (Waits 5 sec, auto aligns to nearest branch & does reef alignment, waits 1 sec after finished, and then homes & goes to global localization)
-        // CharacterizationExecutor executor = new CharacterizationExecutor(drive);
-        
-        // RobotModeTriggers.teleop().onTrue(
-        //     Commands.sequence(
-        //         executor.wheelRadiusCharacterization().withTimeout(20)
-        //     )
-        // );
 
-        // DataLogManager.start();
-        // DriverStation.startDataLog(DataLogManager.getLog());
-
-        // SysIdExecutor e = new SysIdExecutor(superstructure.getArm(), volts -> superstructure.getArm().runVolts(volts.in(Volts)));
-
-        // RobotModeTriggers.teleop().onTrue(
-        //     Commands.waitSeconds(3).alongWith(e.sysIdQuasistatic(Direction.kForward))
-        // );
-
-        // SysIdExecutor executor = new SysIdExecutor(superstructure.getArm(), volts -> superstructure.getArm().runVolts(volts.in(Volts)));
-
-        RobotModeTriggers.teleop().onTrue(
-            // Commands.sequence(
-            //     executor.sysIdQuasistatic(Direction.kForward),
-            //     executor.sysIdQuasistatic(Direction.kReverse),
-            //     executor.sysIdDynamic(Direction.kForward),
-            //     executor.sysIdDynamic(Direction.kReverse)
-            // )
-            new TuneArm(superstructure.getArm())
-        );
-
-        // XboxControllerSim x = new XboxControllerSim(driver.getHID());
-        // x.setLeftTriggerAxis(0.5);
-        
-        // RobotModeTriggers.teleop().onTrue(
-        //     Commands.sequence(
-        //         Commands.runOnce(() -> drive.setPose(new Pose2d(3, 4,Rotation2d.kZero))),
-        //         Commands.waitSeconds(5),
-        //         new SafelyStowAndIntakeCoralFromStation(drive, vision, superstructure, leds)
-        //     )
-        // );
     }
 }

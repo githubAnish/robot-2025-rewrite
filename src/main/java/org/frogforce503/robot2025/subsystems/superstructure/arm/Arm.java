@@ -25,7 +25,7 @@ public class Arm extends FFSubsystemBase {
     // Control
     private double targetAngleRad = ArmConstants.START;
 
-    private boolean shouldRunProfile = false;
+    private boolean shouldRunProfile = true;
     @Setter private TrapezoidProfile profile;
     @Getter private State setpoint = new State();
     private boolean atGoal = false;
@@ -76,8 +76,6 @@ public class Arm extends FFSubsystemBase {
         }
 
         Logger.recordOutput("Arm/CurrentPositionRad", getAngleRad());
-        Logger.recordOutput("Arm/CurrentVelocityRadPerSec", inputs.data.velocityRadPerSec());
-        Logger.recordOutput("Arm/CurrentAppliedVolts", inputs.data.appliedVolts());
 
         // Record cycle time
         LoggedTracer.record("Arm");

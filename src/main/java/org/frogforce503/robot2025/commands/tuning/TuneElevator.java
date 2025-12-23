@@ -51,7 +51,7 @@ public class TuneElevator extends Command {
         this.maxVelocityInchesPerSec = new LoggedTunableNumber("Elevator/MaxVelocityInchesPerSec", Units.metersToInches(initialConstraints.maxVelocity));
         this.maxAccelerationInchesPerSec2 = new LoggedTunableNumber("Elevator/MaxAccelerationInchesPerSec2", Units.metersToInches(initialConstraints.maxAcceleration));
 
-        this.setpointHeightInches = new LoggedTunableNumber("Elevator/SetpointInches", Units.metersToInches(ElevatorConstants.minHeight));
+        this.setpointHeightInches = new LoggedTunableNumber("Elevator/SetpointInches", Units.metersToInches(ElevatorConstants.START));
 
         addRequirements(elevator);
     }

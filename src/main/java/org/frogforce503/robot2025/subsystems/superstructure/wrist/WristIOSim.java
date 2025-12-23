@@ -51,15 +51,17 @@ public class WristIOSim extends WristIOSpark {
 
         // Update motor simulation
         motorSim.iterate(wristSim.getVelocityRadPerSec(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        motorSim.setPosition(wristSim.getAngleRads());
+        motorSim.setVelocity(wristSim.getVelocityRadPerSec());
 
         inputs.data =
             new WristIOData(
                 true,
-                wristSim.getAngleRads(),
-                wristSim.getAngleRads(), // In sim, assume absolute encoder position matches relative encoder position
-                wristSim.getVelocityRadPerSec(),
+                motorSim.getPosition(),
+                motorSim.getPosition(), // In sim, assume absolute encoder position matches relative encoder position
+                motorSim.getVelocity(),
                 appliedVolts,
-                wristSim.getCurrentDrawAmps(),
+                motorSim.getMotorCurrent(),
                 24.0);
     }
 }

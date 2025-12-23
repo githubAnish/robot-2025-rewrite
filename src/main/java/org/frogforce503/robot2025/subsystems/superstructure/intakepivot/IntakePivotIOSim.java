@@ -19,7 +19,7 @@ public class IntakePivotIOSim extends IntakePivotIOSpark {
     // Constants
     private final DCMotor motorModel = DCMotor.getNEO(1);
     private final double length = Units.inchesToMeters(14.75);
-    private final double moi = 0.68; // kg * m^2
+    private final double moi = 0.62; // kg * m^2
 
     public IntakePivotIOSim() {
         final IntakePivotConfig pivotConfig = Robot.bot.getIntakePivotConfig();
@@ -51,14 +51,16 @@ public class IntakePivotIOSim extends IntakePivotIOSpark {
 
         // Update motor simulation
         motorSim.iterate(pivotSim.getVelocityRadPerSec(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        motorSim.setPosition(pivotSim.getAngleRads());
+        motorSim.setVelocity(pivotSim.getVelocityRadPerSec());
 
         inputs.data =
             new IntakePivotIOData(
                 true,
-                pivotSim.getAngleRads(),
-                pivotSim.getVelocityRadPerSec(),
+                motorSim.getPosition(),
+                motorSim.getVelocity(),
                 appliedVolts,
-                pivotSim.getCurrentDrawAmps(),
+                motorSim.getMotorCurrent(),
                 24.0);
     } 
 }

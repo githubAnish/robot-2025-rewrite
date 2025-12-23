@@ -23,6 +23,7 @@ import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristConstants;
 import org.frogforce503.robot2025.subsystems.vision.Vision;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagGoal;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
@@ -181,6 +182,8 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 superstructure.setHasCoral(true);
                 break;
         }
+
+        Logger.recordOutput("SafelyStowAndIntakeCoralFromStation/State", currentState);
     }
 
     @Override

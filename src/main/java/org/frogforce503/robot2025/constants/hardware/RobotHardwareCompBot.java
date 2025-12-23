@@ -68,8 +68,8 @@ public class RobotHardwareCompBot extends RobotHardware {
                 false,
                 80,
                 0.0,
-                new PIDConfig(7, 0, 0),
-                new FFConfig(0.1, 5, 5, 0),
+                new PIDConfig(5, 0, 0),
+                new FFConfig(0, 0.91, 4, 0),
                 new Constraints(Units.degreesToRadians(360), Units.degreesToRadians(720)),
                 Units.degreesToRadians(-90),
                 Units.degreesToRadians(90));
@@ -81,9 +81,9 @@ public class RobotHardwareCompBot extends RobotHardware {
                 true,
                 40,
                 0.0,
-                new PIDConfig(),
-                new FFConfig(),
-                new Constraints(0, 0),
+                new PIDConfig(0.3, 0, 0.06),
+                new FFConfig(0, 3.356, 0.35, 0),
+                new Constraints(Units.degreesToRadians(480), Units.degreesToRadians(960)),
                 Units.degreesToRadians(-90),
                 Units.degreesToRadians(135));
 
@@ -91,12 +91,12 @@ public class RobotHardwareCompBot extends RobotHardware {
             new ClawConfig(
                 5,
                 8,
-                25,
+                1,
                 true,
                 false,
-                35,
-                new PIDConfig(),
-                new FFConfig());
+                80,
+                new PIDConfig(0.0003, 0, 0),
+                new FFConfig(0, 0, 0.01155, 0));
 
         this.intakePivotConfig =
             new IntakePivotConfig(
@@ -105,9 +105,9 @@ public class RobotHardwareCompBot extends RobotHardware {
                 false,
                 40,
                 0.0,
-                new PIDConfig(),
-                new FFConfig(),
-                new Constraints(0, 0),
+                new PIDConfig(0.5, 0, 0.1),
+                new FFConfig(0, 2.106, 1.5, 0),
+                new Constraints(Units.degreesToRadians(360), Units.degreesToRadians(720)),
                 Units.degreesToRadians(-45),
                 Units.degreesToRadians(90));
 
@@ -118,8 +118,8 @@ public class RobotHardwareCompBot extends RobotHardware {
                 1.6,
                 true,
                 80,
-                new PIDConfig(),
-                new FFConfig());
+                new PIDConfig(0.00001, 0, 0),
+                new FFConfig(0, 0, 0.0299, 0));
 
         // Create other configs
         this.climberConfig =

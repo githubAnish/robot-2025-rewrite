@@ -51,7 +51,7 @@ public class TuneArm extends Command {
         this.maxVelocityDegPerSec = new LoggedTunableNumber("Arm/MaxVelocityDegPerSec", Units.radiansToDegrees(initialConstraints.maxVelocity));
         this.maxAccelerationDegPerSec2 = new LoggedTunableNumber("Arm/MaxAccelerationDegPerSec2", Units.radiansToDegrees(initialConstraints.maxAcceleration));
 
-        this.setpointAngleDeg = new LoggedTunableNumber("Arm/SetpointDeg", Units.radiansToDegrees(ArmConstants.minAngle));
+        this.setpointAngleDeg = new LoggedTunableNumber("Arm/SetpointDeg", Units.radiansToDegrees(ArmConstants.START));
 
         addRequirements(arm);
     }

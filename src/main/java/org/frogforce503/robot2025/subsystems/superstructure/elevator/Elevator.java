@@ -25,7 +25,7 @@ public class Elevator extends FFSubsystemBase {
     private double targetHeightMeters = ElevatorConstants.START;
     private double lastHeightMeters = 0.0;
 
-    private boolean shouldRunProfile = false;
+    private boolean shouldRunProfile = true;
     @Setter private TrapezoidProfile profile;
     @Getter private State setpoint = new State();
     private boolean atGoal = false;

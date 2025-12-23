@@ -18,7 +18,7 @@ public class IntakeRollerIOSim extends IntakeRollerIOSpark {
     
     // Constants
     private final DCMotor motorModel = Robot.bot.getIntakeRollerConfig().isSparkFlex() ? DCMotor.getNeoVortex(1) : DCMotor.getNEO(1);
-    private final double moi = 0.00005;
+    private final double moi = 0.0001;
 
     public IntakeRollerIOSim() {
         final IntakeRollerConfig rollerConfig = Robot.bot.getIntakeRollerConfig();
@@ -40,13 +40,14 @@ public class IntakeRollerIOSim extends IntakeRollerIOSpark {
 
         // Update motor simulation
         motorSim.iterate(rollerSim.getAngularVelocityRadPerSec(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        motorSim.setVelocity(rollerSim.getAngularVelocityRadPerSec());
         
         inputs.data =
             new IntakeRollerIOData(
                 true,
-                rollerSim.getAngularVelocityRadPerSec(),
+                motorSim.getVelocity(),
                 appliedVolts,
-                rollerSim.getCurrentDrawAmps(),
+                motorSim.getMotorCurrent(),
                 24.0);
     }
 }

@@ -19,7 +19,7 @@ public class ArmIOSim extends ArmIOSpark {
     // Constants
     private final DCMotor motorModel = DCMotor.getNEO(1);
     private final double length = Units.inchesToMeters(19);
-    private final double moi = 0.95; // kg * m^2
+    private final double moi = 0.85; // kg * m^2
 
     public ArmIOSim() {
         final ArmConfig armConfig = Robot.bot.getArmConfig();
@@ -51,14 +51,16 @@ public class ArmIOSim extends ArmIOSpark {
 
         // Update motor simulation
         motorSim.iterate(armSim.getVelocityRadPerSec(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        motorSim.setPosition(armSim.getAngleRads());
+        motorSim.setVelocity(armSim.getVelocityRadPerSec());
 
         inputs.data =
             new ArmIOData(
                 true,
-                armSim.getAngleRads(),
-                armSim.getVelocityRadPerSec(),
+                motorSim.getPosition(),
+                motorSim.getVelocity(),
                 appliedVolts,
-                armSim.getCurrentDrawAmps(),
+                motorSim.getMotorCurrent(),
                 24.0);
     }
 }

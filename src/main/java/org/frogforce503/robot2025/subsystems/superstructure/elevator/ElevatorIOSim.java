@@ -50,14 +50,16 @@ public class ElevatorIOSim extends ElevatorIOSpark {
 
         // Update motor simulation
         motorSim.iterate(elevatorSim.getVelocityMetersPerSecond(), RobotController.getBatteryVoltage(), Constants.loopPeriodSecs);
+        motorSim.setPosition(elevatorSim.getPositionMeters());
+        motorSim.setVelocity(elevatorSim.getVelocityMetersPerSecond());
 
         inputs.data =
             new ElevatorIOData(
                 true,
-                elevatorSim.getPositionMeters(),
-                elevatorSim.getVelocityMetersPerSecond(),
+                motorSim.getPosition(),
+                motorSim.getVelocity(),
                 appliedVolts,
-                elevatorSim.getCurrentDrawAmps(),
+                motorSim.getMotorCurrent(),
                 24.0,
                 !super.getLimitSwitch().get());
     }

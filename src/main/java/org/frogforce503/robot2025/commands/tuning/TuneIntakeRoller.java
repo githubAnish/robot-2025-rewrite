@@ -6,8 +6,10 @@ import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.constants.hardware.subsystem_config.IntakeRollerConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRoller;
+import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRollerConstants;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class TuneIntakeRoller extends Command {
@@ -20,7 +22,7 @@ public class TuneIntakeRoller extends Command {
     private final LoggedTunableNumber kV;
     private final LoggedTunableNumber kA;
 
-    private final LoggedTunableNumber setpointVelocityRadPerSec;
+    private final LoggedTunableNumber setpointVelocityRpm;
 
     public TuneIntakeRoller(IntakeRoller intakeRoller) {
         this.intakeRoller = intakeRoller;
@@ -39,7 +41,7 @@ public class TuneIntakeRoller extends Command {
         this.kV = new LoggedTunableNumber("IntakeRoller/kV", initialFF.kV());
         this.kA = new LoggedTunableNumber("IntakeRoller/kA", initialFF.kA());
 
-        this.setpointVelocityRadPerSec = new LoggedTunableNumber("IntakeRoller/SetpointRadPerSec", intakeRoller.getVelocityRadPerSec());
+        this.setpointVelocityRpm = new LoggedTunableNumber("IntakeRoller/SetpointRpm", Units.radiansPerSecondToRotationsPerMinute(IntakeRollerConstants.START));
 
         addRequirements(intakeRoller);
     }
@@ -53,7 +55,7 @@ public class TuneIntakeRoller extends Command {
         this.kS.setTuningMode(true);
         this.kV.setTuningMode(true);
         this.kA.setTuningMode(true);
-        this.setpointVelocityRadPerSec.setTuningMode(true);
+        this.setpointVelocityRpm.setTuningMode(true);
     }
 
     @Override
@@ -73,8 +75,8 @@ public class TuneIntakeRoller extends Command {
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> intakeRoller.setVelocity(setpointVelocityRadPerSec.get()),
-            setpointVelocityRadPerSec);
+            () -> intakeRoller.setVelocity(Units.rotationsPerMinuteToRadiansPerSecond(setpointVelocityRpm.get())),
+            setpointVelocityRpm);
     }
 
     @Override

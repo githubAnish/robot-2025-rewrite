@@ -6,8 +6,10 @@ import org.frogforce503.lib.motorcontrol.PIDConfig;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.constants.hardware.subsystem_config.ClawConfig;
 import org.frogforce503.robot2025.subsystems.superstructure.claw.Claw;
+import org.frogforce503.robot2025.subsystems.superstructure.claw.ClawConstants;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class TuneClaw extends Command {
@@ -20,7 +22,7 @@ public class TuneClaw extends Command {
     private final LoggedTunableNumber kV;
     private final LoggedTunableNumber kA;
 
-    private final LoggedTunableNumber setpointVelocityRadPerSec;
+    private final LoggedTunableNumber setpointVelocityRpm;
 
     public TuneClaw(Claw claw) {
         this.claw = claw;
@@ -39,7 +41,7 @@ public class TuneClaw extends Command {
         this.kV = new LoggedTunableNumber("Claw/kV", initialFF.kV());
         this.kA = new LoggedTunableNumber("Claw/kA", initialFF.kA());
 
-        this.setpointVelocityRadPerSec = new LoggedTunableNumber("Claw/SetpointRadPerSec", claw.getLeftVelocityRadPerSec());
+        this.setpointVelocityRpm = new LoggedTunableNumber("Claw/SetpointRpm", Units.radiansPerSecondToRotationsPerMinute(ClawConstants.START));
 
         addRequirements(claw);
     }
@@ -53,7 +55,7 @@ public class TuneClaw extends Command {
         this.kS.setTuningMode(true);
         this.kV.setTuningMode(true);
         this.kA.setTuningMode(true);
-        this.setpointVelocityRadPerSec.setTuningMode(true);
+        this.setpointVelocityRpm.setTuningMode(true);
     }
 
     @Override
@@ -73,8 +75,8 @@ public class TuneClaw extends Command {
         // Update setpoint only if changed
         LoggedTunableNumber.ifChanged(
             hashCode(),
-            () -> claw.setVelocity(setpointVelocityRadPerSec.get()),
-            setpointVelocityRadPerSec);
+            () -> claw.setVelocity(Units.rotationsPerMinuteToRadiansPerSecond(setpointVelocityRpm.get())),
+            setpointVelocityRpm);
     }
 
     @Override

@@ -25,7 +25,7 @@ public class IntakePivot extends FFSubsystemBase {
     // Control
     private double targetAngleRad = IntakePivotConstants.START;
 
-    private boolean shouldRunProfile = false;
+    private boolean shouldRunProfile = true;
     @Setter private TrapezoidProfile profile;
     @Getter private State setpoint = new State();
     private boolean atGoal = false;

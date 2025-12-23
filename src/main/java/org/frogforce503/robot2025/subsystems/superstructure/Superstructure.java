@@ -88,12 +88,14 @@ public class Superstructure extends VirtualSubsystem {
 
         // Update viz
         if (RobotBase.isSimulation()) {
-            viz.setHasCoral(hasCoral);
             viz.update(
                 elevator.getHeightMeters(),
                 arm.getAngleRad(),
                 wrist.getRelativeAngleRad(),
-                intakePivot.getAngleRad());
+                intakePivot.getAngleRad(),
+                hasCoral,
+                hasAlgaeInClaw,
+                hasAlgaeInIntake);
         }
 
         Logger.recordOutput("Superstructure/Inputs/Has Coral", hasCoral);
