@@ -3,6 +3,7 @@ package org.frogforce503.robot2025.subsystems.superstructure;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.frogforce503.lib.math.GeomUtil;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.ArmConstants;
 import org.frogforce503.robot2025.subsystems.superstructure.intakepivot.IntakePivotConstants;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristConstants;
@@ -131,11 +132,12 @@ public class SuperstructureViz {
     ) {
         Pose3d drivePose3d = new Pose3d(robotPoseSupplier.get());
 
-        update2dViz(elevatorHeightMeters, armAngleRad, wristAngleRad, intakePivotAngleRad, hasCoral, hasAlgaeInClaw, hasAlgaeInIntake);
-        update3dViz(elevatorHeightMeters, armAngleRad, wristAngleRad, intakePivotAngleRad, hasCoral, hasAlgaeInClaw, hasAlgaeInIntake);
+        update2dViz(drivePose3d, elevatorHeightMeters, armAngleRad, wristAngleRad, intakePivotAngleRad, hasCoral, hasAlgaeInClaw, hasAlgaeInIntake);
+        update3dViz(drivePose3d, elevatorHeightMeters, armAngleRad, wristAngleRad, intakePivotAngleRad, hasCoral, hasAlgaeInClaw, hasAlgaeInIntake);
     }
 
     private void update2dViz(
+        Pose3d drivePose3d,
         double elevatorHeightMeters,
         double armAngleRad,
         double wristAngleRad,
@@ -157,6 +159,7 @@ public class SuperstructureViz {
     }
 
     private void update3dViz(
+        Pose3d drivePose3d,
         double elevatorHeightMeters,
         double armAngleRad,
         double wristAngleRad,
@@ -187,15 +190,15 @@ public class SuperstructureViz {
                 .plus(new Transform3d(Translation3d.kZero, new Rotation3d(0, -intakePivotAngleRad + Math.PI/2, 0)));
             
         if (hasCoral) {
-            coralClawPose = wristPose.plus(wristToCoral);
+            coralClawPose = drivePose3d.plus(GeomUtil.toTransform3d(wristPose.plus(wristToCoral)));
         }
 
         if (hasAlgaeInClaw) {
-            algaeClawPose = wristPose.plus(wristToAlgae);
+            algaeClawPose = drivePose3d.plus(GeomUtil.toTransform3d(wristPose.plus(wristToAlgae)));
         }
 
         if (hasAlgaeInIntake) {
-            algaeIntakePose = intakePivotPose.plus(intakePivotToAlgae);
+            algaeIntakePose = drivePose3d.plus(GeomUtil.toTransform3d(intakePivotPose.plus(intakePivotToAlgae)));
         }
 
         Logger.recordOutput("SuperstructureViz/3D/Components", elevatorPose, armPose, wristPose, intakePivotPose);

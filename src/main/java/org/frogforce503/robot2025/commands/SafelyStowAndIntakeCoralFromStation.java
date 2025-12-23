@@ -1,13 +1,13 @@
 package org.frogforce503.robot2025.commands;
 
 import org.frogforce503.lib.auto.planned_path.PlannedPath;
+import org.frogforce503.lib.auto.planned_path.PlannedPath.HolonomicState;
 import org.frogforce503.lib.auto.planned_path.PlannedPathFactory;
 import org.frogforce503.lib.auto.planned_path.components.Waypoint;
 import org.frogforce503.lib.reefscape.ProximityUtil;
-import org.frogforce503.robot2025.commands.drive.DrivePlannedPath;
-import org.frogforce503.robot2025.constants.field.FieldConstants;
+import org.frogforce503.lib.swerve.SwervePathFollower;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
-import org.frogforce503.robot2025.subsystems.leds.Animations;
+import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 import org.frogforce503.robot2025.subsystems.leds.Leds;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
@@ -26,7 +26,10 @@ import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagG
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class SafelyStowAndIntakeCoralFromStation extends Command {
@@ -47,10 +50,14 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
     // Constants
     private final double safeDistanceFromReefToStowInches = Units.inchesToMeters(40); // TODO make sure to tune this
 
-    // State
-    private Pose2d closestReefSide;
-    private DrivePlannedPath driveToStation;
+    // Trajectory
+    private final SwervePathFollower trajectoryController = DriveConstants.pathFollower;
+    private final Timer trajectoryTimer = new Timer();
+    private PlannedPath trajectory;
 
+    // State
+    private Pose2d closestReefSide; 
+    private Pose2d closestStation;
     private IntakingState currentState = IntakingState.SAFE_DISTANCE_FROM_REEF;
 
     private enum IntakingState {
@@ -89,6 +96,8 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
             return;
         }
 
+        vision.setDesiredAprilTagGoal(AprilTagGoal.CORAL_STATION_ALIGNMENT);
+
         // If elevator & arm close to stowed, no need to move intake pivot
         if (elevator.isAtHeight(ElevatorConstants.minHeight, Units.inchesToMeters(5.0)) &&
             arm.isAtAngle(ArmConstants.STOW, Units.degreesToRadians(5.0))
@@ -98,21 +107,14 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
         // Generate path to closest station
         closestReefSide = ProximityUtil.getClosestReefSide(drive);
-
-        Pose2d closestStation =
-            ProximityUtil.getClosestPose(
-                drive,
-                FieldConstants.CoralStation.blueLeft,
-                FieldConstants.CoralStation.blueRight,
-                FieldConstants.CoralStation.redLeft,
-                FieldConstants.CoralStation.redRight);
+        closestStation = ProximityUtil.getClosestStation(drive);
         
         double linearVelocity =
             Math.hypot(
                 drive.getRobotVelocity().vxMetersPerSecond,
                 drive.getRobotVelocity().vyMetersPerSecond);
 
-        PlannedPath pathToStation =
+        trajectory =
             PlannedPathFactory.generate(
                 3.048,
                 3.6576,
@@ -120,12 +122,9 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 0,
                 Waypoint.fromHolonomicPose(drive.getPose()),
                 Waypoint.fromHolonomicPose(closestStation));
-        
-        driveToStation = new DrivePlannedPath(drive, pathToStation);
-        driveToStation.schedule();
 
-        vision.setDesiredAprilTagGoal(AprilTagGoal.CORAL_STATION_ALIGNMENT);
-        leds.runAnimation(Animations.INTAKE_CORAL);
+        trajectoryController.reset();
+        trajectoryTimer.restart();
     }
 
     @Override
@@ -166,6 +165,12 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 break;
                 
             case WAIT_FOR_LOWER_TRUE:
+                if (RobotBase.isSimulation() && ProximityUtil.getDistanceFromPose(drive, closestStation) < Units.inchesToMeters(40)) {
+                    // In sim, we don't have beam breaks, so we just assume intake is successful after intake pivot is in & robot close to station
+                    currentState = IntakingState.FINISHED;
+                    break;
+                }
+
                 if (superstructure.lowerBeamTriggered()) {
                     currentState = IntakingState.WAIT_FOR_LOWER_FALSE;
                 }
@@ -179,11 +184,20 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
             case FINISHED:
                 claw.stop();
-                superstructure.setHasCoral(true);
                 break;
         }
 
+        // Follow trajectory to station
+        double currentTime = trajectoryTimer.get();
+        HolonomicState desiredState = trajectory.sample(currentTime);
+        ChassisSpeeds targetChassisSpeeds = trajectoryController.calculate(drive.getPose(), desiredState);
+        drive.runVelocity(targetChassisSpeeds);
+
+        // Log data
         Logger.recordOutput("SafelyStowAndIntakeCoralFromStation/State", currentState);
+        Logger.recordOutput("SafelyStowAndIntakeCoralFromStation/Timestamp", currentTime);
+        Logger.recordOutput("SafelyStowAndIntakeCoralFromStation/Drive Error", trajectoryController.getPoseError().getTranslation());
+        Logger.recordOutput("SafelyStowAndIntakeCoralFromStation/Theta Error", trajectoryController.getRotationError());
     }
 
     @Override
@@ -193,8 +207,11 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        driveToStation.cancel();
+        trajectoryTimer.stop();
+        drive.stop();
         vision.setDesiredAprilTagGoal(AprilTagGoal.GLOBAL_LOCALIZATION);
         leds.stop();
+
+        superstructure.setHasCoral(true);
     }
 }

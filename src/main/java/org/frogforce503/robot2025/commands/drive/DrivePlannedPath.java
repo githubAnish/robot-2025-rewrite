@@ -12,9 +12,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import lombok.Setter;
@@ -37,10 +35,6 @@ public class DrivePlannedPath extends Command {
     public DrivePlannedPath(Drive drive, PlannedPath trajectory) {
         this.drive = drive;
 
-        this.controller.setPoseTolerance(
-            new Pose2d(
-                new Translation2d(Units.inchesToMeters(0.1), Units.inchesToMeters(0.0254)),
-                Rotation2d.fromDegrees(1)));
         this.timer = new Timer();
         this.trajectory = trajectory;
 

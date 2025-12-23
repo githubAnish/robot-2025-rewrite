@@ -63,7 +63,13 @@ public class Elevator extends FFSubsystemBase {
             atGoal = isAtHeight(goalState.position, ElevatorConstants.kTolerance);
 
             double accel = (setpoint.velocity - previousVelocity) / Constants.loopPeriodSecs;
-            io.runPosition(setpoint.position, feedforward.calculate(setpoint.velocity, accel));
+            double ffVolts = feedforward.calculate(setpoint.velocity, accel);
+
+            if (inputs.data.limitSwitchPressed() && targetHeightMeters <= ElevatorConstants.minHeight) {
+                ffVolts = 0.0;
+            }
+
+            io.runPosition(setpoint.position, ffVolts);
 
             /// Log state
             Logger.recordOutput("Elevator/Profile/SetpointPositionMeters", setpoint.position);

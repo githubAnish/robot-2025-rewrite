@@ -5,7 +5,9 @@ import org.frogforce503.lib.auto.planned_path.PlannedPath.HolonomicState;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +27,12 @@ public class SwervePathFollower {
 
         // Enable continuous input for theta controller
         this.thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        // Set default tolerance
+        this.poseTolerance =
+            new Pose2d(
+                new Translation2d(Units.inchesToMeters(0.1), Units.inchesToMeters(0.0254)),
+                Rotation2d.fromDegrees(1));
     }
 
     public void reset() {

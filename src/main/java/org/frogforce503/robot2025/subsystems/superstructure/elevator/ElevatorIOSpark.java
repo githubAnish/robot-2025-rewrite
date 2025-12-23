@@ -28,7 +28,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     @Getter private final SparkMax motor;
     private final RelativeEncoder encoder;
 
-    @Getter private final DigitalInput limitSwitch;
+    private final DigitalInput limitSwitch;
 
     // Control
     private final SparkClosedLoopController controller;

@@ -61,6 +61,6 @@ public class ElevatorIOSim extends ElevatorIOSpark {
                 appliedVolts,
                 motorSim.getMotorCurrent(),
                 24.0,
-                !super.getLimitSwitch().get());
+                motorSim.getPosition() == 0);
     }
 }

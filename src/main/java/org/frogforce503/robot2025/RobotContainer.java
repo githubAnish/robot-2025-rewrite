@@ -57,6 +57,7 @@ import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeR
 import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRollerIO;
 import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRollerIOSim;
 import org.frogforce503.robot2025.subsystems.superstructure.intakeroller.IntakeRollerIOSpark;
+import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIO;
 import org.frogforce503.robot2025.subsystems.superstructure.sensors.CoralSensorIOBeamBreak;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristIO;
@@ -78,6 +79,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.ExtensionMethod;
 
@@ -225,7 +227,9 @@ public class RobotContainer implements UnitTest {
                 claw,
                 intakePivot,
                 intakeRoller,
-                new CoralSensorIOBeamBreak(),
+                Constants.getMode() == Constants.Mode.REAL
+                    ? new CoralSensorIOBeamBreak()
+                    : new CoralSensorIO() {},
                 drive::getPose);
 
         offsetManager =
