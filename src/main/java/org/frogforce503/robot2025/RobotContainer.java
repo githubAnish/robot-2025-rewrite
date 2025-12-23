@@ -75,6 +75,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -378,6 +379,13 @@ public class RobotContainer implements UnitTest {
 
     @Override
     public void test() {
-
+        // Right now, I don't have any separate scoring cmd to raise of all these subsystems, so I'm testing it here just to verify SafelyStowAndIntakeCoralFromStation works
+        // RobotModeTriggers.teleop().onTrue(
+        //     Commands.runOnce(() -> {
+        //         superstructure.getElevator().setHeight(Units.inchesToMeters(30));
+        //         superstructure.getArm().setAngle(Units.degreesToRadians(45));
+        //         superstructure.getWrist().setAngle(Units.degreesToRadians(45));
+        //     })
+        // );
     }
 }

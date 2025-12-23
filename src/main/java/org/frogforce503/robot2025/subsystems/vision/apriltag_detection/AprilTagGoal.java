@@ -1,6 +1,7 @@
 package org.frogforce503.robot2025.subsystems.vision.apriltag_detection;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -79,7 +80,8 @@ public enum AprilTagGoal {
                 aprilTagIO.setPoseObservationType(PoseObservationType.PNP_DISTANCE_TRIG_SOLVE);
             }
 
-            Set<Integer> ignoredTags = VisionConstants.BARGE_TAGS;
+            Set<Integer> ignoredTags = new HashSet<>();
+            ignoredTags.addAll(VisionConstants.BARGE_TAGS);
             ignoredTags.addAll(VisionConstants.CORAL_STATION_TAGS);
             ignoredTags.addAll(VisionConstants.PROCESSOR_TAGS);
 
@@ -114,7 +116,8 @@ public enum AprilTagGoal {
                 aprilTagIO.setPoseObservationType(PoseObservationType.PNP_DISTANCE_TRIG_SOLVE);
             }
 
-            Set<Integer> ignoredTags = VisionConstants.BARGE_TAGS;
+            Set<Integer> ignoredTags = new HashSet<>();
+            ignoredTags.addAll(VisionConstants.BARGE_TAGS);
             ignoredTags.addAll(VisionConstants.REEF_TAGS);
             ignoredTags.addAll(VisionConstants.PROCESSOR_TAGS);
 

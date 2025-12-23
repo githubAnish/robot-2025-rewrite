@@ -165,7 +165,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
                 break;
                 
             case WAIT_FOR_LOWER_TRUE:
-                if (RobotBase.isSimulation() && ProximityUtil.getDistanceFromPose(drive, closestStation) < Units.inchesToMeters(40)) {
+                if (RobotBase.isSimulation() && ProximityUtil.getDistanceFromPose(drive, closestStation) < Units.inchesToMeters(25)) {
                     // In sim, we don't have beam breaks, so we just assume intake is successful after intake pivot is in & robot close to station
                     currentState = IntakingState.FINISHED;
                     break;
