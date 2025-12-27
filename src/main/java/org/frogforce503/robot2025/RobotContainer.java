@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.frogforce503.lib.io.DoublePressTracker;
-import org.frogforce503.lib.io.JoystickInputs;
+import org.frogforce503.lib.io.RumbleConsumer;
 import org.frogforce503.lib.io.TriggerUtil;
 import org.frogforce503.lib.logging.LoggedJVM;
 import org.frogforce503.lib.util.ErrorUtil;
@@ -106,7 +106,7 @@ public class RobotContainer implements UnitTest {
     private final CommandXboxController operator = new CommandXboxController(1);
     private final Trigger driverLeftPaddle = driver.leftPaddle();
     private final Trigger driverRightPaddle = driver.rightPaddle();
-    private final JoystickInputs driverInputs = new JoystickInputs(driver);
+    private final RumbleConsumer rumbleConsumer = new RumbleConsumer(driver);
 
     // Other
     private final WarmupExecutor warmupExecutor;
@@ -247,7 +247,7 @@ public class RobotContainer implements UnitTest {
         gameViz = new GameViz(drive);
 
         // Set default commands
-        drive.setDefaultCommand(new TeleopDriveCommand(drive, driverInputs));
+        drive.setDefaultCommand(new TeleopDriveCommand(drive, driver));
 
         // Triggers
         Trigger camerasConnected = new Trigger(() -> true); // TODO: Make a method for this in Vision.java
@@ -271,7 +271,7 @@ public class RobotContainer implements UnitTest {
         driver.leftTrigger().whileTrue(
             new FFSelectCommand<>(
                 Map.of(
-                    SuperstructureMode.CORAL_INTAKE, new SafelyStowAndIntakeCoralFromStation(drive, vision, superstructure, leds),
+                    SuperstructureMode.CORAL_INTAKE, new SafelyStowAndIntakeCoralFromStation(drive, vision, superstructure, leds, rumbleConsumer),
                     SuperstructureMode.ALGAE_GROUND, new IntakeAlgaeFromGround(),
                     SuperstructureMode.ALGAE_HANDOFF, new IntakeAlgaeFromHandoff(),
                     SuperstructureMode.ALGAE_PLUCK, new IntakeAlgaeFromReef(drive, vision, superstructure, leds)
@@ -380,12 +380,12 @@ public class RobotContainer implements UnitTest {
     @Override
     public void test() {
         // Right now, I don't have any separate scoring cmd to raise of all these subsystems, so I'm testing it here just to verify SafelyStowAndIntakeCoralFromStation works
-        // RobotModeTriggers.teleop().onTrue(
-        //     Commands.runOnce(() -> {
-        //         superstructure.getElevator().setHeight(Units.inchesToMeters(30));
-        //         superstructure.getArm().setAngle(Units.degreesToRadians(45));
-        //         superstructure.getWrist().setAngle(Units.degreesToRadians(45));
-        //     })
-        // );
+        RobotModeTriggers.teleop().onTrue(
+            Commands.runOnce(() -> {
+                superstructure.getElevator().setHeight(Units.inchesToMeters(30));
+                superstructure.getArm().setAngle(Units.degreesToRadians(45));
+                superstructure.getWrist().setAngle(Units.degreesToRadians(45));
+            })
+        );
     }
 }

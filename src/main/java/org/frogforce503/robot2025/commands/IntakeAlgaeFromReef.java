@@ -107,7 +107,6 @@ public class IntakeAlgaeFromReef extends Command { // use the reef faces from Fi
         backupFromAlgae = new DriveToPose(drive, () -> closestReefSide.plus(reefSideToBackup));
 
         vision.setDesiredAprilTagGoal(AprilTagGoal.REEF_ALIGNMENT);
-        leds.runAnimation(Animations.INTAKE_ALGAE);
     }
 
     @Override

@@ -2,7 +2,7 @@ package org.frogforce503.robot2025.subsystems.drive;
 
 import org.frogforce503.lib.math.MathUtils;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
-import org.frogforce503.lib.swerve.SwervePathFollower;
+import org.frogforce503.lib.swerve.SwervePathController;
 import org.frogforce503.robot2025.Robot;
 import org.frogforce503.robot2025.constants.hardware.subsystem_config.DriveConfig;
 
@@ -18,11 +18,9 @@ public final class DriveConstants {
 
     public static final double maxLinearSpeed;
     public static final double maxOmega;
-    public static final double slowModeLinearSpeed;
-    public static final double slowModeOmega;
 
     public static final SwerveDriveKinematics kinematics;
-    public static final SwervePathFollower pathFollower;
+    public static final SwervePathController pathFollower;
 
     static {
         final DriveConfig driveConfig = Robot.bot.getDriveConfig();
@@ -44,8 +42,6 @@ public final class DriveConstants {
 
         maxLinearSpeed = Robot.bot.getDriveConfig().frontLeft().SpeedAt12Volts;
         maxOmega = maxLinearSpeed / driveBaseRadius;
-        slowModeLinearSpeed = 1.5;
-        slowModeOmega = Math.PI;
 
         kinematics =
             new SwerveDriveKinematics(
@@ -59,7 +55,7 @@ public final class DriveConstants {
         final PIDConfig thetaPID = Robot.bot.getFollowerThetaPID();
 
         pathFollower =
-            new SwervePathFollower(
+            new SwervePathController(
                 linearPID.toPIDController(),
                 linearPID.toPIDController(),
                 thetaPID.toPIDController());

@@ -11,7 +11,7 @@ import edu.wpi.first.math.util.Units;
 import lombok.Getter;
 import lombok.Setter;
 
-public class SwervePathFollower {
+public class SwervePathController {
     private final PIDController xController;
     private final PIDController yController;
     private final PIDController thetaController;
@@ -20,7 +20,7 @@ public class SwervePathFollower {
     @Getter private Rotation2d rotationError = Rotation2d.kZero;
     @Setter private Pose2d poseTolerance = Pose2d.kZero;
 
-    public SwervePathFollower(PIDController xController, PIDController yController, PIDController thetaController) {
+    public SwervePathController(PIDController xController, PIDController yController, PIDController thetaController) {
         this.xController = xController;
         this.yController = yController;
         this.thetaController = thetaController;

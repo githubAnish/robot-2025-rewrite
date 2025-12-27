@@ -2,60 +2,72 @@ package org.frogforce503.robot2025.subsystems.leds;
 
 import org.frogforce503.robot2025.Robot;
 
-import com.ctre.phoenix.ErrorCode;
-import com.ctre.phoenix.led.Animation;
-import com.ctre.phoenix.led.CANdle;
-import com.ctre.phoenix.led.CANdleConfiguration;
-import com.ctre.phoenix.led.CANdleStatusFrame;
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANdleConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
+import com.ctre.phoenix6.controls.EmptyAnimation;
+import com.ctre.phoenix6.hardware.CANdle;
+import com.ctre.phoenix6.signals.StripTypeValue;
 
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
 
 public class LedsIOCANdle implements LedsIO {
-    private CANdle leds;
+    private final CANdle leds;
+
+    private final StatusSignal<Voltage> supplyVolts;
+    private final StatusSignal<Current> statorCurrent;
+    private final StatusSignal<Temperature> temp;
 
     public LedsIOCANdle() {
+        // Initialize CANdle
         leds = new CANdle(Robot.bot.getLedsConfig().candleID());
 
+        // Apply config
         CANdleConfiguration config = new CANdleConfiguration();
 
-        leds.configFactoryDefault();
-        leds.clearStickyFaults();
+        config.LED.StripType = StripTypeValue.RGB;
+        config.LED.BrightnessScalar = 0.75;
 
-        leds.setStatusFramePeriod(CANdleStatusFrame.CANdleStatusFrame_Status_1_General, 500); // Update twice a second
+        leds.getConfigurator().apply(config);
 
-        leds.configAllSettings(config);
+        // Initialize signals
+        supplyVolts = leds.getSupplyVoltage();
+        statorCurrent = leds.getOutputCurrent();
+        temp = leds.getDeviceTemp();
+
+        BaseStatusSignal.setUpdateFrequencyForAll(
+            4, // Update 4 times a second
+            supplyVolts,
+            statorCurrent,
+            temp);
+
+        leds.optimizeBusUtilization();
+
+        // Clear all animations
+        for (int i = 0; i < 8; i++) {
+            leds.setControl(new EmptyAnimation(i));
+        }
     }
 
     @Override
     public void updateInputs(LedsIOInputs inputs) {
-        inputs.data =
-            new LedsIOData(
-                leds.getLastError() == ErrorCode.OK,
-                leds.getBusVoltage(),
-                leds.getCurrent(),
-                leds.getTemperature());
+        BaseStatusSignal.refreshAll(
+            supplyVolts,
+            statorCurrent,
+            temp);
+
+        inputs.stripConnected = BaseStatusSignal.isAllGood(supplyVolts, statorCurrent, temp);
+        inputs.patternName = leds.getAppliedControl().getName();
+        inputs.supplyVolts = supplyVolts.getValueAsDouble();
+        inputs.statorCurrentAmps = statorCurrent.getValueAsDouble();
+        inputs.tempCelsius = temp.getValueAsDouble();
     }
 
     @Override
-    public void runColor(Color color) {
-        Color8Bit simpleColor = new Color8Bit(color);
-
-        leds.setLEDs(
-            (int) simpleColor.red * 255,
-            (int) simpleColor.green * 255,
-            (int) simpleColor.blue * 255
-        );
-    }
-
-    @Override
-    public void runAnimation(Animation animation) {
-        leds.animate(animation);
-    }
-
-    @Override
-    public void stop() {
-        leds.setLEDs(0, 0, 0);
-        leds.clearAnimation(0);
+    public void runPattern(ControlRequest pattern) {
+        leds.setControl(pattern);
     }
 }

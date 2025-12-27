@@ -4,9 +4,8 @@ import org.frogforce503.lib.logging.LoggedTracer;
 import org.frogforce503.lib.logging.LoggerUtil;
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix.led.Animation;
+import com.ctre.phoenix6.controls.ControlRequest;
 
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lombok.Setter;
 
@@ -28,7 +27,7 @@ public class Leds extends SubsystemBase {
         Logger.processInputs("Leds", inputs);
 
         if (cameraDisconnected) {
-            io.runAnimation(Animations.CAMERA_DISCONNECTED);
+            io.runPattern(LedsRequest.CAMERA_DISCONNECTED);
         }
 
         // Record cycle time
@@ -36,20 +35,20 @@ public class Leds extends SubsystemBase {
     }
 
     public void stop() {
-        if (!cameraDisconnected) {
-            io.stop();
+        if (cameraDisconnected) {
+            return;
         }
+
+        io.runPattern(LedsRequest.CLEAR_ANIMATION);
+        io.runPattern(LedsRequest.ALL_LEDS_OFF);
     }
 
-    public void runColor(Color color) {
-        if (!cameraDisconnected) {
-            io.runColor(color);
+    /** Runs the specified LED pattern. See {@link LedsRequest} for available patterns. */
+    public void runPattern(ControlRequest pattern) {
+        if (cameraDisconnected) {
+            return;
         }
-    }
 
-    public void runAnimation(Animation animation) {
-        if (!cameraDisconnected) {
-            io.runAnimation(animation);
-        }
+        io.runPattern(pattern);
     }
 }

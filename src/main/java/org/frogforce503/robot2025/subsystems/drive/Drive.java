@@ -110,6 +110,10 @@ public class Drive extends SubsystemBase {
         return inputs.Pose;
     }
 
+    public Pose2d getFuturePose(double lookaheadTimeSec) {
+        return getPose().exp(getRobotVelocity().toTwist2d(lookaheadTimeSec));
+    }
+
     public ChassisSpeeds getRobotVelocity() {
         return inputs.Speeds;
     }

@@ -2,27 +2,19 @@ package org.frogforce503.robot2025.subsystems.leds;
 
 import org.littletonrobotics.junction.AutoLog;
 
-import com.ctre.phoenix.led.Animation;
-
-import edu.wpi.first.wpilibj.util.Color;
+import com.ctre.phoenix6.controls.ControlRequest;
 
 public interface LedsIO {
     @AutoLog
     class LedsIOInputs {
-        public LedsIOData data = new LedsIOData(false, 0.0, 0.0, 0.0);
+        public boolean stripConnected = false;
+        public String patternName = "";
+        public double supplyVolts = 0.0;
+        public double statorCurrentAmps = 0.0;
+        public double tempCelsius = 0.0;
     }
-
-    record LedsIOData(
-        boolean stripConnected,
-        double supplyVolts,
-        double statorCurrentAmps,
-        double tempCelsius) {}
 
     default void updateInputs(LedsIOInputs inputs) {}
 
-    default void runColor(Color color) {}
-
-    default void runAnimation(Animation animation) {}
-
-    default void stop() {}
+    default void runPattern(ControlRequest pattern) {}
 }

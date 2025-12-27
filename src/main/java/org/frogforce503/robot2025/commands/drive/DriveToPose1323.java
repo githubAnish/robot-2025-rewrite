@@ -3,10 +3,8 @@ package org.frogforce503.robot2025.commands.drive;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import org.frogforce503.lib.io.JoystickInputs;
 import org.frogforce503.lib.math.GeomUtil;
 import org.frogforce503.lib.motorcontrol.PIDConfig;
-import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 import org.littletonrobotics.junction.Logger;
@@ -87,18 +85,6 @@ public class DriveToPose1323 extends Command {
         this(drive, target);
         this.linearFF = linearFF;
         this.omegaFF = omegaFF;
-    }
-
-    public DriveToPose1323(
-        Drive drive,
-        Supplier<Pose2d> target,
-        JoystickInputs inputs
-    ) {
-        this(
-            drive,
-            target,
-            () -> inputs.getLinearVelocityFromJoysticks().times(FieldInfo.isRed() ? -1.0 : 1.0),
-            () -> inputs.getOmegaFromJoysticks());
     }
 
     @Override

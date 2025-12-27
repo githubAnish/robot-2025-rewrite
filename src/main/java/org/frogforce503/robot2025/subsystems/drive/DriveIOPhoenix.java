@@ -99,13 +99,13 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
 
     @Override
     public void runVelocity(ChassisSpeeds speeds) {
-        super.setControl(DriveRequests.APPLY_ROBOT_SPEEDS.withSpeeds(speeds));
+        super.setControl(DriveRequest.APPLY_ROBOT_SPEEDS.withSpeeds(speeds));
     }
 
     @Override
     public void runVelocity(ChassisSpeeds speeds, double[] moduleForcesX, double[] moduleForcesY) {
         super.setControl(
-            DriveRequests.APPLY_ROBOT_SPEEDS
+            DriveRequest.APPLY_ROBOT_SPEEDS
                 .withSpeeds(speeds)
                 .withWheelForceFeedforwardsX(moduleForcesX)
                 .withWheelForceFeedforwardsY(moduleForcesY));
@@ -113,6 +113,6 @@ public class DriveIOPhoenix extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
 
     @Override
     public void runCharacterization(double output) {
-        super.setControl(DriveRequests.RUN_CHARACTERIZATION.withVolts(output));
+        super.setControl(DriveRequest.RUN_CHARACTERIZATION.withVolts(output));
     }
 }

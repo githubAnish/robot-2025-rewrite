@@ -7,7 +7,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.SysIdSwerveTranslation;
 
-public class DriveRequests {
+public class DriveRequest {
     public static final ApplyRobotSpeeds APPLY_ROBOT_SPEEDS =
         new ApplyRobotSpeeds()
             .withCenterOfRotation(DriveConstants.centerOfRotation)

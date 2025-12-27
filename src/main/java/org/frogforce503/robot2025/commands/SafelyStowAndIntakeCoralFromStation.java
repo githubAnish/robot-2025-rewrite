@@ -4,11 +4,13 @@ import org.frogforce503.lib.auto.planned_path.PlannedPath;
 import org.frogforce503.lib.auto.planned_path.PlannedPath.HolonomicState;
 import org.frogforce503.lib.auto.planned_path.PlannedPathFactory;
 import org.frogforce503.lib.auto.planned_path.components.Waypoint;
+import org.frogforce503.lib.io.RumbleConsumer;
 import org.frogforce503.lib.reefscape.ProximityUtil;
-import org.frogforce503.lib.swerve.SwervePathFollower;
+import org.frogforce503.lib.swerve.SwervePathController;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 import org.frogforce503.robot2025.subsystems.leds.Leds;
+import org.frogforce503.robot2025.subsystems.leds.LedsRequest;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.ArmConstants;
@@ -30,6 +32,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class SafelyStowAndIntakeCoralFromStation extends Command {
@@ -46,32 +49,34 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
     private final IntakeRoller intakeRoller;
 
     private final Leds leds;
+
+    private final RumbleConsumer rumbleConsumer;
     
     // Constants
-    private final double safeDistanceFromReefToStowInches = Units.inchesToMeters(40); // TODO make sure to tune this
+    private final double safeDistanceFromReefToStowInches = Units.inchesToMeters(20); // TODO make sure to tune this
 
     // Trajectory
-    private final SwervePathFollower trajectoryController = DriveConstants.pathFollower;
+    private final SwervePathController trajectoryController = DriveConstants.pathFollower;
     private final Timer trajectoryTimer = new Timer();
     private PlannedPath trajectory;
 
     // State
     private Pose2d closestReefSide; 
     private Pose2d closestStation;
-    private IntakingState currentState = IntakingState.SAFE_DISTANCE_FROM_REEF;
+    private IntakingState currentState = IntakingState.PUT_INTAKEPIVOT_OUT_AND_CHECK_SAFE_DISTANCE_FROM_REEF;
 
     private enum IntakingState {
-        SAFE_DISTANCE_FROM_REEF,
-        PUT_INTAKEPIVOT_OUT,
+        PUT_INTAKEPIVOT_OUT_AND_CHECK_SAFE_DISTANCE_FROM_REEF,
         PARTIAL_STOW,
         STOW,
         PUT_INTAKEPIVOT_IN,
         WAIT_FOR_LOWER_TRUE,
         WAIT_FOR_LOWER_FALSE,
+        SET_HAS_CORAL,
         FINISHED
     }
 
-    public SafelyStowAndIntakeCoralFromStation(Drive drive, Vision vision, Superstructure superstructure, Leds leds) {
+    public SafelyStowAndIntakeCoralFromStation(Drive drive, Vision vision, Superstructure superstructure, Leds leds, RumbleConsumer rumbleConsumer) {
         this.drive = drive;
         this.vision = vision;
 
@@ -84,6 +89,8 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
         this.intakeRoller = superstructure.getIntakeRoller();
 
         this.leds = leds;
+
+        this.rumbleConsumer = rumbleConsumer;
 
         addRequirements(drive, vision, elevator, arm, wrist, claw, intakePivot, intakeRoller, leds);
     }
@@ -130,23 +137,22 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
     @Override
     public void execute() {
         switch (currentState) {
-            case SAFE_DISTANCE_FROM_REEF:
-                if (ProximityUtil.getDistanceFromPose(drive, closestReefSide) > safeDistanceFromReefToStowInches) {
-                    currentState = IntakingState.PUT_INTAKEPIVOT_OUT;
-                }
-                break;
-
-            case PUT_INTAKEPIVOT_OUT:
+            case PUT_INTAKEPIVOT_OUT_AND_CHECK_SAFE_DISTANCE_FROM_REEF:
                 intakePivot.setAngle(IntakePivotConstants.ARM_STOW_CLEARANCE);
-                
-                if (intakePivot.isAtAngle(IntakePivotConstants.ARM_STOW_CLEARANCE, Units.degreesToRadians(5.0))) { // just needs to be enough out of way for arm
+
+                if (ProximityUtil.getDistanceFromPose(drive, closestReefSide) > safeDistanceFromReefToStowInches &&
+                    intakePivot.isAtAngle(IntakePivotConstants.ARM_STOW_CLEARANCE, Units.degreesToRadians(5.0)) // just needs to be enough out of way for arm
+                ) {
                     currentState = IntakingState.PARTIAL_STOW;
                 }
                 break;
 
             case PARTIAL_STOW:
                 elevator.setHeight(ElevatorConstants.minHeight);
-                currentState = IntakingState.STOW;
+
+                if (elevator.isAtHeight(ElevatorConstants.minHeight, Units.inchesToMeters(15.0))) {
+                    currentState = IntakingState.STOW;
+                }
                 break;
 
             case STOW:
@@ -167,7 +173,7 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
             case WAIT_FOR_LOWER_TRUE:
                 if (RobotBase.isSimulation() && ProximityUtil.getDistanceFromPose(drive, closestStation) < Units.inchesToMeters(25)) {
                     // In sim, we don't have beam breaks, so we just assume intake is successful after intake pivot is in & robot close to station
-                    currentState = IntakingState.FINISHED;
+                    currentState = IntakingState.SET_HAS_CORAL;
                     break;
                 }
 
@@ -178,12 +184,19 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
 
             case WAIT_FOR_LOWER_FALSE:
                 if (!superstructure.lowerBeamTriggered() && claw.coralCurrentThresholdForIntookMet()) {
-                    currentState = IntakingState.FINISHED;
+                    currentState = IntakingState.SET_HAS_CORAL;
                 }
                 break;
 
-            case FINISHED:
+            case SET_HAS_CORAL:
                 claw.stop();
+                superstructure.setHasCoral(true);
+                leds.runPattern(LedsRequest.GOT_PIECE);
+                rumbleConsumer.accept(RumbleType.kBothRumble, 0.5);
+                currentState = IntakingState.FINISHED;
+                break;
+
+            case FINISHED:
                 break;
         }
 
@@ -211,7 +224,6 @@ public class SafelyStowAndIntakeCoralFromStation extends Command {
         drive.stop();
         vision.setDesiredAprilTagGoal(AprilTagGoal.GLOBAL_LOCALIZATION);
         leds.stop();
-
-        superstructure.setHasCoral(true);
+        rumbleConsumer.accept(RumbleType.kBothRumble, 0.0);
     }
 }

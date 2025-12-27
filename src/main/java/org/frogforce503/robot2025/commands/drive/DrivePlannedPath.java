@@ -4,7 +4,7 @@ import java.util.function.Supplier;
 
 import org.frogforce503.lib.auto.planned_path.PlannedPath;
 import org.frogforce503.lib.auto.planned_path.PlannedPath.HolonomicState;
-import org.frogforce503.lib.swerve.SwervePathFollower;
+import org.frogforce503.lib.swerve.SwervePathController;
 import org.frogforce503.robot2025.FieldInfo;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
 import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
@@ -22,7 +22,7 @@ public class DrivePlannedPath extends Command {
     private final Drive drive;
 
     // Control
-    private final SwervePathFollower controller = DriveConstants.pathFollower;
+    private final SwervePathController controller = DriveConstants.pathFollower;
     private final Timer timer;
     private final PlannedPath trajectory;
 
