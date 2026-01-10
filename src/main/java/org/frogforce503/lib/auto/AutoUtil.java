@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.frogforce503.lib.auto.planned_path.PlannedPath;
-import org.frogforce503.robot2025.commands.drive.DriveToPose;
-import org.frogforce503.robot2025.subsystems.drive.Drive;
+import org.frogforce503.robot.commands.drive.DriveToPose;
+import org.frogforce503.robot.subsystems.drive.Drive;
 
 import choreo.auto.AutoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;

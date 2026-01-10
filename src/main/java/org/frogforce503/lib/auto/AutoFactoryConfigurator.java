@@ -1,12 +1,12 @@
 package org.frogforce503.lib.auto;
 
+import org.frogforce503.robot.Constants;
+import org.frogforce503.robot.subsystems.drive.Drive;
+import org.frogforce503.robot.subsystems.drive.DriveConstants;
+
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-
-import org.frogforce503.robot2025.Constants;
-import org.frogforce503.robot2025.subsystems.drive.Drive;
-import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
 
 // import com.pathplanner.lib.auto.AutoBuilder;
 // import com.pathplanner.lib.config.PIDConstants;

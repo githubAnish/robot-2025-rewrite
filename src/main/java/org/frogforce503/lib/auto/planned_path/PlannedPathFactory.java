@@ -7,7 +7,7 @@ import java.util.List;
 import org.frogforce503.lib.auto.planned_path.components.Waypoint;
 import org.frogforce503.lib.auto.planned_path.generator.CustomTrajectoryGenerator;
 import org.frogforce503.lib.util.ErrorUtil;
-import org.frogforce503.robot2025.subsystems.drive.DriveConstants;
+import org.frogforce503.robot.subsystems.drive.DriveConstants;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
