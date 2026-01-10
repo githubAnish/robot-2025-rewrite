@@ -70,7 +70,6 @@ import org.frogforce503.robot.subsystems.vision.apriltag_detection.AprilTagIO;
 import org.frogforce503.robot.subsystems.vision.apriltag_detection.AprilTagIOPhotonSim;
 import org.frogforce503.robot.subsystems.vision.apriltag_detection.AprilTagIOPhotonVision;
 import org.frogforce503.robot.subsystems.vision.object_detection.ObjectDetectionIO;
-import org.frogforce503.test.UnitTest;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -86,7 +85,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.ExtensionMethod;
 
 @ExtensionMethod({DoublePressTracker.class, TriggerUtil.class})
-public class RobotContainer implements UnitTest {
+public class RobotContainer {
     // Subsystems
     private Drive drive;
     private Vision vision;
@@ -400,7 +399,6 @@ public class RobotContainer implements UnitTest {
         warmupExecutor.disabledPeriodic();
     }
 
-    @Override
     public void test() {
         // Right now, I don't have any separate scoring cmd to raise of all these subsystems, so I'm testing it here just to verify SafelyStowAndIntakeCoralFromStation works
         RobotModeTriggers.teleop().onTrue(

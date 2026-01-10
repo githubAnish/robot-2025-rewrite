@@ -1,5 +1,7 @@
 package org.frogforce503.lib.reefscape;
 
+import java.util.Arrays;
+
 import org.frogforce503.robot.FieldInfo;
 import org.frogforce503.robot.constants.field.FieldConstants;
 import org.frogforce503.robot.subsystems.drive.Drive;
@@ -23,21 +25,7 @@ public final class ProximityUtil {
             return null;
         }
 
-        final Pose2d robotPose = drive.getPose();
-
-        Pose2d closestPose = Pose2d.kZero;
-        double closestDist = Double.MAX_VALUE;
-
-        for (Pose2d pose : options) {
-            double dist = getDistanceBetweenPoses(pose, robotPose);
-
-            if (dist < closestDist) {
-                closestDist = dist;
-                closestPose = pose;
-            }
-        }
-
-        return closestPose;
+        return drive.getPose().nearest(Arrays.asList(options));
     }
 
     // Reefscape-specific proximity methods
