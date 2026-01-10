@@ -19,7 +19,7 @@ public class WarmupExecutor {
         this.autoChooser = autoChooser;
     }
 
-    /** Wrap this method under another method to find its warmup time. */
+    /** Wrap this method over another method to find its warmup time. */
     private void printWarmupTime(Runnable action) {
         long startTime = System.nanoTime();
         action.run();

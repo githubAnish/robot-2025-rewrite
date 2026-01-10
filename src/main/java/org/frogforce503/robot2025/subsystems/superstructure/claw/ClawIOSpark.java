@@ -11,7 +11,7 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -115,8 +115,8 @@ public class ClawIOSpark implements ClawIO {
 
     @Override
     public void runVelocity(double leftVelocityRadPerSec, double rightVelocityRadPerSec, double leftFeedforward, double rightFeedforward) {
-        leftController.setReference(leftVelocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, leftFeedforward);
-        rightController.setReference(rightVelocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, rightFeedforward);
+        leftController.setSetpoint(leftVelocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, leftFeedforward);
+        rightController.setSetpoint(rightVelocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, rightFeedforward);
     }
 
     @Override

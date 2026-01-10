@@ -2,12 +2,9 @@ package org.frogforce503.robot2025.commands;
 
 import org.frogforce503.lib.math.GeomUtil;
 import org.frogforce503.lib.reefscape.ProximityUtil;
-import org.frogforce503.robot2025.FieldInfo;
-import org.frogforce503.robot2025.commands.drive.DrivePlannedPath;
 import org.frogforce503.robot2025.commands.drive.DriveToPose;
 import org.frogforce503.robot2025.constants.field.FieldConstants;
 import org.frogforce503.robot2025.subsystems.drive.Drive;
-import org.frogforce503.robot2025.subsystems.leds.Animations;
 import org.frogforce503.robot2025.subsystems.leds.Leds;
 import org.frogforce503.robot2025.subsystems.superstructure.Superstructure;
 import org.frogforce503.robot2025.subsystems.superstructure.arm.Arm;
@@ -23,9 +20,7 @@ import org.frogforce503.robot2025.subsystems.superstructure.wrist.Wrist;
 import org.frogforce503.robot2025.subsystems.superstructure.wrist.WristConstants;
 import org.frogforce503.robot2025.subsystems.vision.Vision;
 import org.frogforce503.robot2025.subsystems.vision.apriltag_detection.AprilTagGoal;
-import org.ironmaple.utils.mathutils.MapleCommonMath;
 
-import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;

@@ -13,7 +13,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.filter.Debouncer;
@@ -105,7 +105,7 @@ public class WristIOSpark implements WristIO {
 
     @Override
     public void runPosition(double positionRad, double feedforward) {
-        controller.setReference(positionRad, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
+        controller.setSetpoint(positionRad, ControlType.kPosition, ClosedLoopSlot.kSlot0, feedforward);
     }
 
     @Override
